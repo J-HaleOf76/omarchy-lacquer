@@ -1,0 +1,232 @@
+#!/usr/bin/env python3
+"""The boot screen's unlock prompt (Plymouth), read and previewed without privileges.
+
+  unlock-screen scan    JSON for Lacquer's Lock & boot section
+  unlock-screen logo    draw the current theme's unlock logo; print its
+                        background, foreground and logo path, one per line
+
+Omarchy's own themes ship unlock.png, the Omarchy logo in the theme's accent
+colour, and `omarchy plymouth set-by-theme` bakes it with the theme's background
+and foreground. Themes without one (Aether themes, most community themes) cannot
+reach the boot screen that way, so Lacquer draws the same logo in their accent
+colour and bakes it through the same `omarchy plymouth set`.
+
+Nothing here needs a password: the baking itself is left to unlock-apply, run in
+a terminal where Omarchy asks for it.
+"""
+import hashlib, json, os, re, subprocess, sys, tempfile
+
+HOME = os.environ.get("HOME", "")
+OMARCHY = os.environ.get("OMARCHY_PATH") or "/usr/share/omarchy"
+DEFAULTS = os.path.join(OMARCHY, "default/plymouth")
+INSTALLED = "/usr/share/plymouth/themes/omarchy"
+CURRENT = os.path.join(HOME, ".local/state/omarchy/current")
+# Inside Lacquer's state folder, so lacquer-cleanup takes them along.
+STATE = os.path.join(HOME, ".local/state/omarchy/io.github.deunnis.lacquer/unlock")
+CACHE = os.path.join(STATE, "previews")
+SLUG = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
+HEX = re.compile(r"^#?([0-9a-fA-F]{6})$")
+
+# Files are read only when they are regular files and small, so a strange file
+# cannot hang or flood the helper.
+TEXT_LIMIT = 256 * 1024
+IMAGE_LIMIT = 8 * 1024 * 1024
+
+
+def read_capped(path, limit, binary=False):
+    try:
+        if not os.path.isfile(path) or os.path.getsize(path) > limit:
+            return None
+        with open(path, "rb" if binary else "r", **({} if binary else {"encoding": "utf-8"})) as f:
+            data = f.read(limit + 1)
+        return data if len(data) <= limit else None
+    except (OSError, UnicodeDecodeError):
+        return None
+
+
+def colors(path):
+    """background, foreground and accent from a colors.toml, as bare lowercase hex."""
+    out = {}
+    for line in (read_capped(path, TEXT_LIMIT) or "").splitlines():
+        m = re.match(r'^\s*(background|foreground|accent)\s*=\s*"?(#?[0-9a-fA-F]{6})"?\s*(#.*)?$', line)
+        if m and m.group(1) not in out:
+            out[m.group(1)] = HEX.match(m.group(2)).group(1).lower()
+    return out
+
+
+def theme_dir(name):
+    user = os.path.join(HOME, ".config/omarchy/themes", name)
+    return user if os.path.isdir(user) else os.path.join(OMARCHY, "themes", name)
+
+
+def ships_unlock(directory):
+    return all(os.path.isfile(os.path.join(directory, f)) and not os.path.islink(os.path.join(directory, f))
+               for f in ("unlock.png", "preview-unlock.png"))
+
+
+def current_theme():
+    name = (read_capped(os.path.join(CURRENT, "theme.name"), 4096) or "").strip()
+    if not SLUG.match(name):
+        return None
+    c = colors(os.path.join(CURRENT, "theme/colors.toml"))
+    if "background" not in c or "foreground" not in c:
+        return None
+    c.setdefault("accent", c["foreground"])
+    return {"name": name, "dir": theme_dir(name), "colors": c}
+
+
+def private_dir(path):
+    os.makedirs(path, mode=0o700, exist_ok=True)
+    os.chmod(path, 0o700)
+    return path
+
+
+def magick(args):
+    subprocess.run(["magick"] + args, check=True, capture_output=True, timeout=30)
+
+
+def make_logo(accent):
+    """The Omarchy logo in one colour, the way Omarchy's themes draw theirs."""
+    target = os.path.join(private_dir(STATE), "logo-" + accent + ".png")
+    if os.path.isfile(target) and not os.path.islink(target):
+        return target
+    fd, tmp = tempfile.mkstemp(suffix=".png", dir=STATE)
+    os.close(fd)
+    try:
+        # No timestamps in the file, so the same accent always gives the same
+        # bytes: that is how the boot screen's logo is recognised afterwards.
+        magick([os.path.join(DEFAULTS, "logo.png"), "-channel", "RGB",
+                "+level-colors", "#" + accent + ",#" + accent, "-strip",
+                "-define", "png:exclude-chunks=date,time", "PNG32:" + tmp])
+        os.replace(tmp, target)
+    finally:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+    return target
+
+
+def render_preview(bg, fg, logo):
+    """A small picture of the unlock prompt, laid out like omarchy-plymouth-preview."""
+    logo_bytes = read_capped(logo, IMAGE_LIMIT, binary=True) or b""
+    key = hashlib.sha256(bg.encode() + fg.encode() + logo_bytes).hexdigest()[:20]
+    target = os.path.join(private_dir(CACHE), "preview-" + key + ".png")
+    if os.path.isfile(target):
+        return target
+    with tempfile.TemporaryDirectory(dir=CACHE) as work:
+        for asset in ("bullet.png", "entry.png", "lock.png"):
+            magick([os.path.join(DEFAULTS, asset), "-channel", "RGB",
+                    "+level-colors", "#" + fg + ",#" + fg, os.path.join(work, asset)])
+
+        def size(path):
+            out = subprocess.run(["magick", "identify", "-format", "%w %h", path],
+                                 capture_output=True, text=True, timeout=30, check=True).stdout.split()
+            return int(out[0]), int(out[1])
+
+        cw, ch = 1920, 1080
+        lw, lh = size(logo)
+        ew, eh = size(os.path.join(work, "entry.png"))
+        lock_h = int(eh * 0.8)
+        lock_w = int(84 * lock_h / 96)
+        lx, ly = (cw - lw) // 2, (ch - lh) // 2
+        ex, ey = (cw - ew) // 2, ly + lh + 40
+        args = ["-size", "%dx%d" % (cw, ch), "xc:#" + bg,
+                logo, "-geometry", "+%d+%d" % (lx, ly), "-composite",
+                os.path.join(work, "entry.png"), "-geometry", "+%d+%d" % (ex, ey), "-composite",
+                "(", os.path.join(work, "lock.png"), "-resize", "%dx%d" % (lock_w, lock_h), ")",
+                "-geometry", "+%d+%d" % (ex - lock_w - 15, ey + eh // 2 - lock_h // 2), "-composite"]
+        for i in range(4):
+            args += ["(", os.path.join(work, "bullet.png"), "-resize", "7x7", ")",
+                     "-geometry", "+%d+%d" % (ex + 20 + i * 12, ey + eh // 2 - 4), "-composite"]
+        tmp = os.path.join(work, "out.png")
+        magick(args + ["-resize", "640x360", tmp])
+        os.replace(tmp, target)
+    return target
+
+
+def installed():
+    """The logo and background the boot screen was last baked with."""
+    logo = read_capped(os.path.join(INSTALLED, "logo.png"), IMAGE_LIMIT, binary=True)
+    script = read_capped(os.path.join(INSTALLED, "omarchy.script"), TEXT_LIMIT) or ""
+    bg = ""
+    m = re.search(r"Window\.SetBackgroundTopColor\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*\)", script)
+    if m:
+        bg = "".join("%02x" % max(0, min(255, round(float(v) * 255))) for v in m.groups())
+    conf = read_capped("/etc/plymouth/plymouthd.conf", TEXT_LIMIT) or ""
+    active = re.search(r"^\s*Theme\s*=\s*(\S+)", conf, re.M)
+    return logo, bg, active.group(1) if active else ""
+
+
+def close(a, b):
+    """Two hex colours equal after Plymouth's three-decimal rounding."""
+    try:
+        return all(abs(int(a[i:i + 2], 16) - int(b[i:i + 2], 16)) <= 1 for i in (0, 2, 4))
+    except (ValueError, IndexError):
+        return False
+
+
+def listed_themes():
+    names = set()
+    for root in (os.path.join(HOME, ".config/omarchy/themes"), os.path.join(OMARCHY, "themes")):
+        try:
+            names.update(n for n in os.listdir(root) if SLUG.match(n))
+        except OSError:
+            pass
+    return sorted(names, key=str.lower)
+
+
+def scan():
+    theme = current_theme()
+    logo, bg, active = installed()
+    default_logo = read_capped(os.path.join(DEFAULTS, "logo.png"), IMAGE_LIMIT, binary=True)
+
+    shipping = []
+    on_boot = ""
+    if logo is not None and logo == default_logo:
+        on_boot = "default"
+    for name in listed_themes():
+        d = theme_dir(name)
+        if not ships_unlock(d):
+            continue
+        shipping.append({"name": name, "preview": os.path.join(d, "preview-unlock.png")})
+        if not on_boot and logo is not None and logo == read_capped(os.path.join(d, "unlock.png"), IMAGE_LIMIT, binary=True):
+            on_boot = name
+
+    out = {"active": active, "onBoot": on_boot, "theme": None, "themes": shipping,
+           "defaultPreview": os.path.join(DEFAULTS, "preview-unlock.png")}
+    if theme:
+        c = theme["colors"]
+        ships = ships_unlock(theme["dir"])
+        entry = {"name": theme["name"], "ships": ships, "preview": ""}
+        if ships:
+            entry["preview"] = os.path.join(theme["dir"], "preview-unlock.png")
+        else:
+            try:
+                ours = make_logo(c["accent"])
+                entry["preview"] = render_preview(c["background"], c["foreground"], ours)
+                if (not on_boot and logo is not None and logo == read_capped(ours, IMAGE_LIMIT, binary=True)
+                        and close(bg, c["background"])):
+                    out["onBoot"] = "current"
+            except (OSError, subprocess.SubprocessError, ValueError):
+                entry["preview"] = ""
+        out["theme"] = entry
+    print(json.dumps(out))
+
+
+def logo_command():
+    theme = current_theme()
+    if not theme:
+        sys.exit("unlock-screen: the current theme has no readable colors.toml")
+    c = theme["colors"]
+    print(c["background"])
+    print(c["foreground"])
+    print(make_logo(c["accent"]))
+
+
+if __name__ == "__main__":
+    command = sys.argv[1] if len(sys.argv) > 1 else ""
+    if command == "scan":
+        scan()
+    elif command == "logo":
+        logo_command()
+    else:
+        sys.exit(__doc__)

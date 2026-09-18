@@ -67,7 +67,7 @@ Optional, for one section each:
 
 | Plugin | Adds |
 |---|---|
-| [lock-explorer](https://github.com/SirJul1337/omarchy-lock-explorer) | **Lock & boot**: designs, unlock animation, clock, boot screen. Without it the section says so. |
+| [lock-explorer](https://github.com/SirJul1337/omarchy-lock-explorer) | **Lock & boot**: lock designs, unlock animation, clock and its own boot screens. Without it the section still sets when the screen locks and the boot unlock screen. |
 | [OmaMenu](https://github.com/Deunnis/OmaMenu) with Menu Look IPC | **Menu look**. Without it the section is not shown. |
 | [OmaShuffle](https://github.com/Deunnis/OmaShuffle) | Nothing extra: while it is installed, Lacquer's Shuffle stays out of its way. |
 
@@ -253,7 +253,26 @@ you choose to replace it (a backup is kept).
 
 ## Screens
 
-Lock and boot settings go through **lock-explorer's IPC only**
+**Boot unlock screen** is the screen that asks for the disk password while the
+laptop starts (Omarchy's Plymouth theme). Omarchy's own **Style › Unlock** only
+offers themes that ship an `unlock.png`, so Aether themes and most community
+themes can't be put there. Lacquer offers the current theme as well: it draws
+the Omarchy logo in the theme's accent colour, the same way the stock themes'
+logos are made (pixel for pixel), previews it, and bakes it with the theme's
+background and foreground through `omarchy plymouth set`. Themes that do ship
+an unlock screen go through `omarchy plymouth set-by-theme`, and **Default**
+through `omarchy plymouth reset`, exactly like Omarchy's menu. All three
+rebuild the boot image and ask for your password, so they run in Omarchy's
+floating terminal (`unlock-apply`), never in the background. Nothing changes
+the boot screen on its own after a theme switch; the section says when it no
+longer matches. The drawn logos and previews live in Lacquer's state folder
+(`~/.local/state/omarchy/io.github.deunnis.lacquer/unlock/`).
+
+The lock screen itself needs nothing: Omarchy's lock screen already follows the
+theme (wallpaper, blurred, and the `[lock]` colours), and those colours can be
+tuned under **Shell style › Lock screen**.
+
+Lock designs and lock-explorer's boot screens go through **lock-explorer's IPC only**
 (`omarchy-shell lock …`). Its `shell.json` entry is never edited directly: its
 in-memory settings win over the file and it rewrites the whole entry.
 Choosing a boot screen only marks it; building it needs your password and

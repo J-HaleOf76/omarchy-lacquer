@@ -125,8 +125,12 @@ Item {
       return ml ? Number(ml.scale).toFixed(2) + "× · " + ml.transparency + " % see-through" : "Omarchy menu"
     case "lock":
       var si = app.screens.info
-      if (!si || !si.designs) return "Lock and boot screens"
-      for (var i = 0; i < si.designs.length; i++) if (si.designs[i].active) return si.designs[i].name + " · boot " + (si.status.boot || "stock")
+      if (!si) return "Lock and boot screens"
+      for (var i = 0; i < (si.designs || []).length; i++) if (si.designs[i].active) return si.designs[i].name + " · boot " + (si.status.boot || "stock")
+      var ub = si.unlock ? si.unlock.onBoot : ""
+      if (ub === "default") return "Boot screen: Omarchy default"
+      if (ub === "current" && si.unlock.theme) return "Boot screen: " + app.theme.displayOf(si.unlock.theme.name)
+      if (ub) return "Boot screen: " + app.theme.displayOf(ub)
       return "Lock and boot screens"
     case "screensaver":
       var ss = app.screens.info
@@ -181,7 +185,7 @@ Item {
     gtk: ["Light or dark apps", "GTK theme", "Icon theme"],
     cursor: ["Cursor theme", "Cursor size"],
     nightlight: ["Right now", "Schedule", "Warmer from", "Back to normal at", "Evening warmth"],
-    lock: ["Lock design", "Try it", "Unlock animation", "Unlock length", "Clock", "Blank the screen after", "Keep the display on while locked", "Lock after", "Boot screen", "Build the boot screen"],
+    lock: ["Lock screen", "Lock design", "Try it", "Unlock animation", "Unlock length", "Clock", "Blank the screen after", "Keep the display on while locked", "Lock after", "Boot unlock screen", "lock-explorer boot screen", "Build the boot screen"],
     screensaver: ["Screensaver", "Start after", "Screensaver art", "About screen art"],
     menulook: ["Size", "Corner radius", "Border width", "Transparency"],
     terminals: ["Padding", "Cursor", "Cursor blink", "Background opacity"],

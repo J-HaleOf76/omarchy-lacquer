@@ -4,6 +4,9 @@ import Quickshell.Io
 
 // Lock screen, boot screen, idle timings and screensaver art.
 //
+// The boot screen's unlock prompt goes through Omarchy's own `omarchy plymouth`
+// commands (see unlock-apply), with or without lock-explorer.
+//
 // Lock and boot go through lock-explorer's `omarchy-shell lock …` IPC only; its
 // Plymouth rebuild stays behind lock-explorer's own Apply button, which is the
 // one place that tracks what is baked. Idle timings live in shell.json and are
@@ -87,6 +90,24 @@ Item {
     }
     root.app.dismiss()
     Quickshell.execDetached(["omarchy", "branding", which, action])
+  }
+
+  // The boot screen's unlock prompt: "default", "current" (the current theme in
+  // its own colours) or the name of a theme that ships an unlock screen.
+  // Rebuilding the boot image asks for a password, so it runs in Omarchy's
+  // floating terminal, like Omarchy's own Style › Unlock menu.
+  function setUnlock(value) {
+    var args = value === "default" || value === "current" ? [value] : ["theme", value]
+    if (args.length === 2 && !/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(value)) return
+    var quote = function(s) { return "'" + String(s).replace(/'/g, "'\\''") + "'" }
+    root.app.dismiss()
+    Quickshell.execDetached(["omarchy-launch-floating-terminal-with-presentation",
+                             [root.app.pluginDir + "/unlock-apply"].concat(args).map(quote).join(" ")])
+  }
+
+  function lockNow() {
+    root.app.dismiss()
+    Quickshell.execDetached(["omarchy-system-lock"])
   }
 
   function formatSeconds(s) {

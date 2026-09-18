@@ -264,7 +264,7 @@ Item {
     out.push({ id: "menulook", group: "Shell", pane: "desktop", kind: "menu", icon: "󰍜", title: "Menu look",
                blurb: "The Omarchy menu's size, corners, border and transparency, live." })
     out.push({ id: "lock", group: "Screens", pane: "desktop", kind: "lock", icon: "󰌾", title: "Lock & boot",
-               blurb: "The lock screen design and timings, and the boot screen, through lock-explorer." })
+               blurb: "When the screen locks, and the boot unlock screen in any theme's colours; lock designs through lock-explorer." })
     out.push({ id: "screensaver", group: "Screens", pane: "desktop", kind: "screensaver", icon: "󱄄", title: "Screensaver",
                blurb: "When the screensaver starts, and the art it and the About screen show." })
     out.push({ id: "terminals", group: "Apps", pane: "desktop", kind: "terminal", icon: "󰆍", title: "Terminals",
@@ -983,7 +983,7 @@ Item {
                 : root.section.id === "gtk" ? "gsettings · pins.json · hooks/theme-set.d"
                 : root.section.id === "cursor" ? "hyprctl setcursor · gsettings · hypr/autostart.lua"
                 : root.section.id === "nightlight" ? "hypr/hyprsunset.conf · hypr/autostart.lua"
-                : root.section.id === "lock" ? "omarchy-shell lock · shell.json idle"
+                : root.section.id === "lock" ? "shell.json idle · omarchy plymouth · omarchy-shell lock"
                 : root.section.id === "menulook" ? "omarchy-shell omamenu · io.github.omamenu/style.json"
                 : root.section.id === "terminals" ? "foot.ini · alacritty.toml · kitty.conf · ghostty/config"
                 : root.section.id === "btop" ? "btop/btop.conf · starship.toml"

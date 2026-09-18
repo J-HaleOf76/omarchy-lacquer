@@ -194,11 +194,55 @@ Item {
     return list.map(function(n) { return { value: n, label: n === 0 ? "Never" : section.screens.formatSeconds(n) } })
   }
 
+  // The boot screen's unlock prompt (Omarchy's Plymouth theme). Themes that
+  // ship an unlock screen are offered as they are; the current theme always
+  // is, drawn in its own colours when it has none.
+  readonly property var unlockGroup: {
+    var u = section.sd ? section.sd.unlock : null
+    if (!u) return null
+    var t = u.theme
+    var name = function(slug) { return section.app.theme.displayOf(slug) }
+    var options = [{ value: "default", label: "Default", preview: u.defaultPreview, sub: "" }]
+    if (t && !t.ships) options.push({ value: "current", label: name(t.name), preview: t.preview, sub: "this theme" })
+    for (var i = 0; i < u.themes.length; i++)
+      options.push({ value: u.themes[i].name, label: name(u.themes[i].name), preview: u.themes[i].preview,
+                     sub: t && t.name === u.themes[i].name ? "this theme" : "" })
+    for (var j = 0; j < options.length; j++)
+      if (options[j].value === u.onBoot) options[j].sub = options[j].sub ? options[j].sub + " · on boot" : "on boot"
+    var mine = t ? (t.ships ? t.name : "current") : ""
+    var shows = u.onBoot === "" ? "a design Lacquer does not recognise"
+      : u.onBoot === "default" ? "the Omarchy default"
+      : u.onBoot === "current" ? name(t.name) : name(u.onBoot)
+    var note = "Shown while the laptop starts and asks for the disk password. It shows " + shows + "."
+    if (t && mine !== u.onBoot) note += " Pick " + name(t.name) + " to match your theme."
+    if (u.active && u.active !== "omarchy")
+      note += " Right now the boot screen uses the \u201c" + u.active + "\u201d Plymouth theme; picking here switches it back to Omarchy's."
+    note += " Applying asks for your password in a small terminal and rebuilds the boot image, which takes a minute."
+    return {
+      id: "unlock-screen", kind: "cards", title: "Boot unlock screen", note: note,
+      current: u.onBoot, options: options,
+      pick: function(v) { section.screens.setUnlock(v) }
+    }
+  }
+
+  readonly property var lockAfterGroup: !section.sd ? null : {
+    id: "lock-after", kind: "chips", title: "Lock after",
+    note: "Idle time before the session locks (shell.json).",
+    current: section.sd.idle.lock,
+    options: section.secondsChips([120, 300, 600, 900, 1800, 3600]),
+    pick: function(v) { section.screens.setIdle("lock", v) }
+  }
+
   readonly property var lockGroups: !section.sd ? [] : !section.sd.lockExplorer ? [
-    { id: "missing", kind: "chips", title: "Lock screen",
-      note: "lock-explorer is not running, so there is nothing to drive. Lacquer controls the lock and boot screens through it.",
-      options: [] }
-  ] : [
+    {
+      id: "stock-lock", kind: "chips", title: "Lock screen",
+      note: "Omarchy's lock screen follows your theme on its own: the wallpaper, blurred, behind a password field in the theme's colours. Its colours can be tuned under Shell style \u203a Lock screen.",
+      options: [{ value: "lock", label: "Lock now" }, { value: "colours", label: "Lock screen colours" }],
+      pick: function(v) { if (v === "lock") section.screens.lockNow(); else section.app.showSectionById("shell") }
+    },
+    section.lockAfterGroup,
+    section.unlockGroup
+  ].filter(function(g) { return !!g }) : [
     {
       id: "design", kind: "chips", title: "Lock design",
       note: (function() {
@@ -245,15 +289,10 @@ Item {
       options: [{ value: "off", label: "Off" }, { value: "on", label: "On" }],
       pick: function(v) { section.screens.setKeepDisplayOn(v === "on") }
     },
+    section.lockAfterGroup,
+    section.unlockGroup,
     {
-      id: "lock-after", kind: "chips", title: "Lock after",
-      note: "Idle time before the session locks (shell.json).",
-      current: section.sd.idle.lock,
-      options: section.secondsChips([120, 300, 600, 900, 1800, 3600]),
-      pick: function(v) { section.screens.setIdle("lock", v) }
-    },
-    {
-      id: "boot", kind: "cards", title: "Boot screen",
+      id: "boot", kind: "cards", title: "lock-explorer boot screen",
       note: section.ls.bootApplying ? "lock-explorer is rebuilding the boot screen…"
         : section.ls.boot !== (section.ls.bootApplied || "stock")
           ? "Chosen: " + section.ls.boot + ", but the boot screen still shows " + (section.ls.bootApplied || "stock")
@@ -271,7 +310,7 @@ Item {
       options: [{ value: "boot", label: "Open the Boot tab to apply" }],
       pick: function(v) { section.screens.openExplorer(v) }
     }
-  ]
+  ].filter(function(g) { return !!g })
 
   readonly property var screensaverGroups: !section.sd ? [] : [
     {

@@ -1,0 +1,32 @@
+#!/bin/bash
+# unlock-apply — put a theme on the boot screen's unlock prompt. Lacquer runs it
+# in Omarchy's floating terminal: rebuilding the boot image asks for your
+# password there, the same way Omarchy's Style › Unlock menu does.
+#
+#   unlock-apply default         the stock Omarchy boot screen
+#   unlock-apply theme <name>    a theme that ships its own unlock screen
+#   unlock-apply current         the current theme, in its own colours
+
+set -euo pipefail
+here=$(dirname "$(realpath "$0")")
+
+case ${1:-} in
+  default)
+    exec omarchy-plymouth-reset
+    ;;
+  theme)
+    [[ ${2:-} =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$ ]] || { echo "unlock-apply: not a theme name: ${2:-}" >&2; exit 2; }
+    exec omarchy-plymouth-set-by-theme "$2"
+    ;;
+  current)
+    mapfile -t made < <(python3 "$here/unlock-screen" logo)
+    (( ${#made[@]} == 3 )) || { echo "unlock-apply: could not draw the theme's logo" >&2; exit 1; }
+    [[ ${made[0]} =~ ^[0-9a-f]{6}$ && ${made[1]} =~ ^[0-9a-f]{6}$ ]] || { echo "unlock-apply: unexpected colours" >&2; exit 1; }
+    [[ ${made[2]} == "$HOME/.local/state/omarchy/io.github.deunnis.lacquer/unlock/logo-"*.png ]] || { echo "unlock-apply: unexpected logo path" >&2; exit 1; }
+    exec omarchy-plymouth-set "#${made[0]}" "#${made[1]}" "${made[2]}"
+    ;;
+  *)
+    sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//' >&2
+    exit 2
+    ;;
+esac

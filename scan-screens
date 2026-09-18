@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Lock, boot, idle and branding state for Lacquer's Screens sections (read-only).
 
+The boot screen's unlock prompt (Omarchy's Plymouth theme) comes from the
+unlock-screen helper and needs nothing else.
+
 Lock and boot settings come from lock-explorer over its IPC, never from its
 shell.json entry: its in-memory overrides win over the file.
 """
@@ -82,6 +85,16 @@ def boot_cards():
     return cards
 
 
+def unlock_screen():
+    """The boot screen's unlock prompt, from Lacquer's unlock-screen helper."""
+    helper = os.path.join(os.path.dirname(os.path.realpath(__file__)), "unlock-screen")
+    try:
+        r = subprocess.run(["python3", helper, "scan"], capture_output=True, text=True, timeout=40)
+        return json.loads(r.stdout) if r.returncode == 0 else None
+    except Exception:
+        return None
+
+
 def art(name, default_name):
     text = read(os.path.join(BRANDING, name))
     default = read(os.path.join(OMARCHY, default_name))
@@ -116,6 +129,7 @@ def main():
         "screensaverOff": os.path.isfile(os.path.join(HOME, ".local/state/omarchy/toggles/screensaver-off")),
         "screensaver": art("screensaver.txt", "logo.txt"),
         "about": art("about.txt", "icon.txt"),
+        "unlock": unlock_screen(),
     }))
 
 
