@@ -46,6 +46,8 @@ Item {
   }
 
   readonly property var fontGroups: !section.d ? [] : [
+    section.addGroup("font", "Add a font",
+      "A downloaded .ttf or .otf, or a .zip or .tar.gz of them. They go to ~/.local/share/fonts/ and appear in the lists below once the font cache is rebuilt."),
     {
       id: "text-size", kind: "stepper", title: "Text size",
       note: "One knob for the shell, GTK apps and terminals, the same as `omarchy display text size`."
@@ -79,9 +81,7 @@ Item {
       current: section.d.ui.family,
       options: section.d.uiFonts.map(function(f) { return { value: f, label: f } }),
       pick: function(v) { section.store.setUiFont(v, section.store.uiSize) }
-    },
-    section.addGroup("font", "Add a font",
-      "A downloaded .ttf or .otf, or a .zip or .tar.gz of them. They go to ~/.local/share/fonts/ and appear in the lists above once the font cache is rebuilt.")
+    }
   ]
 
   readonly property var gtkGroups: !section.d ? [] : [
@@ -128,6 +128,8 @@ Item {
   readonly property var savedCursor: section.store.block ? section.store.block.cursor : null
 
   readonly property var cursorGroups: !section.d ? [] : [
+    section.addGroup("cursor", "Add a cursor theme",
+      "A downloaded theme folder, or its .zip or .tar.gz. It goes to ~/.local/share/icons/ and shows up below; only the theme's own files are taken."),
     {
       id: "cursor-theme", kind: "chips", title: "Cursor theme",
       note: section.savedCursor
@@ -148,9 +150,7 @@ Item {
       current: section.cursorSize,
       options: [16, 20, 24, 32, 40, 48, 64].map(function(n) { return { value: n, label: String(n) } }),
       pick: function(v) { section.store.setCursor(section.cursorTheme, v) }
-    },
-    section.addGroup("cursor", "Add a cursor theme",
-      "A downloaded theme folder, or its .zip or .tar.gz. It goes to ~/.local/share/icons/ and shows up above; only the theme's own files are taken.")
+    }
   ]
 
   readonly property var ns: section.night.status
