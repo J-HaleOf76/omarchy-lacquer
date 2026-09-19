@@ -23,6 +23,7 @@ Item {
   readonly property var apps: app.apps
 
   function rescanAll() {
+    if (kind === "motion") return
     if (kind === "night") night.rescan()
     else if (kind === "lock" || kind === "screensaver") screens.rescan()
     else if (kind === "menu") menuLook.rescan()
@@ -111,6 +112,46 @@ Item {
       unpin: function() { section.store.unpin("icon-theme") },
       options: section.d.iconThemes.map(function(t) { return { value: t.name, label: t.label, icons: t.icons } }),
       pick: function(v) { section.store.pin("icon-theme", v) }
+    }
+  ]
+
+  // ------------------------------------------------------------------ motion
+  //
+  // A feel is a whole set of curves and speeds (MotionTokens.js). Picking one
+  // writes them through HyprStore like any other edit, so it previews live and
+  // undoes in one step; Animations and Curves still edit each value underneath.
+  readonly property var motionGroups: [
+    {
+      id: "feel", kind: "chips", title: "Motion feel",
+      note: (function() {
+        var f = section.app.feel
+        if (!f.feelSpec) return "Pick how the desktop moves. Each feel sets the animation curves and speeds for windows, layers, workspaces and borders, and the pace of Lacquer's own pages."
+        var line = f.feelSpec.blurb + " Speed " + f.speed.toFixed(1) + "\u00d7."
+        return f.matches ? line
+          : line + " Some of its curves or speeds were changed since, in Animations or Curves \u2014 pick it again to put the feel back."
+      })(),
+      current: section.app.feel.feel,
+      options: section.app.feel.feels.map(function(f) { return { value: f.id, label: f.label } }),
+      pick: function(v) { section.app.feel.applyFeel(v) }
+    },
+    {
+      id: "speed", kind: "stepper", title: "Speed",
+      note: "Multiplies the whole feel: 2\u00d7 is twice as quick, 0.5\u00d7 half as quick. Everything keeps its shape.",
+      value: section.app.feel.speed.toFixed(1) + "\u00d7", unit: "",
+      step: function(d) { section.app.feel.stepSpeed(d) }
+    },
+    {
+      id: "app-motion", kind: "chips", title: "Lacquer's own animations",
+      note: "Page transitions, the rail marker, row cascades and Home's live miniature. Ctrl+M does the same.",
+      current: section.app.motion ? "on" : "off",
+      options: [{ value: "on", label: "On" }, { value: "off", label: "Off" }],
+      pick: function(v) { section.app.setMotion(v === "on") }
+    },
+    {
+      id: "where", kind: "chips", title: "Go to",
+      note: "Every animation one at a time, and the named curves they share.",
+      options: [{ value: "animations", label: "Animations" }, { value: "curves", label: "Curves" }],
+      pick: function(v) { section.app.showSectionById(v) }
     }
   ]
 
@@ -519,6 +560,7 @@ Item {
     app: section.app
     groups: section.kind === "fonts" ? section.fontGroups
       : section.kind === "gtk" ? section.gtkGroups
+      : section.kind === "motion" ? section.motionGroups
       : section.kind === "night" ? section.nightGroups
       : section.kind === "lock" ? section.lockGroups
       : section.kind === "screensaver" ? section.screensaverGroups

@@ -45,6 +45,7 @@ Item {
   NightStore { id: nightStore; app: root }
   ScreensStore { id: screensStore; app: root }
   MenuLookStore { id: menuLookStore; app: root; Component.onCompleted: rescan() }
+  MotionStore { id: motionStore; app: root }
 
   // Sections can appear after load (Menu look, once OmaMenu answers); keep the
   // page the user is on rather than the index it used to have.
@@ -67,6 +68,7 @@ Item {
   readonly property alias toml: tomlStore
   readonly property alias sjson: sjsonStore
   readonly property alias theme: themeStore
+  readonly property alias feel: motionStore
   readonly property alias aether: aetherStore
   readonly property alias desktop: desktopStore
   readonly property alias night: nightStore
@@ -111,12 +113,37 @@ Item {
   // curve preview's Play still plays: that is the feature, not decoration.)
   property bool motion: true
   property bool motionLoaded: false
+  // The desktop's motion feel and its speed multiplier (see MotionStore).
+  property string motionFeel: ""
+  property real motionSpeed: 1
   readonly property string uiStatePath: root.home + "/.local/state/omarchy/io.github.deunnis.lacquer/ui.json"
+
+  function saveUiState() {
+    uiStateFile.setText(JSON.stringify({ motion: root.motion, feel: root.motionFeel,
+                                         speed: root.motionSpeed }, null, 2) + "\n")
+  }
 
   function setMotion(on) {
     root.motion = on === true
-    uiStateFile.setText(JSON.stringify({ motion: root.motion }, null, 2) + "\n")
+    root.saveUiState()
     root.statusText = root.motion ? "Animations on" : "Animations off"
+  }
+
+  function setMotionFeel(id, speed) {
+    root.motionFeel = String(id || "")
+    root.motionSpeed = Number(speed) > 0 ? Number(speed) : 1
+    root.saveUiState()
+  }
+
+  // Easing by name, so a feel can carry one as a string.
+  function easingFor(name) {
+    switch (name) {
+      case "OutCubic": return Easing.OutCubic
+      case "OutQuad": return Easing.OutQuad
+      case "OutBack": return Easing.OutBack
+      case "InOutCubic": return Easing.InOutCubic
+      default: return Easing.OutQuint
+    }
   }
 
   // Written through FileView, read through the bounded reader.
@@ -138,6 +165,8 @@ Item {
         try {
           var parsed = JSON.parse(uiStateOut.text)
           if (parsed && typeof parsed.motion === "boolean") root.motion = parsed.motion
+          if (parsed && typeof parsed.feel === "string") root.motionFeel = parsed.feel
+          if (parsed && Number(parsed.speed) > 0) root.motionSpeed = Number(parsed.speed)
         } catch (e) { }
       }
       root.motionLoaded = true
@@ -237,6 +266,8 @@ Item {
         blurb: "A new theme on every boot, or light and dark themes that follow sunrise and sunset." },
       { id: "generate", group: "Theme", pane: "generate", icon: "󰏘", title: "Generate",
         blurb: "Build a theme from any wallpaper with aether, or apply one of its saved blueprints." },
+      { id: "motion", group: "Theme", pane: "desktop", kind: "motion", icon: "✦", title: "Motion",
+        blurb: "One feel for how the whole desktop moves: curves and speeds for windows, workspaces and Lacquer itself." },
       { id: "fonts", group: "Desktop", pane: "desktop", kind: "fonts", icon: "󰛖", title: "Fonts & text",
         blurb: "Text size everywhere, the terminal font and the interface font." },
       { id: "gtk", group: "Desktop", pane: "desktop", kind: "gtk", icon: "󰉼", title: "GTK & icons",
@@ -1310,10 +1341,10 @@ Item {
               id: pageEnter
               property string axis: "y"
               property int dir: 1
-              NumberAnimation { target: pageShift; property: pageEnter.axis; from: pageEnter.dir * Style.space(pageEnter.axis === "y" ? 26 : 34); to: 0; duration: 380; easing.type: Easing.OutQuint }
-              NumberAnimation { target: pageContent; property: "opacity"; from: 0; to: 1; duration: 240; easing.type: Easing.OutCubic }
-              NumberAnimation { target: pageScale; property: "xScale"; from: 0.985; to: 1; duration: 420; easing.type: Easing.OutBack; easing.overshoot: 1.6 }
-              NumberAnimation { target: pageScale; property: "yScale"; from: 0.985; to: 1; duration: 420; easing.type: Easing.OutBack; easing.overshoot: 1.6 }
+              NumberAnimation { target: pageShift; property: pageEnter.axis; from: pageEnter.dir * Style.space(pageEnter.axis === "y" ? 26 : 34); to: 0; duration: motionStore.uiDuration; easing.type: root.easingFor(motionStore.uiEasing) }
+              NumberAnimation { target: pageContent; property: "opacity"; from: 0; to: 1; duration: Math.round(motionStore.uiDuration * 0.63); easing.type: Easing.OutCubic }
+              NumberAnimation { target: pageScale; property: "xScale"; from: 0.985; to: 1; duration: Math.round(motionStore.uiDuration * 1.1); easing.type: Easing.OutBack; easing.overshoot: 1.6 }
+              NumberAnimation { target: pageScale; property: "yScale"; from: 0.985; to: 1; duration: Math.round(motionStore.uiDuration * 1.1); easing.type: Easing.OutBack; easing.overshoot: 1.6 }
               onStopped: { pageShift.x = 0; pageShift.y = 0; pageContent.opacity = 1; pageScale.xScale = 1; pageScale.yScale = 1 }
             }
 

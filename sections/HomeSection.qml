@@ -118,6 +118,10 @@ Item {
     case "groups": return "Tabbed window groups"
     case "animations": return animationsOn ? "On · windows at " + Number(moveLeaf.speed).toFixed(1) : "Off"
     case "curves": return app.hypr.curveNames.length + " curves"
+    case "motion":
+      var mf = app.feel.feelSpec
+      if (!mf) return "Pick how the desktop moves"
+      return mf.label + " \u00b7 " + app.feel.speed.toFixed(1) + "\u00d7" + (app.feel.matches ? "" : " \u00b7 edited")
     case "shell": return "Base text " + (app.toml.shellUser.font && app.toml.shellUser.font["base-size"] ? app.toml.shellUser.font["base-size"] : 12) + " px"
     case "bar": return barPosition.charAt(0).toUpperCase() + barPosition.slice(1) + (app.sjson.barConfig && app.sjson.barConfig.bar && app.sjson.barConfig.bar.transparent ? " · transparent" : "")
     case "menulook":
@@ -184,6 +188,7 @@ Item {
     fonts: ["Add a font", "Text size", "Terminal & code font", "Interface font size", "Interface font"],
     gtk: ["Light or dark apps", "GTK theme", "Icon theme"],
     cursor: ["Add a cursor theme", "Cursor theme", "Cursor size"],
+    motion: ["Motion feel", "Speed", "Lacquer's own animations"],
     nightlight: ["Right now", "Schedule", "Warmer from", "Back to normal at", "Evening warmth"],
     lock: ["Lock screen", "Lock design", "Try it", "Unlock animation", "Unlock length", "Clock", "Blank the screen after", "Keep the display on while locked", "Lock after", "Boot unlock screen", "lock-explorer boot screen", "Build the boot screen"],
     screensaver: ["Screensaver", "Start after", "Screensaver art", "About screen art"],
