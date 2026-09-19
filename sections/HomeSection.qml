@@ -118,6 +118,8 @@ Item {
     case "groups": return "Tabbed window groups"
     case "animations": return animationsOn ? "On · windows at " + Number(moveLeaf.speed).toFixed(1) : "Off"
     case "curves": return app.hypr.curveNames.length + " curves"
+    case "borders":
+      return app.borders.on ? app.borders.modeLabel + " \u00b7 " + app.borders.spec.angle + "\u00b0" : "Theme colour"
     case "motion":
       var mf = app.feel.feelSpec
       if (!mf) return "Pick how the desktop moves"
@@ -189,6 +191,7 @@ Item {
     gtk: ["Light or dark apps", "GTK theme", "Icon theme"],
     cursor: ["Add a cursor theme", "Cursor theme", "Cursor size"],
     motion: ["Motion feel", "Speed", "Lacquer's own animations"],
+    borders: ["Window shape", "Border gradient", "Blend", "Gradient angle", "Spin the gradient", "Unfocused windows too", "Grouped windows too"],
     nightlight: ["Right now", "Schedule", "Warmer from", "Back to normal at", "Evening warmth"],
     lock: ["Lock screen", "Lock design", "Try it", "Unlock animation", "Unlock length", "Clock", "Blank the screen after", "Keep the display on while locked", "Lock after", "Boot unlock screen", "lock-explorer boot screen", "Build the boot screen"],
     screensaver: ["Screensaver", "Start after", "Screensaver art", "About screen art"],

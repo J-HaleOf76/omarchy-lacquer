@@ -238,14 +238,16 @@ function join(chunks) {
   return kept.join("\n\n")
 }
 
-function renderLooknfeelBody(overrides, draftCurves, draftLeaves, baseCurves, baseLeaves) {
+function renderLooknfeelBody(overrides, draftCurves, draftLeaves, baseCurves, baseLeaves, borders) {
   return join([renderConfig(overrides),
-               diffedAnimations(draftCurves, draftLeaves, baseCurves, baseLeaves)])
+               diffedAnimations(draftCurves, draftLeaves, baseCurves, baseLeaves),
+               renderBorders(borders)])
 }
 
-function renderPreviewBody(overrides, draftCurves, draftLeaves, baseCurves, baseLeaves) {
+function renderPreviewBody(overrides, draftCurves, draftLeaves, baseCurves, baseLeaves, borders) {
   return join([renderConfig(overrides),
-               allAnimations(draftCurves, draftLeaves, baseCurves, baseLeaves)])
+               allAnimations(draftCurves, draftLeaves, baseCurves, baseLeaves),
+               renderBorders(borders)])
 }
 
 // Re-applies Omarchy's blanket opacity rule at 1.0. Registered after
@@ -254,6 +256,115 @@ function renderPreviewBody(overrides, draftCurves, draftLeaves, baseCurves, base
 function renderWindowsBody(overrides) {
   if (overrides[OPAQUE_WINDOWS_KEY] !== true) return ""
   return 'o.window(".*", { opacity = "1 1" })'
+}
+
+// ------------------------------------------------------------------ borders
+//
+// A gradient border that follows the theme instead of pinning a colour.
+//
+// Omarchy themes own general:col.* (they load before looknfeel.lua), so Lacquer
+// never writes a colour of its own. It writes Lua that asks Hyprland for the
+// colour the theme just set (`hl.get_config`) and derives the second stop from
+// it, so every theme switch re-derives on the spot with nothing to re-apply.
+//
+// The whole chunk sits inside pcall: under read.lua's sandbox `hl` is an inert
+// stub, so this quietly does nothing there and the parser sees no stray state.
+// Colours cross the boundary as "0xAARRGGBB" strings, which is what
+// hl.get_config hands back.
+
+var BORDER_MODES = ["lighter", "darker", "unfocused", "hue"]
+
+function renderBorders(spec) {
+  if (!spec || BORDER_MODES.indexOf(spec.mode) < 0) return ""
+  var amount = Math.max(0.05, Math.min(0.95, Number(spec.amount) || 0.4))
+  var angle = Math.max(0, Math.min(360, Math.round(Number(spec.angle) || 0)))
+  var targets = ["general:col.active_border"]
+  if (spec.inactive) targets.push("general:col.inactive_border")
+
+  var lines = [
+    "-- Border gradient, derived from the theme's own border colour, so it",
+    "-- follows every theme switch instead of pinning a colour of its own.",
+    "pcall(function()",
+    "  local function parts(v)",
+    "    local n = tonumber((tostring(v):gsub(\"^0[xX]\", \"\")), 16)",
+    "    if not n then return nil end",
+    "    return math.floor(n / 16777216) % 256, math.floor(n / 65536) % 256,",
+    "           math.floor(n / 256) % 256, n % 256",
+    "  end",
+    "  local function hex(a, r, g, b)",
+    "    local function c(x) return math.max(0, math.min(255, math.floor(x + 0.5))) end",
+    "    return string.format(\"0x%02X%02X%02X%02X\", c(a), c(r), c(g), c(b))",
+    "  end"
+  ]
+
+  if (spec.mode === "hue") {
+    lines = lines.concat([
+      "  -- Rotate the hue, keeping how light and how saturated the colour is.",
+      "  local function spin(r, g, b, deg)",
+      "    local mx, mn = math.max(r, g, b), math.min(r, g, b)",
+      "    local d, h = mx - mn, 0",
+      "    if d > 0 then",
+      "      if mx == r then h = ((g - b) / d) % 6",
+      "      elseif mx == g then h = (b - r) / d + 2",
+      "      else h = (r - g) / d + 4 end",
+      "    end",
+      "    h = (h * 60 + deg) % 360",
+      "    local c = d",
+      "    local x = c * (1 - math.abs((h / 60) % 2 - 1))",
+      "    local m = mn",
+      "    local rr, gg, bb = 0, 0, 0",
+      "    if h < 60 then rr, gg, bb = c, x, 0",
+      "    elseif h < 120 then rr, gg, bb = x, c, 0",
+      "    elseif h < 180 then rr, gg, bb = 0, c, x",
+      "    elseif h < 240 then rr, gg, bb = 0, x, c",
+      "    elseif h < 300 then rr, gg, bb = x, 0, c",
+      "    else rr, gg, bb = c, 0, x end",
+      "    return rr + m, gg + m, bb + m",
+      "  end"
+    ])
+  }
+
+  lines.push("  local function second(a, r, g, b)")
+  if (spec.mode === "lighter") {
+    lines.push("    local t = " + num(amount, 2))
+    lines.push("    return a, r + (255 - r) * t, g + (255 - g) * t, b + (255 - b) * t")
+  } else if (spec.mode === "darker") {
+    lines.push("    local t = " + num(amount, 2))
+    lines.push("    return a, r * (1 - t), g * (1 - t), b * (1 - t)")
+  } else if (spec.mode === "hue") {
+    lines.push("    local rr, gg, bb = spin(r, g, b, " + num(amount * 360, 0) + ")")
+    lines.push("    return a, rr, gg, bb")
+  } else {
+    lines.push("    -- Fade towards the unfocused border, mixed by the amount.")
+    lines.push("    local other = hl.get_config(\"general:col.inactive_border\")")
+    lines.push("    local oa, orr, og, ob = parts(other and other.colors and other.colors[1])")
+    lines.push("    if not oa then return a, r, g, b end")
+    lines.push("    local t = " + num(amount, 2))
+    lines.push("    return a, r + (orr - r) * t, g + (og - g) * t, b + (ob - b) * t")
+  }
+  lines.push("  end")
+
+  for (var i = 0; i < targets.length; i++) {
+    var key = targets[i]
+    // general:col.active_border -> the property name under general.col
+    var leaf = key.split(":")[1].split(".")[1]
+    lines = lines.concat([
+      "  local base = hl.get_config(" + quote(key) + ")",
+      "  local a, r, g, b = parts(base and base.colors and base.colors[1])",
+      "  if a then",
+      "    local a2, r2, g2, b2 = second(a, r, g, b)",
+      "    hl.config({ general = { col = { [" + quote(leaf) + "] = { colors = { hex(a, r, g, b), hex(a2, r2, g2, b2) }, angle = " + angle + " } } } })",
+      (spec.groups && key.indexOf("active") > 0 && key.indexOf("inactive") < 0
+        ? "    hl.config({ group = { col = { border_active = { colors = { hex(a, r, g, b), hex(a2, r2, g2, b2) }, angle = " + angle + " } } } })"
+        : ""),
+      "  end"
+    ])
+  }
+  lines.push("end)")
+
+  var kept = []
+  for (var j = 0; j < lines.length; j++) if (lines[j] !== "") kept.push(lines[j])
+  return kept.join("\n")
 }
 
 function renderBlock(body) {

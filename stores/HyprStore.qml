@@ -220,7 +220,7 @@ Item {
   function livePreview() {
     if (!root.baselineReady) return
     var body = StyleLua.renderPreviewBody(root.overrides, root.curves, root.leaves,
-                                          root.baseCurves, root.baseLeaves)
+                                          root.baseCurves, root.baseLeaves, app.borders.spec)
     if (!body) return
     // One eval in flight at a time with the newest state queued behind it, so
     // a slider drag cannot outrun hyprctl.
@@ -235,7 +235,7 @@ Item {
 
     var current = configFile.text()
     var body = StyleLua.renderLooknfeelBody(root.overrides, root.curves, root.leaves,
-                                            root.baseCurves, root.baseLeaves)
+                                            root.baseCurves, root.baseLeaves, app.borders.spec)
     var next = StyleLua.applyBlock(current, body)
 
     var windowsCurrent = windowsFile.text()
@@ -385,7 +385,7 @@ Item {
     for (var i = 0; i < migrationQueue.length; i++)
       next = StyleLua.removeFences(next, migrationQueue[i].begin, migrationQueue[i].end)
     var body = StyleLua.renderLooknfeelBody(root.overrides, root.curves, root.leaves,
-                                            root.baseCurves, root.baseLeaves)
+                                            root.baseCurves, root.baseLeaves, app.borders.spec)
     next = StyleLua.applyBlock(next, body)
 
     root.migrationNotice = "Imported your settings from " + migrationNames.join(" and ") + "."

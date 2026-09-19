@@ -1,6 +1,7 @@
 import QtQuick
 import qs.Commons
 import qs.Ui
+import "../LookSchema.js" as LookSchema
 
 // Fonts & text, GTK & icons, and Cursor: three views over DesktopStore.
 Item {
@@ -23,7 +24,7 @@ Item {
   readonly property var apps: app.apps
 
   function rescanAll() {
-    if (kind === "motion") return
+    if (kind === "motion" || kind === "borders") return
     if (kind === "night") night.rescan()
     else if (kind === "lock" || kind === "screensaver") screens.rescan()
     else if (kind === "menu") menuLook.rescan()
@@ -112,6 +113,119 @@ Item {
       unpin: function() { section.store.unpin("icon-theme") },
       options: section.d.iconThemes.map(function(t) { return { value: t.name, label: t.label, icons: t.icons } }),
       pick: function(v) { section.store.pin("icon-theme", v) }
+    }
+  ]
+
+  // ------------------------------------------------------------------ borders
+  //
+  // Shape presets set several Hyprland keys and the gradient together, as one
+  // undo step; the gradient itself derives its colours from the theme at
+  // config-load time (StyleLua.renderBorders), so it survives theme switches.
+  readonly property var shapePresets: [
+    { value: "sharp", label: "Sharp", blurb: "No rounding, a hairline border, nothing behind it.",
+      keys: { "decoration:rounding": 0, "decoration:rounding_power": 2, "general:border_size": 1,
+              "decoration:shadow:enabled": false, "decoration:glow:enabled": false },
+      border: { mode: "", amount: 0.4, angle: 45, inactive: false, groups: true } },
+    { value: "soft", label: "Soft", blurb: "Rounded corners, a light gradient and a soft shadow.",
+      keys: { "decoration:rounding": 12, "decoration:rounding_power": 2, "general:border_size": 2,
+              "decoration:shadow:enabled": true, "decoration:shadow:range": 20, "decoration:glow:enabled": false },
+      border: { mode: "lighter", amount: 0.35, angle: 45, inactive: false, groups: true } },
+    { value: "pill", label: "Pill", blurb: "Deep corners and a hue shift around the border.",
+      keys: { "decoration:rounding": 24, "decoration:rounding_power": 4, "general:border_size": 2,
+              "decoration:shadow:enabled": false, "decoration:glow:enabled": false },
+      border: { mode: "hue", amount: 0.12, angle: 90, inactive: false, groups: true } },
+    { value: "neon", label: "Neon", blurb: "A thick spinning gradient with a glow behind it.",
+      keys: { "decoration:rounding": 8, "decoration:rounding_power": 2, "general:border_size": 3,
+              "decoration:glow:enabled": true, "decoration:glow:range": 12, "decoration:shadow:enabled": false },
+      border: { mode: "hue", amount: 0.25, angle: 0, inactive: true, groups: true }, spin: true },
+    { value: "paper", label: "Paper", blurb: "A thin border, a sharp shadow and dimmed unfocused windows.",
+      keys: { "decoration:rounding": 4, "decoration:rounding_power": 2, "general:border_size": 1,
+              "decoration:shadow:enabled": true, "decoration:shadow:sharp": true, "decoration:shadow:range": 8,
+              "decoration:dim_inactive": true, "decoration:glow:enabled": false },
+      border: { mode: "darker", amount: 0.3, angle: 90, inactive: false, groups: true } }
+  ]
+
+  function applyShape(value) {
+    var preset = null
+    for (var i = 0; i < section.shapePresets.length; i++)
+      if (section.shapePresets[i].value === value) preset = section.shapePresets[i]
+    if (!preset) return
+    section.app.beginEdit()
+    for (var key in preset.keys) {
+      var item = LookSchema.itemFor(key)
+      if (item) section.app.hypr.setValue(item, preset.keys[key], false)
+    }
+    section.app.hypr.setLeaf("borderangle", preset.spin
+      ? { enabled: true, speed: 100, bezier: "linear", style: "loop" }
+      : { enabled: false, speed: 1, bezier: "default", style: "" }, false)
+    section.app.borders.spec = section.app.borders.clone(preset.border)
+    section.app.borders.restoreSpec(preset.border)
+    section.app.commitEdit("Window shape: " + preset.label)
+    section.app.hypr.persistNow()
+    section.app.statusText = preset.label + " \u00b7 " + preset.blurb
+  }
+
+  readonly property var borderGroups: [
+    {
+      id: "shape", kind: "chips", title: "Window shape",
+      note: "Rounding, border width, shadow, glow and the border gradient in one go. Every one of them stays editable afterwards, here and in Decoration and Effects.",
+      options: section.shapePresets.map(function(p) { return { value: p.value, label: p.label } }),
+      pick: function(v) { section.applyShape(v) }
+    },
+    {
+      id: "gradient", kind: "chips", title: "Border gradient",
+      note: "Lacquer never pins a colour: it asks Hyprland for the border colour your theme just set and builds the second stop from it, so the gradient re-derives itself on every theme switch."
+        + (section.app.borders.on ? "" : " Right now the border is the theme's flat colour."),
+      current: section.app.borders.spec.mode,
+      options: [{ value: "", label: "Theme colour" }, { value: "lighter", label: "Lighter" },
+                { value: "darker", label: "Darker" }, { value: "unfocused", label: "To unfocused" },
+                { value: "hue", label: "Hue shift" }],
+      pick: function(v) { section.app.borders.setMode(v) }
+    },
+    {
+      id: "gradient-amount", kind: "stepper", title: section.app.borders.spec.mode === "hue" ? "Hue turn" : "Blend",
+      note: section.app.borders.spec.mode === "hue"
+        ? "How far around the colour wheel the second stop sits."
+        : "How far the second stop moves from the theme's colour.",
+      value: section.app.borders.spec.mode === "hue"
+        ? Math.round(section.app.borders.spec.amount * 360) + "\u00b0"
+        : Math.round(section.app.borders.spec.amount * 100) + " %",
+      unit: "",
+      step: function(d) { section.app.borders.stepAmount(d) }
+    },
+    {
+      id: "gradient-angle", kind: "stepper", title: "Gradient angle",
+      note: "Which way the gradient runs across the border.",
+      value: section.app.borders.spec.angle + "\u00b0", unit: "",
+      step: function(d) { section.app.borders.stepAngle(d) }
+    },
+    {
+      id: "gradient-spin", kind: "chips", title: "Spin the gradient",
+      note: "Hyprland turns the angle on its own, so the border keeps moving. It repaints the border continuously, which costs a little GPU.",
+      current: section.app.borders.spinning ? "on" : "off",
+      options: section.onOff(),
+      pick: function(v) { section.app.borders.setSpin(v === "on") }
+    },
+    {
+      id: "gradient-where", kind: "chips", title: "Unfocused windows too",
+      note: "Give the unfocused border the same treatment, derived from its own colour.",
+      current: section.app.borders.spec.inactive ? "on" : "off",
+      options: section.onOff(),
+      pick: function(v) { section.app.borders.toggle("inactive", v === "on") }
+    },
+    {
+      id: "gradient-groups", kind: "chips", title: "Grouped windows too",
+      note: "The tab bar on grouped windows follows the same gradient.",
+      current: section.app.borders.spec.groups ? "on" : "off",
+      options: section.onOff(),
+      pick: function(v) { section.app.borders.toggle("groups", v === "on") }
+    },
+    {
+      id: "corners-where", kind: "chips", title: "Go to",
+      note: "Rounding, opacity and dimming live in Decoration; blur, shadow and glow in Effects.",
+      options: [{ value: "decoration", label: "Decoration" }, { value: "effects", label: "Effects" },
+                { value: "windows", label: "Windows" }],
+      pick: function(v) { section.app.showSectionById(v) }
     }
   ]
 
@@ -561,6 +675,7 @@ Item {
     groups: section.kind === "fonts" ? section.fontGroups
       : section.kind === "gtk" ? section.gtkGroups
       : section.kind === "motion" ? section.motionGroups
+      : section.kind === "borders" ? section.borderGroups
       : section.kind === "night" ? section.nightGroups
       : section.kind === "lock" ? section.lockGroups
       : section.kind === "screensaver" ? section.screensaverGroups

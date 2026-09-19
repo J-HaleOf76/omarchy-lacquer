@@ -46,6 +46,7 @@ Item {
   ScreensStore { id: screensStore; app: root }
   MenuLookStore { id: menuLookStore; app: root; Component.onCompleted: rescan() }
   MotionStore { id: motionStore; app: root }
+  BordersStore { id: bordersStore; app: root }
 
   // Sections can appear after load (Menu look, once OmaMenu answers); keep the
   // page the user is on rather than the index it used to have.
@@ -69,6 +70,7 @@ Item {
   readonly property alias sjson: sjsonStore
   readonly property alias theme: themeStore
   readonly property alias feel: motionStore
+  readonly property alias borders: bordersStore
   readonly property alias aether: aetherStore
   readonly property alias desktop: desktopStore
   readonly property alias night: nightStore
@@ -282,6 +284,8 @@ Item {
       out.push({ id: look.id, group: "Windows", pane: "rows", icon: look.icon, title: look.title,
                  blurb: look.blurb, groups: look.groups })
     }
+    out.push({ id: "borders", group: "Windows", pane: "desktop", kind: "borders", icon: "◰", title: "Borders & shape",
+               blurb: "Window shape presets, and a border gradient built from your theme's own colours." })
     out.push({ id: "animations", group: "Windows", pane: "rows", icon: "󱐋", title: "Animations",
                blurb: "Speed, curve and style for every animation Hyprland can play." })
     out.push({ id: "curves", group: "Windows", pane: "curves", icon: "󰓅", title: "Curves",
@@ -496,7 +500,8 @@ Item {
       leaves: StyleLua.cloneLeafMap(hypr.leaves),
       curves: StyleLua.cloneCurveMap(hypr.curves),
       shell: toml.shellUserText,
-      opaque: hypr.opaqueWindows
+      opaque: hypr.opaqueWindows,
+      borders: bordersStore.clone(bordersStore.spec)
     }
   }
 
@@ -505,6 +510,7 @@ Item {
     hypr.leaves = StyleLua.cloneLeafMap(state.leaves)
     hypr.curves = StyleLua.cloneCurveMap(state.curves)
     if (state.opaque !== undefined) hypr.opaqueWindows = state.opaque === true
+    if (state.borders !== undefined) bordersStore.restoreSpec(state.borders)
     if (state.shell !== undefined) toml.writeShell(state.shell)
   }
 
