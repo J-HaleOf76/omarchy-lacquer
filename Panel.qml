@@ -430,6 +430,9 @@ Item {
     // A pick from the wallpaper picker that Generate opened.
     if (payload && typeof payload.aetherSource === "string" && root.isImagePath(payload.aetherSource))
       aetherStore.setSource(payload.aetherSource)
+    // What the font/cursor helper did, in one line (see DesktopStore.add).
+    if (payload && typeof payload.status === "string" && payload.status !== "")
+      root.statusText = payload.status.replace(/[\x00-\x1f\x7f]/g, " ").slice(0, 200)
     Qt.callLater(function() { keyCatcher.forceActiveFocus() })
   }
 

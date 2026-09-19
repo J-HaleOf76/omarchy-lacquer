@@ -181,9 +181,9 @@ Item {
   // Only the labels a person would look for; groups in the Desktop, Screens
   // and Apps views are listed by their visible titles.
   readonly property var choiceGroups: ({
-    fonts: ["Text size", "Terminal & code font", "Interface font size", "Interface font"],
+    fonts: ["Text size", "Terminal & code font", "Interface font size", "Interface font", "Add a font"],
     gtk: ["Light or dark apps", "GTK theme", "Icon theme"],
-    cursor: ["Cursor theme", "Cursor size"],
+    cursor: ["Cursor theme", "Cursor size", "Add a cursor theme"],
     nightlight: ["Right now", "Schedule", "Warmer from", "Back to normal at", "Evening warmth"],
     lock: ["Lock screen", "Lock design", "Try it", "Unlock animation", "Unlock length", "Clock", "Blank the screen after", "Keep the display on while locked", "Lock after", "Boot unlock screen", "lock-explorer boot screen", "Build the boot screen"],
     screensaver: ["Screensaver", "Start after", "Screensaver art", "About screen art"],

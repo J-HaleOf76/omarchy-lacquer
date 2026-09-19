@@ -1,0 +1,239 @@
+#!/usr/bin/env python3
+"""Put a picked font or cursor theme where the desktop looks for it.
+
+  add-asset font <path>...     fonts into ~/.local/share/fonts/
+  add-asset cursor <path>...   cursor themes into ~/.local/share/icons/
+
+Each path is a font or theme file, an archive holding one, or a folder. Only
+the files that belong to the kind are taken, one level of folder is kept, and
+nothing is read from outside the picked path. A one-line JSON summary goes to
+stdout; Lacquer shows it and rescans.
+
+Archives are unpacked here rather than by `tar`/`unzip` so that a member can
+neither escape the target folder (absolute paths, `..`, symlinks, hard links,
+devices) nor fill the disk: members, their sizes and their depth are capped.
+"""
+import json, os, re, shutil, subprocess, sys, tarfile, tempfile, zipfile
+
+HOME = os.environ.get("HOME", "")
+FONT_DIR = os.path.join(HOME, ".local/share/fonts")
+ICON_DIR = os.path.join(HOME, ".local/share/icons")
+FONT_EXT = (".ttf", ".otf", ".ttc", ".otc", ".pfb", ".pcf", ".bdf")
+ARCHIVE_EXT = (".zip", ".tar", ".tar.gz", ".tgz", ".tar.xz", ".txz", ".tar.bz2", ".tbz2")
+SAFE_NAME = re.compile(r"[^A-Za-z0-9._-]+")
+
+MAX_MEMBERS = 5000
+MAX_MEMBER_BYTES = 256 * 1024 * 1024
+MAX_TOTAL_BYTES = 512 * 1024 * 1024
+MAX_DEPTH = 8
+MAX_WALK_FILES = 20000
+
+
+def slug(name):
+    out = SAFE_NAME.sub("-", name).strip("-.") or "added"
+    return out[:64]
+
+
+def unique_dir(parent, name):
+    target = os.path.join(parent, slug(name))
+    n = 2
+    while os.path.exists(target):
+        target = os.path.join(parent, slug(name) + "-" + str(n))
+        n += 1
+        if n > 50:
+            raise ValueError("too many folders by that name already")
+    return target
+
+
+def is_archive(path):
+    lower = path.lower()
+    return any(lower.endswith(e) for e in ARCHIVE_EXT)
+
+
+def safe_member_path(name):
+    """A member's path inside the target, or None when it must not be written."""
+    name = name.replace("\\", "/")
+    if name.startswith("/") or ":" in name.split("/")[0]:
+        return None
+    parts = [p for p in name.split("/") if p not in ("", ".")]
+    if not parts or any(p == ".." for p in parts) or len(parts) > MAX_DEPTH:
+        return None
+    return os.path.join(*[SAFE_NAME.sub("-", p)[:96] or "-" for p in parts])
+
+
+def extract(archive, into):
+    """Unpack an archive's regular files into `into`, refusing anything else."""
+    total = 0
+    count = 0
+    if zipfile.is_zipfile(archive):
+        with zipfile.ZipFile(archive) as zf:
+            for info in zf.infolist():
+                if info.is_dir():
+                    continue
+                count += 1
+                if count > MAX_MEMBERS:
+                    raise ValueError("the archive holds too many files")
+                # Anything but a regular file (symlink, device) has a type in
+                # the upper mode bits; zip keeps it in the creator field.
+                if (info.external_attr >> 16) & 0o170000 not in (0, 0o100000):
+                    continue
+                if info.file_size > MAX_MEMBER_BYTES:
+                    raise ValueError("a file in the archive is too big")
+                total += info.file_size
+                if total > MAX_TOTAL_BYTES:
+                    raise ValueError("the archive is too big")
+                rel = safe_member_path(info.filename)
+                if not rel:
+                    continue
+                target = os.path.join(into, rel)
+                os.makedirs(os.path.dirname(target), exist_ok=True)
+                with zf.open(info) as src, open(target, "wb") as dst:
+                    shutil.copyfileobj(src, dst, 1024 * 1024)
+        return
+    with tarfile.open(archive) as tf:
+        for member in tf:
+            count += 1
+            if count > MAX_MEMBERS:
+                raise ValueError("the archive holds too many files")
+            if not member.isfile():
+                continue
+            if member.size > MAX_MEMBER_BYTES:
+                raise ValueError("a file in the archive is too big")
+            total += member.size
+            if total > MAX_TOTAL_BYTES:
+                raise ValueError("the archive is too big")
+            rel = safe_member_path(member.name)
+            if not rel:
+                continue
+            target = os.path.join(into, rel)
+            os.makedirs(os.path.dirname(target), exist_ok=True)
+            src = tf.extractfile(member)
+            if src is None:
+                continue
+            with src, open(target, "wb") as dst:
+                shutil.copyfileobj(src, dst, 1024 * 1024)
+
+
+def walk_files(root):
+    seen = 0
+    for base, dirs, files in os.walk(root, followlinks=False):
+        if base[len(root):].count(os.sep) >= MAX_DEPTH:
+            dirs[:] = []
+        for f in sorted(files):
+            path = os.path.join(base, f)
+            if os.path.islink(path) or not os.path.isfile(path):
+                continue
+            seen += 1
+            if seen > MAX_WALK_FILES:
+                return
+            yield path
+
+
+def copy_fonts(source_root, name):
+    """Every font file under source_root, flattened into one folder."""
+    fonts = [p for p in walk_files(source_root) if p.lower().endswith(FONT_EXT)]
+    if not fonts:
+        return None
+    target = unique_dir(FONT_DIR, name)
+    os.makedirs(target, exist_ok=True)
+    for path in fonts:
+        base = SAFE_NAME.sub("-", os.path.basename(path))
+        dest = os.path.join(target, base)
+        n = 2
+        while os.path.exists(dest):
+            stem, ext = os.path.splitext(base)
+            dest = os.path.join(target, stem + "-" + str(n) + ext)
+            n += 1
+        shutil.copyfile(path, dest)
+    return {"name": os.path.basename(target), "files": len(fonts)}
+
+
+def cursor_roots(root):
+    """Folders that hold a cursors/ folder: one cursor theme each."""
+    found = []
+    for base, dirs, _ in os.walk(root, followlinks=False):
+        if base[len(root):].count(os.sep) >= MAX_DEPTH:
+            dirs[:] = []
+            continue
+        if "cursors" in dirs:
+            found.append(base)
+            dirs[:] = []
+        if len(found) > 20:
+            break
+    return found
+
+
+def copy_cursor(source_root, name):
+    roots = cursor_roots(source_root)
+    if not roots:
+        return None
+    added = []
+    for root in roots:
+        # The folder holding cursors/ is the theme's name to the system, so keep
+        # it; only a theme picked as a bare folder falls back to the given name.
+        label = os.path.basename(root) if os.path.realpath(root) != os.path.realpath(source_root) else name
+        target = unique_dir(ICON_DIR, label)
+        os.makedirs(target, exist_ok=True)
+        for path in walk_files(root):
+            rel = safe_member_path(os.path.relpath(path, root))
+            if not rel:
+                continue
+            dest = os.path.join(target, rel)
+            os.makedirs(os.path.dirname(dest), exist_ok=True)
+            shutil.copyfile(path, dest)
+        added.append({"name": os.path.basename(target), "files": 0})
+    return added
+
+
+def add_one(kind, path, work):
+    real = os.path.realpath(path)
+    if not os.path.exists(real):
+        return None
+    name = os.path.basename(real.rstrip("/"))
+    for ext in ARCHIVE_EXT + FONT_EXT:
+        if name.lower().endswith(ext):
+            name = name[: -len(ext)]
+            break
+    if os.path.isdir(real):
+        source = real
+    elif is_archive(real):
+        source = tempfile.mkdtemp(dir=work)
+        extract(real, source)
+    elif kind == "font" and real.lower().endswith(FONT_EXT):
+        source = tempfile.mkdtemp(dir=work)
+        shutil.copyfile(real, os.path.join(source, os.path.basename(real)))
+    else:
+        return None
+    if kind == "font":
+        one = copy_fonts(source, name)
+        return [one] if one else None
+    return copy_cursor(source, name)
+
+
+def main():
+    kind = sys.argv[1] if len(sys.argv) > 1 else ""
+    paths = sys.argv[2:]
+    if kind not in ("font", "cursor") or not paths:
+        sys.exit(__doc__)
+    os.makedirs(FONT_DIR if kind == "font" else ICON_DIR, exist_ok=True)
+    added, skipped, error = [], 0, ""
+    with tempfile.TemporaryDirectory(prefix="lacquer-add-") as work:
+        for path in paths[:20]:
+            try:
+                got = add_one(kind, path, work)
+            except (OSError, ValueError, tarfile.TarError, zipfile.BadZipFile) as e:
+                got, error = None, str(e)
+            if got:
+                added += got
+            else:
+                skipped += 1
+    if kind == "font" and added:
+        try:
+            subprocess.run(["fc-cache", "-f"], capture_output=True, timeout=120)
+        except (OSError, subprocess.SubprocessError):
+            pass
+    print(json.dumps({"added": added, "skipped": skipped, "error": error}))
+
+
+if __name__ == "__main__":
+    main()

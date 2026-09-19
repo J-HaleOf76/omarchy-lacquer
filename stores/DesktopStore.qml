@@ -129,6 +129,35 @@ Item {
 
   // setcursor changes the live cursor and also writes gsettings cursor-theme;
   // the block makes it survive a Hyprland restart.
+  // Adding a font or a cursor theme: Omarchy's desktop file chooser is another
+  // surface, so the panel closes first and a detached helper unpacks what was
+  // picked (add-asset), then summons Lacquer back on the same page with a word
+  // about what it did.
+  readonly property string addScript:
+      'kind=$1; mode=$2; dir=$3; section=$4\n'
+    + 'if [ "$mode" = folder ]; then\n'
+    + '  sel=$(omarchy-file-select --title "Pick a folder to add" --directory)\n'
+    + 'elif [ "$kind" = font ]; then\n'
+    + '  sel=$(omarchy-file-select --title "Pick fonts to add" --multiple --extensions "ttf otf ttc otc zip tar gz xz bz2")\n'
+    + 'else\n'
+    + '  sel=$(omarchy-file-select --title "Pick a cursor theme to add" --multiple --extensions "zip tar gz xz bz2")\n'
+    + 'fi\n'
+    + 'status=""\n'
+    + 'if [ -n "$sel" ]; then\n'
+    + '  mapfile -t picks <<< "$sel"\n'
+    + '  status=$(python3 "$dir/add-asset" "$kind" "${picks[@]}" | jq -r \'if ((.added // []) | length) > 0 then "Added " + ((.added | map(.name)) | join(", ")) elif .error != "" then "Could not add that: " + .error else "Nothing to add in what you picked" end\' 2>/dev/null)\n'
+    + 'fi\n'
+    + 'payload=$(jq -nc --arg s "$section" --arg t "$status" \'{section:$s, status:$t}\')\n'
+    + 'omarchy-shell shell summon io.github.deunnis.lacquer "$payload" >/dev/null\n'
+
+  function add(kind, mode) {
+    root.app.dismiss()
+    Quickshell.execDetached(["bash", "-c", root.addScript, "lacquer-add",
+                             kind === "cursor" ? "cursor" : "font",
+                             mode === "folder" ? "folder" : "files",
+                             root.app.pluginDir, kind === "cursor" ? "cursor" : "fonts"])
+  }
+
   function setCursor(theme, size) {
     var t = theme || root.gs["cursor-theme"] || "Adwaita"
     var s = Math.max(16, Math.min(96, Math.round(size || root.gs["cursor-size"] || 24)))

@@ -79,7 +79,9 @@ Item {
       current: section.d.ui.family,
       options: section.d.uiFonts.map(function(f) { return { value: f, label: f } }),
       pick: function(v) { section.store.setUiFont(v, section.store.uiSize) }
-    }
+    },
+    section.addGroup("font", "Add a font",
+      "A downloaded .ttf or .otf, or a .zip or .tar.gz of them. They go to ~/.local/share/fonts/ and appear in the lists above once the font cache is rebuilt.")
   ]
 
   readonly property var gtkGroups: !section.d ? [] : [
@@ -112,6 +114,15 @@ Item {
     }
   ]
 
+  // Downloaded fonts and cursor themes, straight from the file chooser.
+  function addGroup(kind, title, note) {
+    return {
+      id: "add-" + kind, kind: "chips", title: title, note: note,
+      options: [{ value: "files", label: "Add from files\u2026" }, { value: "folder", label: "Add from a folder\u2026" }],
+      pick: function(v) { section.store.add(kind, v) }
+    }
+  }
+
   readonly property string cursorTheme: section.d ? section.d.gsettings["cursor-theme"] : ""
   readonly property int cursorSize: section.d ? section.d.gsettings["cursor-size"] : 24
   readonly property var savedCursor: section.store.block ? section.store.block.cursor : null
@@ -137,7 +148,9 @@ Item {
       current: section.cursorSize,
       options: [16, 20, 24, 32, 40, 48, 64].map(function(n) { return { value: n, label: String(n) } }),
       pick: function(v) { section.store.setCursor(section.cursorTheme, v) }
-    }
+    },
+    section.addGroup("cursor", "Add a cursor theme",
+      "A downloaded theme folder, or its .zip or .tar.gz. It goes to ~/.local/share/icons/ and shows up above; only the theme's own files are taken.")
   ]
 
   readonly property var ns: section.night.status

@@ -243,6 +243,17 @@ Two Omarchy quirks are worked around, not changed:
 - Text size re-derives every terminal's size from the px value, so the section
   says what a step will set terminals to before you press it.
 
+**Add a font** and **Add a cursor theme** take a download straight from the
+desktop file chooser: a `.ttf`/`.otf`, a theme folder, or a `.zip`/`.tar.gz` of
+either. `add-asset` unpacks archives itself rather than calling `tar`/`unzip`,
+so a member cannot escape the target folder (absolute paths, `..`, symlinks,
+hard links and devices are refused) or fill the disk (member, size, count and
+depth caps). Only files of the kind are taken: fonts land flattened in
+`~/.local/share/fonts/<name>/` and the font cache is rebuilt; a cursor theme
+keeps its own folder name in `~/.local/share/icons/`. Nothing outside the
+picked path is read, and an existing folder is never overwritten — a second
+copy becomes `<name>-2`.
+
 The cursor and nightlight autostart share a second fenced block, in
 `~/.config/hypr/autostart.lua` rather than `hyprland.lua`, so it never shares a
 file with the window-rule block written from Lacquer's in-memory state.
