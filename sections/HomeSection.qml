@@ -122,6 +122,9 @@ Item {
     case "frame":
       if (!app.companion.present) return "Needs the companion plugin"
       return app.companion.on ? "On" : "Off"
+    case "launcher":
+      var lc = app.launcher.changedCount
+      return lc === 0 ? "Names, icons and what shows" : lc + (lc === 1 ? " app changed" : " apps changed")
     case "apprules":
       var rn = app.rules.rules.length
       return rn === 0 ? "No app rules yet" : rn + (rn === 1 ? " app ruled" : " apps ruled")
@@ -206,6 +209,7 @@ Item {
     sizes: ["Desktop size", "Text size", "This window"],
     displays: ["Scale", "Rotation", "Keep this?"],
     frame: ["Screen frame", "Corners", "Frame width", "Vignette", "Scanlines", "Grain"],
+    launcher: ["App", "Name", "Icon", "In the launcher"],
     apprules: ["App", "Floating", "Size when it floats", "Centred", "Opens on", "Opacity"],
     borders: ["Window shape", "Border gradient", "Blend", "Gradient angle", "Spin the gradient", "Unfocused windows too", "Grouped windows too"],
     nightlight: ["Right now", "Schedule", "Warmer from", "Back to normal at", "Evening warmth"],

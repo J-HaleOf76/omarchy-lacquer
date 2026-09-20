@@ -456,6 +456,23 @@ Item {
             }
           }
 
+          // ------------------------------------------------ text box
+          //
+          // A line of text a group owns: the value comes from the group, and
+          // Enter (or moving focus away) commits what was typed.
+          TextField {
+            visible: groupItem.modelData.kind === "text"
+            width: Style.space(320)
+            foreground: pane.app.foreground
+            accent: pane.app.accent
+            placeholderText: groupItem.modelData.placeholder || ""
+            text: groupItem.modelData.value || ""
+            onEditingFinished: {
+              if (groupItem.modelData.commit) groupItem.modelData.commit(text)
+              pane.app.focusPanel()
+            }
+          }
+
           // ------------------------------------------------ font list
           TextField {
             visible: groupItem.modelData.kind === "fonts"

@@ -50,6 +50,7 @@ Item {
   MonitorsStore { id: monitorsStore; app: root }
   RulesStore { id: rulesStore; app: root }
   CompanionStore { id: companionStore; app: root; Component.onCompleted: rescan() }
+  LauncherStore { id: launcherStore; app: root }
 
   // Sections can appear after load (Menu look, once OmaMenu answers); keep the
   // page the user is on rather than the index it used to have.
@@ -77,6 +78,7 @@ Item {
   readonly property alias monitors: monitorsStore
   readonly property alias rules: rulesStore
   readonly property alias companion: companionStore
+  readonly property alias launcher: launcherStore
   readonly property alias aether: aetherStore
   readonly property alias desktop: desktopStore
   readonly property alias night: nightStore
@@ -341,6 +343,8 @@ Item {
                blurb: "Padding, cursor and background opacity for every installed terminal." })
     out.push({ id: "btop", group: "Apps", pane: "desktop", kind: "btop", icon: "󰄨", title: "btop & prompt",
                blurb: "How btop draws, and the starship prompt's spacing. Colours stay with the theme." })
+    out.push({ id: "launcher", group: "Apps", pane: "desktop", kind: "launcher", icon: "≡", title: "App launcher",
+               blurb: "What an app is called in the launcher, the icon it shows, and whether it appears at all." })
     out.push({ id: "apprules", group: "Apps", pane: "desktop", kind: "rules", icon: "◱", title: "App windows",
                blurb: "How one app's windows behave and look: floating, size, workspace, opacity and effects." })
     out.push({ id: "plugins", group: "Apps", pane: "plugins", icon: "󰏖", title: "Plugins",

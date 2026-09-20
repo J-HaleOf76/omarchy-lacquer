@@ -28,6 +28,7 @@ Item {
     if (kind === "motion" || kind === "borders") return
     if (kind === "monitors") { section.app.monitors.rescan(); return }
     if (kind === "rules") { section.app.rules.rescan(); return }
+    if (kind === "launcher") { section.app.launcher.rescan(); return }
     if (kind === "frame") { section.app.companion.rescan(); return }
     if (kind === "night") night.rescan()
     else if (kind === "lock" || kind === "screensaver") screens.rescan()
@@ -199,6 +200,56 @@ Item {
         step: function(d) { c.step("grain", d, 0, 1, 0.05, "Grain", "%") }
       }
     ]
+  }
+
+  // ------------------------------------------------------------------ app launcher
+  //
+  // Only ever Lacquer's own copy in ~/.local/share/applications is edited; the
+  // packaged .desktop file underneath stays exactly as the package left it.
+  readonly property var launcherGroups: {
+    var store = section.app.launcher
+    if (!store.scanned) return []
+    var app = store.current
+    var out = [{
+      id: "which-launcher-app", kind: "chips", title: "App",
+      note: store.changedCount === 0
+        ? "Every app the launcher can show. Nothing is changed until you change it."
+        : store.changedCount + (store.changedCount === 1 ? " app has" : " apps have") + " been changed; those are marked.",
+      current: store.picked,
+      options: store.apps.map(function(a) {
+        return { value: a.id, label: a.name + (a.managed ? "  \u00b7  changed" : "") + (a.hidden ? "  \u00b7  hidden" : "") }
+      }),
+      pick: function(v) { store.picked = v }
+    }]
+    if (!app) return out
+    out.push({
+      id: "launcher-name", kind: "text", title: "Name",
+      note: "What the launcher calls it. Enter to save.",
+      value: app.name, placeholder: "Name in the launcher",
+      commit: function(v) { if (v && v !== app.name) store.set("name", v, "Renamed to " + v) }
+    })
+    out.push({
+      id: "launcher-icon", kind: "chips", title: "Icon",
+      note: app.icon ? "Now: " + app.icon : "This app has no icon of its own.",
+      options: [{ value: "pick", label: "Choose an image\u2026" }],
+      pick: function(v) { store.pickIcon() }
+    })
+    out.push({
+      id: "launcher-hidden", kind: "chips", title: "In the launcher",
+      note: "Hidden apps still run; they just stop cluttering the list.",
+      current: app.hidden ? "hidden" : "shown",
+      options: [{ value: "shown", label: "Show it" }, { value: "hidden", label: "Hide it" }],
+      pick: function(v) { store.set("hidden", v === "hidden" ? "on" : "off", v === "hidden" ? "Hidden from the launcher" : "Back in the launcher") }
+    })
+    if (app.managed) {
+      out.push({
+        id: "launcher-reset", kind: "chips", title: "Undo",
+        note: "Deletes Lacquer's copy; the packaged entry takes over again.",
+        options: [{ value: "reset", label: "Back to how it was packaged" }],
+        pick: function(v) { store.reset() }
+      })
+    }
+    return out
   }
 
   // ------------------------------------------------------------------ app windows
@@ -1033,6 +1084,7 @@ Item {
       : section.kind === "sizes" ? section.sizeGroups
       : section.kind === "monitors" ? section.monitorGroups
       : section.kind === "rules" ? section.ruleGroups
+      : section.kind === "launcher" ? section.launcherGroups
       : section.kind === "frame" ? section.frameGroups
       : section.kind === "night" ? section.nightGroups
       : section.kind === "lock" ? section.lockGroups
@@ -1048,6 +1100,7 @@ Item {
       : section.kind === "sizes" ? !section.d
       : section.kind === "monitors" ? !section.app.monitors.scanned
       : section.kind === "frame" ? !section.app.companion.probed
+      : section.kind === "launcher" ? !section.app.launcher.scanned
       : (section.kind === "lock" || section.kind === "screensaver") ? !section.sd
       : section.kind === "menu" ? !section.menuLook.probed
       : (section.kind === "terminal" || section.kind === "btop") ? !section.ai : !section.d
