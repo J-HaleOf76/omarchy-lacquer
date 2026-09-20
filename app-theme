@@ -1,0 +1,203 @@
+#!/usr/bin/env python3
+"""Make the tools Omarchy does not cover follow the theme.
+
+  app-theme scan            JSON: which tools are installed and which follow
+  app-theme on <tool>       start following the theme
+  app-theme off <tool>      stop, leaving the file as it was
+  app-theme reapply         rewrite every block that is on (the theme hook)
+
+Omarchy already retints terminals, btop, helix, tmux, VS Code, Obsidian, the
+browsers and more on every theme switch. These three it does not:
+
+  bat     follows the terminal's own colours (--theme=ansi)
+  delta   git's diff colours, from the theme's palette
+  fzf     the picker's colours, from the theme's palette
+
+Each lives between Lacquer's fences in the tool's own config, so what was
+already there is untouched and switching off removes exactly what was added.
+"""
+import json, os, re, subprocess, sys
+
+HOME = os.environ.get("HOME", "")
+STATE = os.path.join(HOME, ".local/state/omarchy/current/theme/colors.toml")
+GEN_DIR = os.path.join(HOME, ".config/lacquer")
+BEGIN = ">>> lacquer managed block >>>"
+END = "<<< lacquer managed block <<<"
+READ_LIMIT = 512 * 1024
+HEX = re.compile(r"^#?([0-9a-fA-F]{6})$")
+
+
+def read_capped(path):
+    try:
+        if not os.path.isfile(path) or os.path.getsize(path) > READ_LIMIT:
+            return None
+        with open(path, encoding="utf-8") as f:
+            return f.read(READ_LIMIT + 1)[:READ_LIMIT]
+    except (OSError, UnicodeDecodeError):
+        return None
+
+
+def colors():
+    """The theme's palette, as #rrggbb strings."""
+    out = {}
+    for line in (read_capped(STATE) or "").splitlines():
+        m = re.match(r'^\s*([a-z0-9_]+)\s*=\s*"?(#?[0-9a-fA-F]{6})"?', line)
+        if m:
+            out.setdefault(m.group(1), "#" + HEX.match(m.group(2)).group(1).lower())
+    out.setdefault("background", "#1e1e2e")
+    out.setdefault("foreground", "#cdd6f4")
+    out.setdefault("accent", out["foreground"])
+    return out
+
+
+def installed(command):
+    return subprocess.run(["bash", "-lc", "command -v " + command + " >/dev/null"],
+                          capture_output=True, timeout=10).returncode == 0
+
+
+def write_text(path, text):
+    # A file left holding nothing but whitespace is a file Lacquer created and
+    # then emptied; take it away rather than leaving litter behind.
+    if text.strip() == "" and os.path.isfile(path):
+        os.remove(path)
+        return
+    if text.strip() == "":
+        return
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp = path + ".lacquer-new"
+    with open(tmp, "w", encoding="utf-8") as f:
+        f.write(text)
+    os.replace(tmp, path)
+
+
+def replace_block(text, body, comment="#"):
+    """Put body between the fences, or take the block out when body is empty."""
+    begin, end = comment + " " + BEGIN, comment + " " + END
+    start = text.find(begin)
+    if start < 0:
+        if not body:
+            return text
+        head = text if text == "" or text.endswith("\n") else text + "\n"
+        return head + ("\n" if head else "") + begin + "\n" + body + "\n" + end + "\n"
+    stop = text.find(end, start)
+    after = "" if stop < 0 else text[stop + len(end):].lstrip("\n")
+    before = text[:start]
+    if not body:
+        return (before.rstrip("\n") + "\n" + after).lstrip("\n") if after else before.rstrip("\n") + "\n"
+    return before + begin + "\n" + body + "\n" + end + "\n" + (after if after else "")
+
+
+# ------------------------------------------------------------------- tools
+
+def bat_body(c):
+    return "--theme=ansi"
+
+
+def delta_body(c):
+    return "\n".join([
+        "[delta]",
+        "    syntax-theme = ansi",
+        "    plus-style = syntax \"%s\"" % shade(c["accent"], 0.82),
+        "    minus-style = normal \"%s\"" % shade(c.get("urgent", c["accent"]), 0.82),
+        "    line-numbers-zero-style = \"%s\"" % c["foreground"],
+        "    file-style = \"%s\"" % c["accent"],
+    ])
+
+
+def fzf_body(c):
+    opts = ",".join([
+        "bg+:-1", "bg:-1",
+        "fg:%s" % c["foreground"], "fg+:%s" % c["foreground"],
+        "hl:%s" % c["accent"], "hl+:%s" % c["accent"],
+        "info:%s" % c["accent"], "prompt:%s" % c["accent"],
+        "pointer:%s" % c["accent"], "marker:%s" % c["accent"],
+        "border:%s" % c["accent"], "header:%s" % c["foreground"],
+    ])
+    return 'export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:+$FZF_DEFAULT_OPTS }--color=%s"' % opts
+
+
+def shade(hex_color, factor):
+    """Darken towards black, so a diff background stays readable."""
+    m = HEX.match(hex_color)
+    if not m:
+        return hex_color
+    value = int(m.group(1), 16)
+    parts = [(value >> 16) & 255, (value >> 8) & 255, value & 255]
+    return "#" + "".join("%02x" % max(0, min(255, int(p * factor))) for p in parts)
+
+
+TOOLS = {
+    "bat": {
+        "name": "bat",
+        "command": "bat",
+        "path": os.path.join(HOME, ".config/bat/config"),
+        "body": bat_body,
+        "what": "Follows the terminal's colours, so it changes with every theme.",
+    },
+    "delta": {
+        "name": "delta",
+        "command": "delta",
+        "path": os.path.join(HOME, ".gitconfig"),
+        "body": delta_body,
+        "what": "git's diff colours, from the theme's palette.",
+    },
+    "fzf": {
+        "name": "fzf",
+        "command": "fzf",
+        "path": os.path.join(GEN_DIR, "fzf.sh"),
+        "body": fzf_body,
+        "what": "The picker's colours. A one-line source is added to ~/.bashrc.",
+        "sourced": True,
+    },
+}
+
+BASHRC = os.path.join(HOME, ".bashrc")
+SOURCE_LINE = '[ -r "$HOME/.config/lacquer/fzf.sh" ] && . "$HOME/.config/lacquer/fzf.sh"'
+
+
+def is_on(tool):
+    spec = TOOLS[tool]
+    text = read_capped(spec["path"]) or ""
+    return BEGIN in text
+
+
+def apply(tool, on):
+    spec = TOOLS[tool]
+    text = read_capped(spec["path"])
+    if text is None:
+        text = ""
+    body = spec["body"](colors()) if on else ""
+    write_text(spec["path"], replace_block(text, body))
+    if spec.get("sourced"):
+        rc = read_capped(BASHRC) or ""
+        write_text(BASHRC, replace_block(rc, SOURCE_LINE if on else ""))
+
+
+def scan():
+    out = []
+    for key in sorted(TOOLS):
+        spec = TOOLS[key]
+        out.append({"id": key, "name": spec["name"], "what": spec["what"],
+                    "installed": installed(spec["command"]), "on": is_on(key),
+                    "path": spec["path"].replace(HOME, "~")})
+    print(json.dumps({"tools": out}))
+
+
+def main():
+    argv = sys.argv[1:]
+    if not argv:
+        sys.exit(__doc__)
+    if argv[0] == "scan":
+        scan()
+    elif argv[0] in ("on", "off") and len(argv) == 2 and argv[1] in TOOLS:
+        apply(argv[1], argv[0] == "on")
+    elif argv[0] == "reapply":
+        for key in TOOLS:
+            if is_on(key):
+                apply(key, True)
+    else:
+        sys.exit(__doc__)
+
+
+if __name__ == "__main__":
+    main()

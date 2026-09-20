@@ -51,6 +51,7 @@ Item {
   RulesStore { id: rulesStore; app: root }
   CompanionStore { id: companionStore; app: root; Component.onCompleted: rescan() }
   LauncherStore { id: launcherStore; app: root }
+  ToolsStore { id: toolsStore; app: root }
 
   // Sections can appear after load (Menu look, once OmaMenu answers); keep the
   // page the user is on rather than the index it used to have.
@@ -79,6 +80,7 @@ Item {
   readonly property alias rules: rulesStore
   readonly property alias companion: companionStore
   readonly property alias launcher: launcherStore
+  readonly property alias tools: toolsStore
   readonly property alias aether: aetherStore
   readonly property alias desktop: desktopStore
   readonly property alias night: nightStore

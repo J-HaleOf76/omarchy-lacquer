@@ -16,6 +16,11 @@ if [[ ! -d $plugin ]]; then
   exit 0
 fi
 
+# The tools Omarchy does not retint on its own (bat, delta, fzf), for whichever
+# of them Lacquer was asked to keep following the theme. Before the pin work
+# below, which gives up early when jq or pins.json are missing.
+timeout -k 2 20 python3 "$plugin/app-theme" reapply 2>/dev/null
+
 command -v jq >/dev/null 2>&1 || exit 0
 
 # Read the pins through the plugin's bounded reader: a plain regular file only

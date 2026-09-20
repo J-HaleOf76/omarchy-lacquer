@@ -33,7 +33,7 @@ Item {
     if (kind === "night") night.rescan()
     else if (kind === "lock" || kind === "screensaver") screens.rescan()
     else if (kind === "menu") menuLook.rescan()
-    else if (kind === "terminal" || kind === "btop") apps.rescan()
+    else if (kind === "terminal" || kind === "btop") { apps.rescan(); if (kind === "btop") section.app.tools.rescan() }
     else store.rescan()
   }
 
@@ -1023,6 +1023,27 @@ Item {
     }
   ]
 
+  // Tools Omarchy leaves alone, offered next to btop and the prompt because
+  // that is where the rest of the terminal-side colours already live.
+  readonly property var toolGroups: {
+    var store = section.app.tools
+    if (!store.scanned || store.tools.length === 0) return []
+    var out = []
+    for (var i = 0; i < store.tools.length; i++) {
+      var tool = store.tools[i]
+      out.push({
+        id: "tool-" + tool.id, kind: "chips", title: tool.name,
+        note: tool.what + (tool.installed ? " Written into " + tool.path + "." : " Not installed here."),
+        current: tool.on ? "on" : "off",
+        options: [{ value: "on", label: "Follow the theme" }, { value: "off", label: "Leave it alone" }],
+        pick: (function(id) {
+          return function(v) { store.set(id, v === "on") }
+        })(tool.id)
+      })
+    }
+    return out
+  }
+
   readonly property var btopGroups: !section.ai ? [] : [].concat(!section.ai.btop ? [] : [
     {
       id: "btop-bg", kind: "chips", title: "btop background",
@@ -1091,7 +1112,7 @@ Item {
       : section.kind === "screensaver" ? section.screensaverGroups
       : section.kind === "menu" ? section.menuGroups
       : section.kind === "terminal" ? section.terminalGroups
-      : section.kind === "btop" ? section.btopGroups : section.cursorGroups
+      : section.kind === "btop" ? section.btopGroups.concat(section.toolGroups) : section.cursorGroups
   }
 
   Text {
