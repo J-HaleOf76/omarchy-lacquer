@@ -225,7 +225,9 @@ Item {
     // One eval in flight at a time with the newest state queued behind it, so
     // a slider drag cannot outrun hyprctl.
     if (evalProc.running) { root.previewPending = true; return }
-    evalProc.command = ["timeout", "-k", "1", "5", "hyprctl", "eval", body]
+    // `--` first: a body can begin with a Lua comment, and hyprctl would read
+    // those two dashes as a flag and refuse the whole thing.
+    evalProc.command = ["timeout", "-k", "1", "5", "hyprctl", "eval", "--", body]
     evalProc.running = true
   }
 

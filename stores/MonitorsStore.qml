@@ -96,7 +96,7 @@ Item {
   function applyLive(specs) {
     var lines = StyleLua.renderMonitorsBody(specs)
     if (!lines) return
-    liveProc.command = ["timeout", "-k", "1", "5", "hyprctl", "eval", lines]
+    liveProc.command = ["timeout", "-k", "1", "5", "hyprctl", "eval", "--", lines]
     liveProc.running = true
   }
 
