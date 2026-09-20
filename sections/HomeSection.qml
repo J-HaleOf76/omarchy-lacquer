@@ -119,6 +119,9 @@ Item {
     case "animations": return animationsOn ? "On · windows at " + Number(moveLeaf.speed).toFixed(1) : "Off"
     case "curves": return app.hypr.curveNames.length + " curves"
     case "sizes": return "Text " + app.desktop.textPx + " px"
+    case "apprules":
+      var rn = app.rules.rules.length
+      return rn === 0 ? "No app rules yet" : rn + (rn === 1 ? " app ruled" : " apps ruled")
     case "displays":
       var ms = app.monitors.monitors
       if (!ms || ms.length === 0) return "Resolution, scale and placement"
@@ -199,6 +202,7 @@ Item {
     motion: ["Motion feel", "Speed", "Lacquer's own animations"],
     sizes: ["Desktop size", "Text size", "This window"],
     displays: ["Scale", "Rotation", "Keep this?"],
+    apprules: ["App", "Floating", "Size when it floats", "Centred", "Opens on", "Opacity"],
     borders: ["Window shape", "Border gradient", "Blend", "Gradient angle", "Spin the gradient", "Unfocused windows too", "Grouped windows too"],
     nightlight: ["Right now", "Schedule", "Warmer from", "Back to normal at", "Evening warmth"],
     lock: ["Lock screen", "Lock design", "Try it", "Unlock animation", "Unlock length", "Clock", "Blank the screen after", "Keep the display on while locked", "Lock after", "Boot unlock screen", "lock-explorer boot screen", "Build the boot screen"],

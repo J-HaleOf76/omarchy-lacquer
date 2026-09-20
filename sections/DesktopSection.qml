@@ -27,6 +27,7 @@ Item {
   function rescanAll() {
     if (kind === "motion" || kind === "borders") return
     if (kind === "monitors") { section.app.monitors.rescan(); return }
+    if (kind === "rules") { section.app.rules.rescan(); return }
     if (kind === "night") night.rescan()
     else if (kind === "lock" || kind === "screensaver") screens.rescan()
     else if (kind === "menu") menuLook.rescan()
@@ -117,6 +118,95 @@ Item {
       pick: function(v) { section.store.pin("icon-theme", v) }
     }
   ]
+
+  // ------------------------------------------------------------------ app windows
+  //
+  // Rules are written as `o.window("^class$", { ... })` into Lacquer's block in
+  // hyprland.lua, the same shape as Omarchy's own per-app rules. Apps on screen
+  // are offered first, so a rule can be made by pointing at a real window.
+  readonly property var rulesStore: section.app.rules
+
+  readonly property var ruleGroups: {
+    var store = section.rulesStore
+    var picked = store.picked
+    var rule = store.current
+    var out = [{
+      id: "which-app", kind: "chips", title: "App",
+      note: store.known.length === 0
+        ? "Nothing is open to point at yet. Open the app you want to rule, then come back."
+        : "Apps with rules, and everything on screen right now. A rule matches the window class exactly.",
+      current: picked,
+      options: store.known.map(function(k) {
+        return { value: k.match, label: k.name + (k.ruled ? "  \u00b7  ruled" : "") }
+      }),
+      pick: function(v) { store.picked = v }
+    }]
+    if (!picked) return out
+    out.push({
+      id: "float", kind: "chips", title: "Floating",
+      note: "Take this app out of the tiling layout, or force it into it.",
+      current: rule && rule.float !== undefined ? (rule.float ? "float" : "tile") : "",
+      options: [{ value: "", label: "Follow the layout" }, { value: "float", label: "Always float" },
+                { value: "tile", label: "Always tile" }],
+      pick: function(v) { store.set("float", v === "" ? undefined : v === "float", v === "" ? "Follows the layout" : (v === "float" ? "Floats" : "Tiles")) }
+    })
+    out.push({
+      id: "size", kind: "chips", title: "Size when it floats",
+      note: "Only used while the window floats.",
+      current: rule && rule.width > 0 ? rule.width + "x" + rule.height : "",
+      options: [{ value: "", label: "Leave it" }, { value: "800x600", label: "800\u00d7600" },
+                { value: "1100x700", label: "1100\u00d7700" }, { value: "1280x800", label: "1280\u00d7800" },
+                { value: "1600x900", label: "1600\u00d7900" }],
+      pick: function(v) {
+        if (v === "") { store.setSize(0, 0); return }
+        var parts = String(v).split("x")
+        store.setSize(Number(parts[0]), Number(parts[1]))
+      }
+    })
+    out.push({
+      id: "centered", kind: "chips", title: "Centred",
+      current: rule && rule.center ? "on" : "off", options: section.onOff(),
+      pick: function(v) { store.set("center", v === "on", v === "on" ? "Opens centred" : "Opens where the layout puts it") }
+    })
+    out.push({
+      id: "workspace", kind: "chips", title: "Opens on",
+      note: "Send this app to the same workspace every time. `special` is the scratchpad.",
+      current: rule ? rule.workspace : "",
+      options: [{ value: "", label: "Wherever you are" }].concat([1, 2, 3, 4, 5, 6].map(function(n) {
+        return { value: String(n), label: "Workspace " + n }
+      })).concat([{ value: "special", label: "Scratchpad" }]),
+      pick: function(v) { store.set("workspace", v, v === "" ? "Opens wherever you are" : "Opens on " + v) }
+    })
+    out.push({
+      id: "opacity", kind: "chips", title: "Opacity",
+      note: "Overrides the global window opacity for this app only.",
+      current: rule && rule.opacity !== "" ? rule.opacity : "",
+      options: [{ value: "", label: "Follow the global" }, { value: 1, label: "Solid" },
+                { value: 0.95, label: "95 %" }, { value: 0.9, label: "90 %" }, { value: 0.8, label: "80 %" }],
+      pick: function(v) { store.set("opacity", v, v === "" ? "Follows the global opacity" : "Opacity " + v) }
+    })
+    out.push({
+      id: "effects-off", kind: "chips", title: "Turn off for this app",
+      note: "Handy for apps that draw their own chrome, or that a blur makes slow.",
+      options: [{ value: "noBlur", label: (rule && rule.noBlur ? "\u2713 " : "") + "Blur" },
+                { value: "noShadow", label: (rule && rule.noShadow ? "\u2713 " : "") + "Shadow" },
+                { value: "noBorder", label: (rule && rule.noBorder ? "\u2713 " : "") + "Border" },
+                { value: "noRounding", label: (rule && rule.noRounding ? "\u2713 " : "") + "Rounding" }],
+      pick: function(v) {
+        var now = rule ? rule[v] === true : false
+        store.set(v, !now, (now ? "On again: " : "Off: ") + v.replace("no", ""))
+      }
+    })
+    if (rule) {
+      out.push({
+        id: "forget-rule", kind: "chips", title: "Remove",
+        note: "Takes every rule for this app back out of hyprland.lua.",
+        options: [{ value: "forget", label: "Remove the rules for " + picked }],
+        pick: function(v) { store.forget(picked) }
+      })
+    }
+    return out
+  }
 
   // ------------------------------------------------------------------ screens
   //
@@ -835,6 +925,7 @@ Item {
       : section.kind === "borders" ? section.borderGroups
       : section.kind === "sizes" ? section.sizeGroups
       : section.kind === "monitors" ? section.monitorGroups
+      : section.kind === "rules" ? section.ruleGroups
       : section.kind === "night" ? section.nightGroups
       : section.kind === "lock" ? section.lockGroups
       : section.kind === "screensaver" ? section.screensaverGroups

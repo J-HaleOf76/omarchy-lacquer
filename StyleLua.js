@@ -253,9 +253,53 @@ function renderPreviewBody(overrides, draftCurves, draftLeaves, baseCurves, base
 // Re-applies Omarchy's blanket opacity rule at 1.0. Registered after
 // default/hypr/windows.lua, so it wins; the decoration:*_opacity globals still
 // multiply on top, which is what keeps the opacity sliders meaningful.
-function renderWindowsBody(overrides) {
-  if (overrides[OPAQUE_WINDOWS_KEY] !== true) return ""
-  return 'o.window(".*", { opacity = "1 1" })'
+function renderWindowsBody(overrides, rules) {
+  var chunks = []
+  if (overrides[OPAQUE_WINDOWS_KEY] === true)
+    chunks.push('o.window(".*", { opacity = "1 1" })')
+  var written = renderWindowRules(rules)
+  if (written) chunks.push(written)
+  return chunks.join("\n")
+}
+
+// ------------------------------------------------------------- window rules
+//
+// One `o.window` per app, in the same shape as Omarchy's own app rules
+// (default/hypr/apps/*.lua). The match is an anchored class regex so a rule
+// for "foot" cannot also catch "footclient".
+
+function ruleMatch(rule) {
+  return "^" + String(rule.match || "").replace(/[\\^$.*+?()[\]{}|]/g, "\\$&") + "$"
+}
+
+function renderWindowRule(rule) {
+  var props = []
+  if (rule.float === true) props.push("float = true")
+  if (rule.float === false) props.push("float = false")
+  if (rule.center === true) props.push("center = true")
+  if (rule.pin === true) props.push("pin = true")
+  if (rule.fullscreen === true) props.push("fullscreen = true")
+  if (Number(rule.width) > 0 && Number(rule.height) > 0)
+    props.push("size = { " + Math.round(rule.width) + ", " + Math.round(rule.height) + " }")
+  if (rule.workspace) props.push("workspace = " + quote(String(rule.workspace)))
+  if (rule.opacity !== undefined && rule.opacity !== "")
+    props.push("opacity = " + quote(num(rule.opacity, 2) + " " + num(rule.opacityInactive === undefined ? rule.opacity : rule.opacityInactive, 2)))
+  if (rule.noBlur === true) props.push("no_blur = true")
+  if (rule.noShadow === true) props.push("no_shadow = true")
+  if (rule.noBorder === true) props.push("no_border = true")
+  if (rule.noRounding === true) props.push("no_rounding = true")
+  if (rule.decorate === false) props.push("decorate = false")
+  if (props.length === 0) return ""
+  return "o.window(" + quote(ruleMatch(rule)) + ", { " + props.join(", ") + " })"
+}
+
+function renderWindowRules(rules) {
+  var lines = []
+  for (var i = 0; i < (rules || []).length; i++) {
+    var line = renderWindowRule(rules[i])
+    if (line) lines.push(line)
+  }
+  return lines.join("\n")
 }
 
 // ------------------------------------------------------------------ borders

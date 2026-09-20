@@ -251,7 +251,7 @@ Item {
     }
     var synthetic = {}
     synthetic[StyleLua.OPAQUE_WINDOWS_KEY] = root.opaqueWindows
-    var windowsNext = StyleLua.applyBlock(windowsCurrent, StyleLua.renderWindowsBody(synthetic))
+    var windowsNext = StyleLua.applyBlock(windowsCurrent, StyleLua.renderWindowsBody(synthetic, app.rules.rules))
 
     var writeConfig = next !== current
     var writeWindows = windowsNext !== windowsCurrent
@@ -371,7 +371,7 @@ Item {
     if (!found) return
     var synthetic = {}
     synthetic[StyleLua.OPAQUE_WINDOWS_KEY] = root.opaqueWindows
-    windowsFile.setText(StyleLua.applyBlock(text, StyleLua.renderWindowsBody(synthetic)))
+    windowsFile.setText(StyleLua.applyBlock(text, StyleLua.renderWindowsBody(synthetic, app.rules.rules)))
   }
 
   function applyMigration() {
