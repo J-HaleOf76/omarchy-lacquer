@@ -119,6 +119,9 @@ Item {
     case "animations": return animationsOn ? "On · windows at " + Number(moveLeaf.speed).toFixed(1) : "Off"
     case "curves": return app.hypr.curveNames.length + " curves"
     case "sizes": return "Text " + app.desktop.textPx + " px"
+    case "frame":
+      if (!app.companion.present) return "Needs the companion plugin"
+      return app.companion.on ? "On" : "Off"
     case "apprules":
       var rn = app.rules.rules.length
       return rn === 0 ? "No app rules yet" : rn + (rn === 1 ? " app ruled" : " apps ruled")
@@ -202,6 +205,7 @@ Item {
     motion: ["Motion feel", "Speed", "Lacquer's own animations"],
     sizes: ["Desktop size", "Text size", "This window"],
     displays: ["Scale", "Rotation", "Keep this?"],
+    frame: ["Screen frame", "Corners", "Frame width", "Vignette", "Scanlines", "Grain"],
     apprules: ["App", "Floating", "Size when it floats", "Centred", "Opens on", "Opacity"],
     borders: ["Window shape", "Border gradient", "Blend", "Gradient angle", "Spin the gradient", "Unfocused windows too", "Grouped windows too"],
     nightlight: ["Right now", "Schedule", "Warmer from", "Back to normal at", "Evening warmth"],

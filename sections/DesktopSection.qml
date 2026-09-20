@@ -28,6 +28,7 @@ Item {
     if (kind === "motion" || kind === "borders") return
     if (kind === "monitors") { section.app.monitors.rescan(); return }
     if (kind === "rules") { section.app.rules.rescan(); return }
+    if (kind === "frame") { section.app.companion.rescan(); return }
     if (kind === "night") night.rescan()
     else if (kind === "lock" || kind === "screensaver") screens.rescan()
     else if (kind === "menu") menuLook.rescan()
@@ -118,6 +119,87 @@ Item {
       pick: function(v) { section.store.pin("icon-theme", v) }
     }
   ]
+
+  // ------------------------------------------------------------------ screen frame
+  //
+  // Everything here is drawn by the companion plugin (Lacquer Shell). Without
+  // it the section says what it would add and offers to install it; Lacquer
+  // itself keeps working exactly as before.
+  readonly property var companion: section.app.companion
+
+  readonly property var frameGroups: {
+    var c = section.companion
+    if (!c.probed) return []
+    if (!c.present) {
+      if (c.confirming) {
+        return [{
+          id: "install-confirm", kind: "chips", title: "Install Lacquer Shell?",
+          note: "This runs Omarchy's own installer in a terminal you can watch: "
+            + "`omarchy plugin add " + c.repo + " --enable`. It adds a second plugin that draws the frame; "
+            + "everything in it stays off until you turn it on, and you can remove it with "
+            + "`omarchy plugin remove " + c.pluginId + "`.",
+          options: [{ value: "yes", label: "Install it" }, { value: "no", label: "Not now" }],
+          pick: function(v) { if (v === "yes") c.install(); else c.cancelInstall() }
+        }]
+      }
+      return [{
+        id: "install", kind: "chips", title: "Needs the companion",
+        note: "Rounded screen corners, corner brackets, a frame around the display, a vignette, scanlines and grain are drawn by a second, optional plugin \u2014 Lacquer Shell \u2014 because something has to stay on screen to draw them. Lacquer works fine without it.",
+        options: [{ value: "install", label: "Tell me more / install" }],
+        pick: function(v) { c.askInstall() }
+      }]
+    }
+    if (!c.frame) return [{
+      id: "no-answer", kind: "chips", title: "Companion installed",
+      note: "Lacquer Shell is installed but has not answered yet. If this stays, restart the shell with `omarchy restart shell`.",
+      options: []
+    }]
+    var f = c.frame
+    return [
+      {
+        id: "frame-on", kind: "chips", title: "Screen frame",
+        note: "Drawn above everything, and it takes no clicks: the desktop underneath behaves exactly as before.",
+        current: f.enabled ? "on" : "off",
+        options: section.onOff(),
+        pick: function(v) { c.set("enabled", v === "on", v === "on" ? "Screen frame on" : "Screen frame off") }
+      },
+      {
+        id: "frame-style", kind: "chips", title: "Corners",
+        note: "Rounded cuts the display's corners; brackets draws a short stroke in each corner instead.",
+        current: f.style,
+        options: [{ value: "corners", label: "Rounded" }, { value: "brackets", label: "Brackets" }],
+        pick: function(v) { c.set("style", v, v === "corners" ? "Rounded corners" : "Corner brackets") }
+      },
+      {
+        id: "frame-corner-size", kind: "stepper", title: f.style === "brackets" ? "Bracket length" : "Corner radius",
+        value: Math.round(f.corners), unit: "px",
+        step: function(d) { c.step("corners", d, 0, 200, 4, f.style === "brackets" ? "Bracket" : "Corner", " px") }
+      },
+      {
+        id: "frame-width", kind: "stepper", title: "Frame width",
+        note: "A line just inside the screen's edge, in the theme's accent colour.",
+        value: Math.round(f.frame), unit: "px",
+        step: function(d) { c.step("frame", d, 0, 40, 1, "Frame", " px") }
+      },
+      {
+        id: "frame-vignette", kind: "stepper", title: "Vignette",
+        note: "Darkens towards the edges.",
+        value: Math.round(f.vignette * 100) + " %", unit: "",
+        step: function(d) { c.step("vignette", d, 0, 1, 0.05, "Vignette", "%") }
+      },
+      {
+        id: "frame-scanlines", kind: "stepper", title: "Scanlines",
+        value: Math.round(f.scanlines * 100) + " %", unit: "",
+        step: function(d) { c.step("scanlines", d, 0, 1, 0.05, "Scanlines", "%") }
+      },
+      {
+        id: "frame-grain", kind: "stepper", title: "Grain",
+        note: "A still speckle over the screen. Drawn once, so it costs nothing to leave on.",
+        value: Math.round(f.grain * 100) + " %", unit: "",
+        step: function(d) { c.step("grain", d, 0, 1, 0.05, "Grain", "%") }
+      }
+    ]
+  }
 
   // ------------------------------------------------------------------ app windows
   //
@@ -926,6 +1008,7 @@ Item {
       : section.kind === "sizes" ? section.sizeGroups
       : section.kind === "monitors" ? section.monitorGroups
       : section.kind === "rules" ? section.ruleGroups
+      : section.kind === "frame" ? section.frameGroups
       : section.kind === "night" ? section.nightGroups
       : section.kind === "lock" ? section.lockGroups
       : section.kind === "screensaver" ? section.screensaverGroups
@@ -939,6 +1022,7 @@ Item {
     visible: section.kind === "night" ? !section.ns
       : section.kind === "sizes" ? !section.d
       : section.kind === "monitors" ? !section.app.monitors.scanned
+      : section.kind === "frame" ? !section.app.companion.probed
       : (section.kind === "lock" || section.kind === "screensaver") ? !section.sd
       : section.kind === "menu" ? !section.menuLook.probed
       : (section.kind === "terminal" || section.kind === "btop") ? !section.ai : !section.d

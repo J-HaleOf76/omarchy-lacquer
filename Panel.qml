@@ -49,6 +49,7 @@ Item {
   BordersStore { id: bordersStore; app: root }
   MonitorsStore { id: monitorsStore; app: root }
   RulesStore { id: rulesStore; app: root }
+  CompanionStore { id: companionStore; app: root; Component.onCompleted: rescan() }
 
   // Sections can appear after load (Menu look, once OmaMenu answers); keep the
   // page the user is on rather than the index it used to have.
@@ -75,6 +76,7 @@ Item {
   readonly property alias borders: bordersStore
   readonly property alias monitors: monitorsStore
   readonly property alias rules: rulesStore
+  readonly property alias companion: companionStore
   readonly property alias aether: aetherStore
   readonly property alias desktop: desktopStore
   readonly property alias night: nightStore
@@ -315,10 +317,10 @@ Item {
       out.push({ id: look.id, group: "Windows", pane: "rows", icon: look.icon, title: look.title,
                  blurb: look.blurb, groups: look.groups })
     }
-    out.push({ id: "apprules", group: "Apps", pane: "desktop", kind: "rules", icon: "◱", title: "App windows",
-               blurb: "How one app's windows behave and look: floating, size, workspace, opacity and effects." })
     out.push({ id: "borders", group: "Windows", pane: "desktop", kind: "borders", icon: "◰", title: "Borders & shape",
                blurb: "Window shape presets, and a border gradient built from your theme's own colours." })
+    out.push({ id: "frame", group: "Windows", pane: "desktop", kind: "frame", icon: "⬚", title: "Screen frame",
+               blurb: "Rounded screen corners, a frame around the display and a wash over it \u2014 drawn by the optional companion." })
     out.push({ id: "animations", group: "Windows", pane: "rows", icon: "󱐋", title: "Animations",
                blurb: "Speed, curve and style for every animation Hyprland can play." })
     out.push({ id: "curves", group: "Windows", pane: "curves", icon: "󰓅", title: "Curves",
@@ -339,6 +341,8 @@ Item {
                blurb: "Padding, cursor and background opacity for every installed terminal." })
     out.push({ id: "btop", group: "Apps", pane: "desktop", kind: "btop", icon: "󰄨", title: "btop & prompt",
                blurb: "How btop draws, and the starship prompt's spacing. Colours stay with the theme." })
+    out.push({ id: "apprules", group: "Apps", pane: "desktop", kind: "rules", icon: "◱", title: "App windows",
+               blurb: "How one app's windows behave and look: floating, size, workspace, opacity and effects." })
     out.push({ id: "plugins", group: "Apps", pane: "plugins", icon: "󰏖", title: "Plugins",
                blurb: "Settings for every installed plugin, from its own manifest." })
     return out
