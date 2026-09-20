@@ -596,7 +596,32 @@ Item {
       options: [{ value: "animations", label: "Animations" }, { value: "curves", label: "Curves" }],
       pick: function(v) { section.app.showSectionById(v) }
     }
-  ]
+  ].concat(section.barMotionGroups)
+
+  // The bar can only move if the companion's bar is the one running: Omarchy's
+  // own bar has no motion settings at all.
+  readonly property var barMotionGroups: {
+    var c = section.app.companion
+    if (!c.present || !c.barMotion) return []
+    var m = c.barMotion
+    return [
+      {
+        id: "bar-motion", kind: "chips", title: "Bar motion",
+        note: "Lacquer Shell's bar, at the feel's pace (" + Math.round(Number(m.duration)) + " ms). "
+          + "Widgets glide when they change size, lift under the pointer, and fade in as they appear.",
+        current: m.enabled ? "on" : "off",
+        options: section.onOff(),
+        pick: function(v) { c.setMotion("enabled", v === "on", v === "on" ? "Bar motion on" : "Bar motion off") }
+      },
+      {
+        id: "bar-motion-parts", kind: "chips", title: "What moves in the bar",
+        options: [{ value: "glide", label: (m.glide ? "\u2713 " : "") + "Glide" },
+                  { value: "hover", label: (m.hover ? "\u2713 " : "") + "Hover lift" },
+                  { value: "appear", label: (m.appear ? "\u2713 " : "") + "Fade in" }],
+        pick: function(v) { c.setMotion(v, !(m[v] === true), (m[v] === true ? "Off: " : "On: ") + v) }
+      }
+    ]
+  }
 
   // Downloaded fonts and cursor themes, straight from the file chooser.
   function addGroup(kind, title, note) {

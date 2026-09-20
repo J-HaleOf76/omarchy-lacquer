@@ -24,6 +24,7 @@ Item {
   property bool probed: false
   property bool confirming: false
   property var frame: null
+  property var barMotion: null
 
   readonly property bool on: root.present && root.frame && root.frame.enabled === true
 
@@ -37,6 +38,30 @@ Item {
              corners: Number(f.corners) || 0, frame: Number(f.frame) || 0,
              vignette: Number(f.vignette) || 0, scanlines: Number(f.scanlines) || 0,
              grain: Number(f.grain) || 0, tint: String(f.tint || "") }
+  }
+
+  function cloneMotion(m) {
+    return { enabled: m.enabled === true, duration: Number(m.duration) || 260,
+             glide: m.glide !== false, hover: m.hover !== false, appear: m.appear !== false }
+  }
+
+  // The bar's motion follows Lacquer's feel: MotionStore pushes the duration
+  // whenever the feel or speed changes, and the toggles below say what moves.
+  function setMotion(field, value, label) {
+    if (!root.present || !root.barMotion) return
+    var next = root.cloneMotion(root.barMotion)
+    next[field] = value
+    root.barMotion = next
+    motionSend.command = ["timeout", "-k", "2", "10", "omarchy-shell", "lacquer.shell",
+                          "setMotion", JSON.stringify(next)]
+    motionSend.running = true
+    if (label) root.app.statusText = label
+  }
+
+  function pushDuration(ms) {
+    if (!root.present || !root.barMotion) return
+    if (Math.abs(Number(root.barMotion.duration) - ms) < 2) return
+    root.setMotion("duration", Math.round(ms), "")
   }
 
   function set(field, value, label) {
@@ -75,8 +100,8 @@ Item {
     onExited: function(code) {
       root.present = code === 0 && String(probeOut.text || "").indexOf("lacquer.shell") >= 0
       root.probed = true
-      if (root.present) readProc.running = true
-      else root.frame = null
+      if (root.present) { readProc.running = true; motionRead.running = true }
+      else { root.frame = null; root.barMotion = null }
     }
   }
 
@@ -91,6 +116,28 @@ Item {
       } catch (e) {
         root.frame = null
       }
+    }
+  }
+
+  Process {
+    id: motionRead
+    command: ["timeout", "-k", "2", "6", "omarchy-shell", "lacquer.shell", "motion"]
+    stdout: StdioCollector { id: motionOut; waitForEnd: true }
+    onExited: function(code) {
+      if (code !== 0) { root.barMotion = null; return }
+      try {
+        root.barMotion = root.cloneMotion(JSON.parse(motionOut.text))
+      } catch (e) {
+        root.barMotion = null
+      }
+    }
+  }
+
+  Process {
+    id: motionSend
+    stderr: StdioCollector { id: motionErr; waitForEnd: true }
+    onExited: function(code) {
+      if (code !== 0) root.app.errorText = String(motionErr.text || "").trim() || "Lacquer Shell did not answer"
     }
   }
 

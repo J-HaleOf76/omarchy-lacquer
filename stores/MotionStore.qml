@@ -72,5 +72,7 @@ Item {
     var name
     for (name in tokens.curves) root.app.hypr.setCurve(name, tokens.curves[name], false)
     for (name in tokens.leaves) root.app.hypr.setLeaf(name, tokens.leaves[name], false)
+    // The companion's bar moves at the same pace, when it is installed.
+    root.app.companion.pushDuration(tokens.ui.duration)
   }
 }
