@@ -236,6 +236,13 @@ function tabFor(id) {
   return null
 }
 
+function itemFor(id) {
+  var all = allItems()
+  for (var i = 0; i < all.length; i++)
+    if (all[i].id === id) return all[i]
+  return null
+}
+
 function allItems() {
   var out = []
   for (var t = 0; t < TABS.length; t++)

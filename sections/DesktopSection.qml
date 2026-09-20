@@ -2,6 +2,7 @@ import QtQuick
 import qs.Commons
 import qs.Ui
 import "../LookSchema.js" as LookSchema
+import "../ShellSchema.js" as ShellSchema
 
 // Fonts & text, GTK & icons, and Cursor: three views over DesktopStore.
 Item {
@@ -113,6 +114,96 @@ Item {
       unpin: function() { section.store.unpin("icon-theme") },
       options: section.d.iconThemes.map(function(t) { return { value: t.name, label: t.label, icons: t.icons } }),
       pick: function(v) { section.store.pin("icon-theme", v) }
+    }
+  ]
+
+  // ------------------------------------------------------------------ sizes
+  //
+  // One knob that moves text, cursor, gaps and the bar together, plus the size
+  // of Lacquer's own window. Every value it sets stays editable in its own
+  // section afterwards, so a preset is a starting point, not a mode.
+  readonly property var scalePresets: [
+    { value: "small", label: "Small", text: 10, cursor: 20, gapsIn: 2, gapsOut: 4, bar: 22 },
+    { value: "normal", label: "Normal", text: 12, cursor: 24, gapsIn: 4, gapsOut: 8, bar: 26 },
+    { value: "large", label: "Large", text: 15, cursor: 32, gapsIn: 6, gapsOut: 12, bar: 32 },
+    { value: "huge", label: "Huge", text: 18, cursor: 40, gapsIn: 8, gapsOut: 16, bar: 38 }
+  ]
+
+  function gapValue(key, fallback) {
+    var v = section.app.hypr.overrides[key]
+    return v === undefined ? fallback : Number(v)
+  }
+
+  readonly property int barHeight: {
+    var item = ShellSchema.itemFor("bar.size-horizontal")
+    if (!item) return 26
+    var v = section.app.toml.shellValue(item)
+    if (v === undefined) v = section.app.toml.shellDefault(item)
+    return v === undefined ? 26 : Number(v)
+  }
+
+  // Which preset the desktop is actually at, or "" when the numbers are mixed.
+  readonly property string scaleNow: {
+    for (var i = 0; i < section.scalePresets.length; i++) {
+      var p = section.scalePresets[i]
+      if (section.store.textPx === p.text
+          && section.cursorSize === p.cursor
+          && section.gapValue("general:gaps_in", 4) === p.gapsIn
+          && section.gapValue("general:gaps_out", 8) === p.gapsOut
+          && section.barHeight === p.bar) return p.value
+    }
+    return ""
+  }
+
+  function applyScale(value) {
+    var preset = null
+    for (var i = 0; i < section.scalePresets.length; i++)
+      if (section.scalePresets[i].value === value) preset = section.scalePresets[i]
+    if (!preset) return
+    section.app.beginEdit()
+    section.store.setTextSize(preset.text)
+    section.store.setCursor(section.cursorTheme, preset.cursor)
+    var gapsIn = LookSchema.itemFor("general:gaps_in")
+    var gapsOut = LookSchema.itemFor("general:gaps_out")
+    if (gapsIn) section.app.hypr.setValue(gapsIn, preset.gapsIn, false)
+    if (gapsOut) section.app.hypr.setValue(gapsOut, preset.gapsOut, false)
+    var bar = ShellSchema.itemFor("bar.size-horizontal")
+    if (bar) section.app.toml.setShell(bar, preset.bar, true)
+    section.app.commitEdit("Desktop size: " + preset.label)
+    section.app.hypr.persistNow()
+    section.app.statusText = "Desktop size: " + preset.label
+  }
+
+  readonly property var sizeGroups: !section.d ? [] : [
+    {
+      id: "desktop-scale", kind: "chips", title: "Desktop size",
+      note: "Text, cursor, window gaps and the bar's height in one go"
+        + (section.scaleNow === "" ? ". Your own numbers don't match any of these right now." : ".")
+        + " Everything it sets stays editable in Fonts & text, Cursor, Windows and Bar.",
+      current: section.scaleNow,
+      options: section.scalePresets.map(function(p) { return { value: p.value, label: p.label } }),
+      pick: function(v) { section.applyScale(v) }
+    },
+    {
+      id: "text-size", kind: "stepper", title: "Text size",
+      note: "The same knob as Fonts & text: the shell, GTK apps and terminals.",
+      value: section.store.textPx, unit: "px",
+      step: function(d) { section.store.stepTextSize(d) },
+      reset: function() { section.store.resetTextSize() }, resetLabel: "Default (12)"
+    },
+    {
+      id: "panel-size", kind: "chips", title: "This window",
+      note: "How big Lacquer itself opens. Saved for next time.",
+      current: section.app.panelSize,
+      options: section.app.panelSizes.map(function(p) { return { value: p.value, label: p.label } }),
+      pick: function(v) { section.app.setPanelSize(v) }
+    },
+    {
+      id: "size-where", kind: "chips", title: "Go to",
+      note: "Each surface on its own: the bar's height, menu size, notification and lock sizes in Shell style, gaps in Windows.",
+      options: [{ value: "bar", label: "Bar" }, { value: "shell", label: "Shell style" },
+                { value: "windows", label: "Windows" }, { value: "cursor", label: "Cursor" }],
+      pick: function(v) { section.app.showSectionById(v) }
     }
   ]
 
@@ -676,6 +767,7 @@ Item {
       : section.kind === "gtk" ? section.gtkGroups
       : section.kind === "motion" ? section.motionGroups
       : section.kind === "borders" ? section.borderGroups
+      : section.kind === "sizes" ? section.sizeGroups
       : section.kind === "night" ? section.nightGroups
       : section.kind === "lock" ? section.lockGroups
       : section.kind === "screensaver" ? section.screensaverGroups
@@ -687,6 +779,7 @@ Item {
   Text {
     anchors.centerIn: parent
     visible: section.kind === "night" ? !section.ns
+      : section.kind === "sizes" ? !section.d
       : (section.kind === "lock" || section.kind === "screensaver") ? !section.sd
       : section.kind === "menu" ? !section.menuLook.probed
       : (section.kind === "terminal" || section.kind === "btop") ? !section.ai : !section.d

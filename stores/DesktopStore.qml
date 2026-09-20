@@ -72,6 +72,14 @@ Item {
     textTimer.restart()
   }
 
+  // An exact size, for the desktop scale presets; the stepper still walks.
+  function setTextSize(px) {
+    var next = Math.max(9, Math.min(20, Math.round(px)))
+    if (next === root.textPx) return
+    root.textPx = next
+    textTimer.restart()
+  }
+
   function resetTextSize() {
     textTimer.stop()
     root.textPx = 12

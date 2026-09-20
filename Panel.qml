@@ -122,13 +122,35 @@ Item {
 
   function saveUiState() {
     uiStateFile.setText(JSON.stringify({ motion: root.motion, feel: root.motionFeel,
-                                         speed: root.motionSpeed }, null, 2) + "\n")
+                                         speed: root.motionSpeed, panel: root.panelSize },
+                                       null, 2) + "\n")
   }
 
   function setMotion(on) {
     root.motion = on === true
     root.saveUiState()
     root.statusText = root.motion ? "Animations on" : "Animations off"
+  }
+
+  // How big Lacquer's own window is. Saved next to the motion settings.
+  property string panelSize: "normal"
+  readonly property var panelSizes: [
+    { value: "compact", label: "Compact", w: 720, h: 560 },
+    { value: "normal", label: "Normal", w: 880, h: 680 },
+    { value: "large", label: "Large", w: 1040, h: 820 },
+    { value: "full", label: "Full screen", w: 100000, h: 100000 }
+  ]
+
+  readonly property var panelSizeSpec: {
+    for (var i = 0; i < root.panelSizes.length; i++)
+      if (root.panelSizes[i].value === root.panelSize) return root.panelSizes[i]
+    return root.panelSizes[1]
+  }
+
+  function setPanelSize(id) {
+    root.panelSize = String(id || "normal")
+    root.saveUiState()
+    root.statusText = "Panel size: " + root.panelSizeSpec.label
   }
 
   function setMotionFeel(id, speed) {
@@ -169,6 +191,7 @@ Item {
           if (parsed && typeof parsed.motion === "boolean") root.motion = parsed.motion
           if (parsed && typeof parsed.feel === "string") root.motionFeel = parsed.feel
           if (parsed && Number(parsed.speed) > 0) root.motionSpeed = Number(parsed.speed)
+          if (parsed && typeof parsed.panel === "string") root.panelSize = parsed.panel
         } catch (e) { }
       }
       root.motionLoaded = true
@@ -284,6 +307,8 @@ Item {
       out.push({ id: look.id, group: "Windows", pane: "rows", icon: look.icon, title: look.title,
                  blurb: look.blurb, groups: look.groups })
     }
+    out.push({ id: "sizes", group: "Desktop", pane: "desktop", kind: "sizes", icon: "⤢", title: "Size",
+               blurb: "How big everything is: text, cursor, gaps, the bar \u2014 and this window." })
     out.push({ id: "borders", group: "Windows", pane: "desktop", kind: "borders", icon: "◰", title: "Borders & shape",
                blurb: "Window shape presets, and a border gradient built from your theme's own colours." })
     out.push({ id: "animations", group: "Windows", pane: "rows", icon: "󱐋", title: "Animations",
@@ -879,8 +904,8 @@ Item {
     BorderSurface {
       id: card
       anchors.centerIn: parent
-      width: Math.min(Style.space(880), window.width - Style.gapsOut * 4)
-      height: Math.min(Style.space(680), window.height - Style.gapsOut * 4)
+      width: Math.min(Style.space(root.panelSizeSpec.w), window.width - Style.gapsOut * 4)
+      height: Math.min(Style.space(root.panelSizeSpec.h), window.height - Style.gapsOut * 4)
       radius: Style.cornerRadius
       color: root.background
       borderSpec: Border.surfaceSpec("menu", "border", Color.menu.border, Math.max(1, Style.space(2)))
