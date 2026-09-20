@@ -23,7 +23,7 @@ Left alone, and listed so you can decide:
 
 Only files that carry Lacquer's own markers are deleted.
 """
-import os, re, shutil, subprocess, sys
+import json, os, re, shutil, subprocess, sys
 
 HOME = os.path.expanduser("~")
 OMARCHY = os.environ.get("OMARCHY_PATH") or "/usr/share/omarchy"
@@ -39,8 +39,24 @@ BLOCKS = [
     ("looknfeel.lua", "-- >>> lacquer managed block >>>", "-- <<< lacquer managed block <<<"),
     ("hyprland.lua", "-- >>> lacquer managed block >>>", "-- <<< lacquer managed block <<<"),
     ("autostart.lua", "-- >>> lacquer desktop block >>>", "-- <<< lacquer desktop block <<<"),
+    ("monitors.lua", "-- >>> lacquer monitors block >>>", "-- <<< lacquer monitors block <<<"),
 ]
+# Tools that were told to follow the theme (bat, delta, fzf) write their own
+# fenced blocks; app-theme takes each of them back out.
+APP_THEME = os.path.join(os.path.dirname(os.path.realpath(__file__)), "app-theme")
 MAX_BYTES = 4 * 1024 * 1024
+
+
+def themed_tools():
+    """Which of bat, delta and fzf were told to follow the theme."""
+    try:
+        out = subprocess.run(["python3", APP_THEME, "scan"], capture_output=True,
+                             text=True, timeout=30)
+        if out.returncode != 0:
+            return []
+        return [t["id"] for t in json.loads(out.stdout).get("tools", []) if t.get("on")]
+    except Exception:
+        return []
 
 
 def read(path):
@@ -125,6 +141,9 @@ def main(argv):
         actions.append(("Unpin GTK theme, colour scheme and icons, and re-apply the theme's own", None, "pins"))
     if cursor_saved:
         actions.append(("Set the cursor back to the default theme at 24 px", None, "cursor"))
+    themed = themed_tools()
+    if themed:
+        actions.append(("Take Lacquer's colours back out of " + ", ".join(themed), None, "tools"))
     if has_marker(HOOK, "# X-Lacquer-Managed=true"):
         actions.append(("Delete the theme-set hook " + HOOK.replace(HOME, "~"), HOOK, None))
     if has_marker(LAUNCHER, "X-Lacquer-Managed=true"):
@@ -143,6 +162,9 @@ def main(argv):
     kept.append("shell.toml and shell.json values set in Shell style, Bar, Plugins and Screensaver")
     kept.append("fonts and text size; terminal, btop and starship settings")
     kept.append("lock-explorer and OmaMenu settings")
+    kept.append("launcher entries you renamed, re-iconed or hid (undo each in App launcher)")
+    kept.append("the boot unlock screen, if you set one (Lock & boot puts Omarchy's default back)")
+    kept.append("Lacquer Shell, the optional companion, if it is installed")
     kept += ["backup: " + b.replace(HOME, "~") for b in backups]
 
     if not actions:
@@ -165,6 +187,9 @@ def main(argv):
                 run(["omarchy-theme-set-gnome"])
             elif payload == "cursor":
                 pass  # applied after the blocks are gone
+            elif payload == "tools":
+                for tool in themed:
+                    run(["python3", APP_THEME, "off", tool])
             elif isinstance(payload, str):
                 write(path, payload)
             elif os.path.isdir(path) and not os.path.islink(path):

@@ -9,12 +9,12 @@ One app for how your Omarchy desktop looks.
 
 | Group | Sections |
 |---|---|
-| Theme | Theme & wallpaper · Shuffle · Generate (aether) |
-| Desktop | Fonts & text · GTK & icons · Cursor · Nightlight |
-| Windows | Windows · Decoration · Effects · Groups · Animations · Curves |
+| Theme | Theme & wallpaper · Shuffle · Generate (aether) · **Motion** |
+| Desktop | Fonts & text · GTK & icons · Cursor · Nightlight · **Size** · **Displays** |
+| Windows | Windows · Decoration · Effects · Groups · **Borders & shape** · **Screen frame** · Animations · Curves |
 | Shell | Shell style · Bar · Menu look |
 | Screens | Lock & boot · Screensaver |
-| Apps | Terminals · btop & prompt · Plugins |
+| Apps | Terminals · btop & prompt · **App launcher** · **App windows** · Plugins |
 
 <table>
 <tr>
@@ -29,7 +29,7 @@ One app for how your Omarchy desktop looks.
 </tr>
 </table>
 
-> **Beta.** Lacquer has so far been used on one laptop (1080p, one screen,
+> **1.0.** Lacquer has so far been used on one laptop (1080p, one screen,
 > foot, mostly light themes). If yours is different (several screens,
 > scaling, a dark theme, kitty/ghostty/alacritty, no lock-explorer), please
 > try it and [open an issue](https://github.com/Deunnis/omarchy-lacquer/issues/new/choose)
@@ -67,6 +67,7 @@ Optional, for one section each:
 
 | Plugin | Adds |
 |---|---|
+| [Lacquer Shell](https://github.com/Deunnis/omarchy-lacquer-shell) | **Screen frame** (corners, frame, vignette, scanlines, grain) and an animated clone of the bar. Lacquer offers to install it when you open the section. |
 | [lock-explorer](https://github.com/SirJul1337/omarchy-lock-explorer) | **Lock & boot**: lock designs, unlock animation, clock and its own boot screens. Without it the section still sets when the screen locks and the boot unlock screen. |
 | [OmaMenu](https://github.com/Deunnis/OmaMenu) with Menu Look IPC | **Menu look**. Without it the section is not shown. |
 | [OmaShuffle](https://github.com/Deunnis/OmaShuffle) | Nothing extra: while it is installed, Lacquer's Shuffle stays out of its way. |
@@ -119,6 +120,22 @@ frames a second, the caret blinks without fading, and the miniature rests a
 few seconds between re-tiles: Home costs about 7 % of one core while open.
 
 ## Motion
+
+**Motion** (under Theme) is one pick for how the whole desktop moves. A *feel* —
+Calm, Standard, Expressive or Snappy — carries four bezier curves and a duration
+for every family of movement, and setting one writes Hyprland's animation curves
+and speeds for windows, layers, fades, workspaces and borders, sets the pace of
+Lacquer's own pages, and (with the companion installed) the bar's. A speed
+multiplier scales the whole feel without changing its shape. The shape of this
+is borrowed from Material 3's motion scheme.
+
+A feel is a starting point, not a mode: Animations and Curves still edit every
+value underneath, and the section says when they no longer match the feel.
+
+Curves a feel writes are its own (`lqEnter`, `lqExit`, `lqMove`, `lqEmphasis`),
+so a theme's curves are never overwritten.
+
+### Lacquer's own animations
 
 Switching sections glides the page in from the direction you moved along the
 rail, with a fade and a small settle; the rail's accent marker slides and
@@ -310,6 +327,48 @@ Terminal padding, cursor and background opacity go to every installed terminal
 with Fonts & text. btop's drawing options reload a running btop with SIGUSR2;
 `color_theme` is never touched. Starship's spacing and command timeout apply to
 the next prompt. A theme switch never rewrites any of these files.
+
+## Borders, sizes, screens and apps
+
+**Borders & shape** builds a gradient border that follows your theme. Lacquer
+still pins no colour: its block asks Hyprland for the border colour the theme
+just set (`hl.get_config`) and derives the second stop — lighter, darker,
+towards the unfocused colour, or a hue turn — so a theme switch re-derives it
+with nothing to re-apply. Hyprland can spin the angle on its own. Five shape
+presets (Sharp, Soft, Pill, Neon, Paper) set rounding, border width, shadow,
+glow and the gradient together, as one undo step.
+
+**Screen frame** needs the optional companion, [Lacquer
+Shell](https://github.com/Deunnis/omarchy-lacquer-shell): rounded display
+corners or brackets, a frame in the theme's accent, and a vignette, scanlines
+or grain. It is input-transparent, so the desktop underneath behaves exactly as
+before, and it draws once and then holds still. Lacquer offers to install it
+with Omarchy's own installer, in a terminal you watch, after a confirmation.
+The same plugin ships an animated clone of Omarchy's bar, whose pace follows
+the motion feel.
+
+**Size** moves text, cursor, gaps and the bar's height together
+(Small/Normal/Large/Huge), and sets how big Lacquer's own window opens.
+
+**Displays** sets resolution, refresh rate, scale and rotation. A change is
+applied live and reverts on its own within ten seconds unless you confirm it,
+and only a confirmed change is written — to its own fenced block in
+`hypr/monitors.lua`, through `monitors-write`.
+
+**App windows** writes per-app rules — float or tile, floating size, centring,
+workspace, opacity, and which effects to drop — as `o.window("^class$", …)`
+lines in Lacquer's block, the same shape as Omarchy's own app rules. Apps on
+screen are offered first.
+
+**App launcher** renames an app, changes its icon or hides it, by copying the
+packaged `.desktop` into `~/.local/share/applications/` and editing the copy.
+Lacquer only ever edits a copy it wrote; Undo deletes it and the packaged entry
+takes over again.
+
+**bat, delta and fzf** can follow the theme too (under btop & prompt). Omarchy
+already retints terminals, btop, helix, tmux, VS Code, Obsidian and the
+browsers; these three it does not. Each gets a fenced block in its own config,
+rewritten by the theme-set hook.
 
 ## The managed block
 
