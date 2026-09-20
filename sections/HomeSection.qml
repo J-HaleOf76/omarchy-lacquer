@@ -205,7 +205,7 @@ Item {
     fonts: ["Add a font", "Text size", "Terminal & code font", "Interface font size", "Interface font"],
     gtk: ["Light or dark apps", "GTK theme", "Icon theme"],
     cursor: ["Add a cursor theme", "Cursor theme", "Cursor size"],
-    motion: ["Motion feel", "Speed", "Lacquer's own animations"],
+    motion: ["Motion feel", "Speed", "Lacquer's own animations", "Bar motion", "What moves in the bar"],
     sizes: ["Desktop size", "Text size", "This window"],
     displays: ["Scale", "Rotation", "Keep this?"],
     frame: ["Screen frame", "Corners", "Frame width", "Vignette", "Scanlines", "Grain"],
