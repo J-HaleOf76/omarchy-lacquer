@@ -545,6 +545,14 @@ Item {
     section.app.statusText = preset.label + " \u00b7 " + preset.blurb
   }
 
+  // A gradient can only show on a border wide enough to see.
+  readonly property int borderWidth: {
+    var item = LookSchema.itemFor("general:border_size")
+    if (!item) return 1
+    var value = section.app.hypr.valueFor(item)
+    return value === undefined ? 1 : Number(value)
+  }
+
   readonly property var borderGroups: [
     {
       id: "shape", kind: "chips", title: "Window shape",
@@ -555,7 +563,10 @@ Item {
     {
       id: "gradient", kind: "chips", title: "Border gradient",
       note: "Lacquer never pins a colour: it asks Hyprland for the border colour your theme just set and builds the second stop from it, so the gradient re-derives itself on every theme switch."
-        + (section.app.borders.on ? "" : " Right now the border is the theme's flat colour."),
+        + (section.app.borders.on ? "" : " Right now the border is the theme's flat colour.")
+        + (section.borderWidth < 2
+           ? " Your window border is " + section.borderWidth + " px, so any gradient on it is nearly invisible \u2014 widen it under Window shape or in Windows."
+           : ""),
       current: section.app.borders.spec.mode,
       options: [{ value: "", label: "Theme colour" }, { value: "lighter", label: "Lighter" },
                 { value: "darker", label: "Darker" }, { value: "unfocused", label: "To unfocused" },
