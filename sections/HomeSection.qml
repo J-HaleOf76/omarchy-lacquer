@@ -119,6 +119,11 @@ Item {
     case "animations": return animationsOn ? "On · windows at " + Number(moveLeaf.speed).toFixed(1) : "Off"
     case "curves": return app.hypr.curveNames.length + " curves"
     case "sizes": return "Text " + app.desktop.textPx + " px"
+    case "displays":
+      var ms = app.monitors.monitors
+      if (!ms || ms.length === 0) return "Resolution, scale and placement"
+      return ms.length === 1 ? ms[0].width + "\u00d7" + ms[0].height + " \u00b7 " + Math.round(ms[0].refreshRate) + " Hz"
+                             : ms.length + " screens"
     case "borders":
       return app.borders.on ? app.borders.modeLabel + " \u00b7 " + app.borders.spec.angle + "\u00b0" : "Theme colour"
     case "motion":
@@ -193,6 +198,7 @@ Item {
     cursor: ["Add a cursor theme", "Cursor theme", "Cursor size"],
     motion: ["Motion feel", "Speed", "Lacquer's own animations"],
     sizes: ["Desktop size", "Text size", "This window"],
+    displays: ["Scale", "Rotation", "Keep this?"],
     borders: ["Window shape", "Border gradient", "Blend", "Gradient angle", "Spin the gradient", "Unfocused windows too", "Grouped windows too"],
     nightlight: ["Right now", "Schedule", "Warmer from", "Back to normal at", "Evening warmth"],
     lock: ["Lock screen", "Lock design", "Try it", "Unlock animation", "Unlock length", "Clock", "Blank the screen after", "Keep the display on while locked", "Lock after", "Boot unlock screen", "lock-explorer boot screen", "Build the boot screen"],

@@ -26,6 +26,7 @@ Item {
 
   function rescanAll() {
     if (kind === "motion" || kind === "borders") return
+    if (kind === "monitors") { section.app.monitors.rescan(); return }
     if (kind === "night") night.rescan()
     else if (kind === "lock" || kind === "screensaver") screens.rescan()
     else if (kind === "menu") menuLook.rescan()
@@ -116,6 +117,71 @@ Item {
       pick: function(v) { section.store.pin("icon-theme", v) }
     }
   ]
+
+  // ------------------------------------------------------------------ screens
+  //
+  // Nothing is written until a change has been confirmed: MonitorsStore applies
+  // it live and puts it back on its own if the countdown runs out, which is the
+  // only safe way to try a mode that might show nothing at all.
+  readonly property var mon: section.app.monitors
+
+  function monitorGroupsFor(m) {
+    var modes = section.mon.modesOf(m.name)
+    var scales = [1, 1.25, 1.5, 1.75, 2]
+    var current = section.mon.currentMode(m.name)
+    var label = m.name + (m.description ? "  \u00b7  " + m.description : "")
+    return [
+      {
+        id: "mode-" + m.name, kind: "chips", title: label,
+        note: "Resolution and refresh rate. " + m.width + "\u00d7" + m.height + " at "
+          + Math.round(m.refreshRate) + " Hz right now"
+          + (m.availableModes && m.availableModes.length ? ", " + modes.length + " to choose from." : "."),
+        current: current,
+        options: modes,
+        pick: function(v) { section.mon.propose(m.name, { mode: v }, m.name + " at " + v.replace("@", " @ ")) }
+      },
+      {
+        id: "scale-" + m.name, kind: "chips", title: "Scale",
+        note: "Everything is drawn this much bigger. Fractional scales can blur apps that do not handle them.",
+        current: Number(m.scale),
+        options: scales.map(function(s) { return { value: s, label: s === 1 ? "100 %" : Math.round(s * 100) + " %" } }),
+        pick: function(v) { section.mon.propose(m.name, { scale: v }, m.name + " at " + Math.round(v * 100) + " %") }
+      },
+      {
+        id: "transform-" + m.name, kind: "chips", title: "Rotation",
+        current: Number(m.transform || 0),
+        options: [{ value: 0, label: "None" }, { value: 1, label: "90\u00b0" },
+                  { value: 2, label: "180\u00b0" }, { value: 3, label: "270\u00b0" }],
+        pick: function(v) { section.mon.propose(m.name, { transform: v }, m.name + " rotated") }
+      }
+    ]
+  }
+
+  readonly property var monitorGroups: {
+    if (!section.mon.scanned) return []
+    var out = []
+    if (section.mon.asking) {
+      out.push({
+        id: "keep", kind: "chips", title: "Keep this?",
+        note: "Trying " + section.mon.pending.label + ". Without a Keep it goes back in "
+          + section.mon.countdown + " second" + (section.mon.countdown === 1 ? "" : "s")
+          + ", so a screen that went black comes back on its own.",
+        options: [{ value: "keep", label: "Keep it" }, { value: "revert", label: "Put it back" }],
+        pick: function(v) { if (v === "keep") section.mon.keep(); else section.mon.revert() }
+      })
+    }
+    for (var i = 0; i < section.mon.monitors.length; i++)
+      out = out.concat(section.monitorGroupsFor(section.mon.monitors[i]))
+    if (section.mon.managed) {
+      out.push({
+        id: "forget", kind: "chips", title: "Written by Lacquer",
+        note: "Your screen settings are in a Lacquer block in ~/.config/hypr/monitors.lua. Omarchy's own lines above it are untouched.",
+        options: [{ value: "forget", label: "Hand them back to Omarchy" }],
+        pick: function(v) { section.mon.forget() }
+      })
+    }
+    return out
+  }
 
   // ------------------------------------------------------------------ sizes
   //
@@ -768,6 +834,7 @@ Item {
       : section.kind === "motion" ? section.motionGroups
       : section.kind === "borders" ? section.borderGroups
       : section.kind === "sizes" ? section.sizeGroups
+      : section.kind === "monitors" ? section.monitorGroups
       : section.kind === "night" ? section.nightGroups
       : section.kind === "lock" ? section.lockGroups
       : section.kind === "screensaver" ? section.screensaverGroups
@@ -780,6 +847,7 @@ Item {
     anchors.centerIn: parent
     visible: section.kind === "night" ? !section.ns
       : section.kind === "sizes" ? !section.d
+      : section.kind === "monitors" ? !section.app.monitors.scanned
       : (section.kind === "lock" || section.kind === "screensaver") ? !section.sd
       : section.kind === "menu" ? !section.menuLook.probed
       : (section.kind === "terminal" || section.kind === "btop") ? !section.ai : !section.d

@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+"""Replace Lacquer's fenced block in ~/.config/hypr/monitors.lua.
+
+  monitors-write            the block's body arrives on stdin
+  monitors-write --clear    remove the block
+
+Everything outside the fences is kept byte for byte, so Omarchy's own lines
+and anything hand-written stay exactly as they are. The file is written
+through a temporary file in the same directory and renamed, so a crash
+mid-write cannot leave a half-written config behind.
+"""
+import os, sys, tempfile
+
+HOME = os.environ.get("HOME", "")
+PATH = os.path.join(HOME, ".config/hypr/monitors.lua")
+BEGIN = "-- >>> lacquer monitors block >>>"
+END = "-- <<< lacquer monitors block <<<"
+HEADER = "-- Written by Lacquer. Only what is between the fences is rewritten."
+READ_LIMIT = 1024 * 1024
+BODY_LIMIT = 64 * 1024
+
+
+def read_capped(path):
+    if not os.path.isfile(path) or os.path.getsize(path) > READ_LIMIT:
+        return None
+    with open(path, encoding="utf-8") as f:
+        text = f.read(READ_LIMIT + 1)
+    return text if len(text) <= READ_LIMIT else None
+
+
+def replace(text, block):
+    start = text.find(BEGIN)
+    if start < 0:
+        if not block:
+            return text
+        head = text if text.endswith("\n") or text == "" else text + "\n"
+        return head + "\n" + block + "\n"
+    end = text.find(END, start)
+    if end < 0:
+        # A begin fence with no end: treat the rest of the file as the block
+        # rather than guessing where it should have stopped.
+        end = len(text)
+        after = ""
+    else:
+        after = text[end + len(END):]
+        after = after[1:] if after.startswith("\n") else after
+    before = text[:start]
+    if not block:
+        return before.rstrip("\n") + ("\n" + after if after else "\n")
+    return before + block + ("\n" + after if after else "\n")
+
+
+def main():
+    clear = "--clear" in sys.argv[1:]
+    body = "" if clear else sys.stdin.read(BODY_LIMIT + 1)
+    if len(body) > BODY_LIMIT:
+        sys.exit("monitors-write: too much to write")
+    body = body.strip("\n")
+    text = read_capped(PATH)
+    if text is None:
+        sys.exit("monitors-write: cannot read " + PATH)
+    block = "" if not body else BEGIN + "\n" + HEADER + "\n" + body + "\n" + END
+    updated = replace(text, block)
+    if updated == text:
+        return
+    folder = os.path.dirname(PATH)
+    fd, tmp = tempfile.mkstemp(dir=folder, prefix=".monitors-lacquer-")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(updated)
+        os.chmod(tmp, 0o644)
+        os.replace(tmp, PATH)
+    except Exception:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+        raise
+
+
+if __name__ == "__main__":
+    main()

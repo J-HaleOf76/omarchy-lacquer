@@ -367,6 +367,46 @@ function renderBorders(spec) {
   return kept.join("\n")
 }
 
+// ------------------------------------------------------------------ monitors
+//
+// Monitor settings live in their own fenced block in hypr/monitors.lua, after
+// Omarchy's shipped `hl.monitor({ output = "", ... })` catch-all, so a named
+// monitor here wins while anything Lacquer does not name keeps following it.
+
+var MONITORS_BEGIN = "-- >>> lacquer monitors block >>>"
+var MONITORS_END = "-- <<< lacquer monitors block <<<"
+
+function renderMonitor(m) {
+  var parts = ["output = " + quote(m.name)]
+  if (m.disabled === true) {
+    parts.push("disabled = true")
+    return "hl.monitor({ " + parts.join(", ") + " })"
+  }
+  parts.push("mode = " + quote(m.mode || "preferred"))
+  parts.push("position = " + quote(m.position || "auto"))
+  parts.push("scale = " + num(m.scale === undefined ? 1 : m.scale, 6))
+  if (Number(m.transform)) parts.push("transform = " + Math.round(Number(m.transform)))
+  return "hl.monitor({ " + parts.join(", ") + " })"
+}
+
+function renderMonitorsBody(list) {
+  var lines = []
+  for (var i = 0; i < (list || []).length; i++)
+    if (list[i] && list[i].name) lines.push(renderMonitor(list[i]))
+  return lines.join("\n")
+}
+
+function renderMonitorsBlock(body) {
+  var header = MONITORS_BEGIN + "\n"
+    + "-- Written by Lacquer. Only what is between the fences is rewritten.\n"
+  if (!body) return header + MONITORS_END
+  return header + body + "\n" + MONITORS_END
+}
+
+function applyMonitorsBlock(text, body) {
+  return applyFences(text, body, MONITORS_BEGIN, MONITORS_END, renderMonitorsBlock(body))
+}
+
 function renderBlock(body) {
   var header = BEGIN_FENCE + "\n"
     + "-- Written by Lacquer. Safe to hand-edit: Lacquer re-reads this block\n"

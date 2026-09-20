@@ -47,6 +47,7 @@ Item {
   MenuLookStore { id: menuLookStore; app: root; Component.onCompleted: rescan() }
   MotionStore { id: motionStore; app: root }
   BordersStore { id: bordersStore; app: root }
+  MonitorsStore { id: monitorsStore; app: root }
 
   // Sections can appear after load (Menu look, once OmaMenu answers); keep the
   // page the user is on rather than the index it used to have.
@@ -71,6 +72,7 @@ Item {
   readonly property alias theme: themeStore
   readonly property alias feel: motionStore
   readonly property alias borders: bordersStore
+  readonly property alias monitors: monitorsStore
   readonly property alias aether: aetherStore
   readonly property alias desktop: desktopStore
   readonly property alias night: nightStore
@@ -300,15 +302,17 @@ Item {
       { id: "cursor", group: "Desktop", pane: "desktop", kind: "cursor", icon: "󰇀", title: "Cursor",
         blurb: "Pointer theme and size, applied live and kept across restarts." },
       { id: "nightlight", group: "Desktop", pane: "desktop", kind: "night", icon: "󰖔", title: "Nightlight",
-        blurb: "A warmer screen now, or every evening on a schedule." }
+        blurb: "A warmer screen now, or every evening on a schedule." },
+      { id: "sizes", group: "Desktop", pane: "desktop", kind: "sizes", icon: "⤢", title: "Size",
+        blurb: "How big everything is: text, cursor, gaps, the bar \u2014 and this window." },
+      { id: "displays", group: "Desktop", pane: "desktop", kind: "monitors", icon: "▣", title: "Displays",
+        blurb: "Resolution, refresh rate, scale and rotation of each screen \u2014 tried first, kept only if you say so." }
     ]
     for (var i = 0; i < LookSchema.SECTIONS.length; i++) {
       var look = LookSchema.SECTIONS[i]
       out.push({ id: look.id, group: "Windows", pane: "rows", icon: look.icon, title: look.title,
                  blurb: look.blurb, groups: look.groups })
     }
-    out.push({ id: "sizes", group: "Desktop", pane: "desktop", kind: "sizes", icon: "⤢", title: "Size",
-               blurb: "How big everything is: text, cursor, gaps, the bar \u2014 and this window." })
     out.push({ id: "borders", group: "Windows", pane: "desktop", kind: "borders", icon: "◰", title: "Borders & shape",
                blurb: "Window shape presets, and a border gradient built from your theme's own colours." })
     out.push({ id: "animations", group: "Windows", pane: "rows", icon: "󱐋", title: "Animations",
