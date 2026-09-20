@@ -60,6 +60,14 @@ def write_text(path, text):
     # then emptied; take it away rather than leaving litter behind.
     if text.strip() == "" and os.path.isfile(path):
         os.remove(path)
+        # And the folder it lived in, when Lacquer made it and nothing else is
+        # in it.
+        folder = os.path.dirname(path)
+        if folder == GEN_DIR:
+            try:
+                os.rmdir(folder)
+            except OSError:
+                pass
         return
     if text.strip() == "":
         return

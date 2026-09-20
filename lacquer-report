@@ -21,5 +21,30 @@ echo
 echo "### Third-party plugins"
 t omarchy plugin list | grep -i 'third-party' | awk '{print "  " $1 "  " $2}'
 echo
+echo "### What Lacquer is set to"
+state="$HOME/.local/state/omarchy/io.github.deunnis.lacquer"
+ui=$(t "$plugin/read-state" "$state/ui.json" 4096)
+echo "motion:   $(printf '%s' "$ui" | t jq -r '"feel " + (.feel // "none") + " x" + ((.speed // 1) | tostring) + ", app animations " + (if .motion == false then "off" else "on" end) + ", panel " + (.panel // "normal")' || echo unknown)"
+borders=$(t "$plugin/read-state" "$state/borders.json" 4096)
+echo "borders:  $(printf '%s' "$borders" | t jq -r 'if (.mode // "") == "" then "theme colour" else .mode + " at " + ((.angle // 0) | tostring) + " deg" end' || echo "theme colour")"
+rules=$(t "$plugin/read-state" "$state/rules.json" 65536)
+echo "app rules: $(printf '%s' "$rules" | t jq -r 'length' || echo 0)"
+echo "themed tools: $(t python3 "$plugin/app-theme" scan | t jq -r '[.tools[] | select(.on) | .name] | if length == 0 then "none" else join(", ") end' || echo none)"
+echo "launcher entries changed: $(t python3 "$plugin/launcher-entry" scan | t jq -r '[.apps[] | select(.managed)] | length' || echo 0)"
+echo "boot unlock screen: $(t python3 "$plugin/unlock-screen" scan | t jq -r '.onBoot // "unknown"' || echo unknown)"
+echo "monitors block: $(grep -q 'lacquer monitors block' "$HOME/.config/hypr/monitors.lua" 2>/dev/null && echo yes || echo no)"
+
+echo
+echo "### Companion (Lacquer Shell)"
+if t omarchy-shell lacquer.shell ping | grep -q lacquer.shell; then
+  echo "installed: yes"
+  echo "frame:     $(t omarchy-shell lacquer.shell frame || echo unknown)"
+  echo "bar:       $(t omarchy-shell lacquer.shell motion || echo unknown)"
+  echo "bar in use: $(t omarchy plugin list | grep -q '^omarchy.bar *disabled' && echo "Lacquer's" || echo "Omarchy's")"
+else
+  echo "installed: no"
+fi
+
+echo
 echo "### Recent Lacquer log lines (last 30 minutes)"
 t journalctl --user --since "30 min ago" --no-pager -o cat | grep -i 'lacquer' | grep -v 'DEBUG' | tail -n 40 | sed 's/^/  /'

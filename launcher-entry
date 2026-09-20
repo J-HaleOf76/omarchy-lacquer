@@ -21,6 +21,9 @@ SYSTEM_DIRS = ["/usr/share/applications", "/usr/local/share/applications",
                "/var/lib/flatpak/exports/share/applications",
                os.path.join(HOME, ".local/share/flatpak/exports/share/applications")]
 MARKER = "X-Lacquer-Managed=true"
+# Lacquer installs its own launcher entry with the same marker; it is not
+# something the user changed, so it is not counted as one.
+OWN = "lacquer.desktop"
 ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$")
 READ_LIMIT = 256 * 1024
 MAX_ENTRIES = 2000
@@ -67,7 +70,7 @@ def describe(entry):
         "name": field(text, "Name") or entry["id"].replace(".desktop", ""),
         "icon": field(text, "Icon"),
         "hidden": field(text, "NoDisplay").lower() == "true",
-        "managed": entry.get("mine", False),
+        "managed": entry.get("mine", False) and entry["id"] != OWN,
         "packaged": not entry["path"].startswith(USER_DIR),
     }
 

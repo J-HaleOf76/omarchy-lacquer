@@ -209,7 +209,7 @@ Item {
   readonly property var launcherGroups: {
     var store = section.app.launcher
     if (!store.scanned) return []
-    var app = store.current
+    var entry = store.current
     var out = [{
       id: "which-launcher-app", kind: "chips", title: "App",
       note: store.changedCount === 0
@@ -221,27 +221,27 @@ Item {
       }),
       pick: function(v) { store.picked = v }
     }]
-    if (!app) return out
+    if (!entry) return out
     out.push({
       id: "launcher-name", kind: "text", title: "Name",
       note: "What the launcher calls it. Enter to save.",
-      value: app.name, placeholder: "Name in the launcher",
-      commit: function(v) { if (v && v !== app.name) store.set("name", v, "Renamed to " + v) }
+      value: entry.name, placeholder: "Name in the launcher",
+      commit: function(v) { if (v && v !== entry.name) store.set("name", v, "Renamed to " + v) }
     })
     out.push({
       id: "launcher-icon", kind: "chips", title: "Icon",
-      note: app.icon ? "Now: " + app.icon : "This app has no icon of its own.",
+      note: entry.icon ? "Now: " + entry.icon : "This app has no icon of its own.",
       options: [{ value: "pick", label: "Choose an image\u2026" }],
       pick: function(v) { store.pickIcon() }
     })
     out.push({
       id: "launcher-hidden", kind: "chips", title: "In the launcher",
       note: "Hidden apps still run; they just stop cluttering the list.",
-      current: app.hidden ? "hidden" : "shown",
+      current: entry.hidden ? "hidden" : "shown",
       options: [{ value: "shown", label: "Show it" }, { value: "hidden", label: "Hide it" }],
       pick: function(v) { store.set("hidden", v === "hidden" ? "on" : "off", v === "hidden" ? "Hidden from the launcher" : "Back in the launcher") }
     })
-    if (app.managed) {
+    if (entry.managed) {
       out.push({
         id: "launcher-reset", kind: "chips", title: "Undo",
         note: "Deletes Lacquer's copy; the packaged entry takes over again.",
