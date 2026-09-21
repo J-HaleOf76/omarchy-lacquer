@@ -50,6 +50,18 @@ adds its own launcher entry. From a terminal or a keybinding:
 
 Update with `omarchy plugin update io.github.deunnis.lacquer`.
 
+Lacquer also answers directly, whether or not the panel is open:
+
+    omarchy-shell lacquer open '{"section":"theme"}'   # or close, toggle
+    omarchy-shell lacquer showSection borders
+    omarchy-shell lacquer currentTheme
+    omarchy-shell lacquer applyTheme gruvbox
+    omarchy-shell lacquer setWallpaper ~/.local/state/omarchy/current/theme/backgrounds/…
+    omarchy-shell lacquer shuffleStatus
+
+A theme name that is not a theme, a section that is not a section and a
+wallpaper outside the current theme are all refused.
+
 **What happens without you changing anything:** enabling the plugin adds its
 launcher entry and a theme-switch hook (which does nothing until you pin a GTK
 or icon choice). The first time the app opens it copies `looknfeel.lua`,

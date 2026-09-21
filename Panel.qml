@@ -1620,27 +1620,6 @@ Item {
     }
   }
 
-  IpcHandler {
-    target: "lacquer"
-    function open(): void { root.open("{}") }
-    function close(): void { root.close(); root.dismiss() }
-    function toggle(): void { root.toggle() }
-    function applyTheme(slug: string): void { themeStore.apply(slug) }
-    // Only a wallpaper Lacquer itself lists for the active theme.
-    function setWallpaper(path: string): void {
-      var list = themeStore.wallpapers || []
-      for (var i = 0; i < list.length; i++)
-        if (list[i].path === path) { themeStore.setWallpaper(path); return }
-    }
-    function currentTheme(): string { return themeStore.current }
-    function showSection(id: string): bool { return root.showSectionById(id) }
-    function shuffleStatus(): string {
-      var e = root.shuffle
-      if (!e) return JSON.stringify({ engine: null })
-      return JSON.stringify({ dormant: e.dormant, active: e.active, stateLoaded: e.stateLoaded,
-                              bootEnabled: e.st.enabled, dayNight: e.st.schedule.enabled,
-                              pool: (e.st.pool || []).length, themes: e.themes.length,
-                              lastBootId: e.st.lastBootId, currentBootId: e.currentBootId })
-    }
-  }
+  // The IPC handler lives in Service.qml: the service is always loaded, so a
+  // script does not have to open the panel before it can ask Lacquer anything.
 }

@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import "stores"
 
 // Installs the launcher entry, so the panel is reachable from SUPER+SPACE
@@ -19,6 +20,79 @@ QtObject {
   // once it has been opened, and a shuffle has to act on boot and at sunset
   // whether or not anyone opens Lacquer.
   readonly property ShuffleEngine shuffle: ShuffleEngine { }
+
+  readonly property string pluginId: (manifest && manifest.id) ? String(manifest.id)
+                                                               : "io.github.deunnis.lacquer"
+
+  // Lacquer's IPC lives here rather than in the panel, because the panel only
+  // exists once it has been opened: a keybinding or a script that asks Lacquer
+  // to do something should not depend on someone having opened it first.
+  //
+  //   omarchy-shell lacquer open '{"section":"theme"}'
+  //   omarchy-shell lacquer applyTheme gruvbox
+  //   omarchy-shell lacquer currentTheme
+  //   omarchy-shell lacquer shuffleStatus
+  //
+  // Opening and closing go through the host (shell.summon/hide), which is what
+  // `omarchy-shell shell summon io.github.deunnis.lacquer` does too.
+  // A QtObject has no default property, so the handler is held by name.
+  readonly property IpcHandler ipc: IpcHandler {
+    target: "lacquer"
+
+    function open(payload: string): string {
+      if (!root.shell) return "the shell did not hand Lacquer its panel api"
+      root.shell.summon(root.pluginId, payload && payload.length > 0 ? payload : "{}")
+      return "ok"
+    }
+
+    function close(): string {
+      if (!root.shell) return "the shell did not hand Lacquer its panel api"
+      root.shell.hide(root.pluginId)
+      return "ok"
+    }
+
+    function toggle(): string {
+      if (!root.shell) return "the shell did not hand Lacquer its panel api"
+      root.shell.toggle(root.pluginId, "{}")
+      return "ok"
+    }
+
+    // Open on one page. The name is the section's id, as listed in the README.
+    function showSection(id: string): string {
+      if (!/^[a-z]+$/.test(String(id))) return "no section called " + id
+      return open(JSON.stringify({ section: String(id) }))
+    }
+
+    function currentTheme(): string {
+      return root.shuffle ? root.shuffle.currentThemeSlug : ""
+    }
+
+    // A theme by its folder name, the way `omarchy theme set` takes it.
+    function applyTheme(slug: string): string {
+      if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(String(slug))) return "no theme called " + slug
+      Quickshell.execDetached(["omarchy-theme-set", String(slug)])
+      return "ok"
+    }
+
+    // Only a wallpaper of the theme that is on: anything else is refused, so a
+    // stray call cannot point the desktop at an arbitrary file.
+    function setWallpaper(path: string): string {
+      var backgrounds = Quickshell.env("HOME") + "/.local/state/omarchy/current/theme/backgrounds/"
+      var real = String(path)
+      if (real.indexOf(backgrounds) !== 0 || real.indexOf("..") >= 0) return "not a wallpaper of the current theme"
+      Quickshell.execDetached(["omarchy-theme-bg-set", real])
+      return "ok"
+    }
+
+    function shuffleStatus(): string {
+      var e = root.shuffle
+      if (!e) return JSON.stringify({ engine: null })
+      return JSON.stringify({ dormant: e.dormant, active: e.active, stateLoaded: e.stateLoaded,
+                              bootEnabled: e.st.enabled, dayNight: e.st.schedule.enabled,
+                              pool: (e.st.pool || []).length, themes: e.themes.length,
+                              lastBootId: e.st.lastBootId, currentBootId: e.currentBootId })
+    }
+  }
 
   // 4.0.3 strips __sourceDir from every third-party manifest
   // (shell.qml publicPluginManifest), so the plugin's own directory has to come
