@@ -59,5 +59,22 @@ def main(argv):
     return 0
 
 
+def _refused(err):
+    """A readable line for a write the filesystem would not allow.
+
+    A read-only ~/.config (home-manager and friends put one there), a file made
+    immutable, or a full disk all arrive here as an OSError. The panel shows
+    whatever comes back on stderr, and a Python traceback is no use to anybody.
+    """
+    home = os.environ.get("HOME", "")
+    where = os.path.dirname(getattr(err, "filename", "") or "") or "that folder"
+    return ("Could not write in %s: %s. Lacquer stopped there.\n"
+            "A read-only folder, an immutable file or a full disk will do this."
+            % (where.replace(home, "~") if home else where, err.strerror or err))
+
+
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    try:
+        sys.exit(main(sys.argv[1:]))
+    except OSError as err:
+        sys.exit(_refused(err))

@@ -207,10 +207,27 @@ def is_on(tool):
     return BEGIN in text
 
 
+def writable(path):
+    """Whether this file could be written where it is."""
+    target = os.path.realpath(path)
+    if os.path.exists(target):
+        return os.access(target, os.W_OK) and os.access(os.path.dirname(target), os.W_OK)
+    folder = os.path.dirname(target)
+    while folder and not os.path.exists(folder):
+        folder = os.path.dirname(folder)
+    return bool(folder) and os.access(folder, os.W_OK)
+
+
 def apply(tool, on):
     spec = TOOLS[tool]
     text = read_or_refuse(spec["path"])
     rc = read_or_refuse(BASHRC) if spec.get("sourced") else None
+    # fzf is switched on by writing two files. Check both before writing
+    # either, so a refusal never leaves one written and the other not.
+    for path in [spec["path"]] + ([BASHRC] if spec.get("sourced") else []):
+        if not writable(path):
+            raise SystemExit("%s cannot be written. Nothing was changed."
+                             % path.replace(HOME, "~"))
     body = spec["body"](colors()) if on else ""
     write_text(spec["path"], replace_block(text, body))
     if spec.get("sourced"):
@@ -257,5 +274,22 @@ def main():
         sys.exit(__doc__)
 
 
+def _refused(err):
+    """A readable line for a write the filesystem would not allow.
+
+    A read-only ~/.config (home-manager and friends put one there), a file made
+    immutable, or a full disk all arrive here as an OSError. The panel shows
+    whatever comes back on stderr, and a Python traceback is no use to anybody.
+    """
+    home = os.environ.get("HOME", "")
+    where = os.path.dirname(getattr(err, "filename", "") or "") or "that folder"
+    return ("Could not write in %s: %s. Lacquer stopped there.\n"
+            "A read-only folder, an immutable file or a full disk will do this."
+            % (where.replace(home, "~") if home else where, err.strerror or err))
+
+
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except OSError as err:
+        sys.exit(_refused(err))
