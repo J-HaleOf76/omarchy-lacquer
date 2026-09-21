@@ -47,4 +47,17 @@ fi
 
 echo
 echo "### Recent Lacquer log lines (last 30 minutes)"
-t journalctl --user --since "30 min ago" --no-pager -o cat | grep -i 'lacquer' | grep -v 'DEBUG' | tail -n 40 | sed 's/^/  /'
+# Your home folder is written as ~ so the report does not carry your user name
+# into a public issue. A log line can still hold the name of a file you picked
+# — a wallpaper, a font — so the last line says to read them before posting.
+lines=$(t journalctl --user --since "30 min ago" --no-pager -o cat \
+  | sed 's/\x1b\[[0-9;]*m//g' \
+  | grep -i 'lacquer' | grep -v 'DEBUG' | tail -n 40 \
+  | sed "s|$HOME|~|g" | sed 's/^/  /')
+if [ -n "$lines" ]; then
+  printf '%s\n' "$lines"
+  echo
+  echo "(Read the lines above before posting: one can name a file you picked.)"
+else
+  echo "  (none)"
+fi
