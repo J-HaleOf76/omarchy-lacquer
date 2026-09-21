@@ -21,6 +21,10 @@ QtObject {
   // whether or not anyone opens Lacquer.
   readonly property ShuffleEngine shuffle: ShuffleEngine { }
 
+  // The pages the panel has, as it reports them when it is first built. Empty
+  // until then, which showSection treats as "cannot tell yet".
+  property var knownSections: []
+
   readonly property string pluginId: (manifest && manifest.id) ? String(manifest.id)
                                                                : "io.github.deunnis.lacquer"
 
@@ -59,8 +63,14 @@ QtObject {
 
     // Open on one page. The name is the section's id, as listed in the README.
     function showSection(id: string): string {
-      if (!/^[a-z]+$/.test(String(id))) return "no section called " + id
-      return open(JSON.stringify({ section: String(id) }))
+      var name = String(id)
+      if (!/^[a-z]+$/.test(name)) return "no section called " + name
+      // The panel hands over its list of pages the first time it is built;
+      // until then an unknown name is taken on trust rather than refused, and
+      // the panel falls back to Home as it always did.
+      if (root.knownSections.length > 0 && root.knownSections.indexOf(name) < 0)
+        return "no section called " + name
+      return open(JSON.stringify({ section: name }))
     }
 
     function currentTheme(): string {

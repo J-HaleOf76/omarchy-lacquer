@@ -1595,7 +1595,23 @@ Item {
     }
   }
 
-  Component.onCompleted: backupProc.running = true
+  // Tell the service which pages exist, so its showSection can refuse a name
+  // that is not one of them instead of quietly falling back to Home. The panel
+  // is the only place the list is written down. The host sets `shell` after
+  // building the panel, so this runs again when the service turns up.
+  function publishSections() {
+    if (!root.service) return
+    var ids = []
+    for (var i = 0; i < root.sections.length; i++) ids.push(root.sections[i].id)
+    root.service.knownSections = ids
+  }
+
+  onServiceChanged: root.publishSections()
+
+  Component.onCompleted: {
+    backupProc.running = true
+    root.publishSections()
+  }
 
   // OmaShuffle's service builds its launcher-entry path from manifest.__sourceDir,
   // which Omarchy 4.0.3 strips from third-party manifests, so its removal can
