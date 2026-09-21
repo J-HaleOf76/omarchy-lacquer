@@ -243,7 +243,7 @@ Item {
     })
     if (entry.managed) {
       out.push({
-        id: "launcher-reset", kind: "chips", title: "Undo",
+        id: "launcher-reset", kind: "chips", title: "Reset this entry",
         note: "Deletes Lacquer's copy; the packaged entry takes over again.",
         options: [{ value: "reset", label: "Back to how it was packaged" }],
         pick: function(v) { store.reset() }
