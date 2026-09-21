@@ -57,6 +57,10 @@ Item {
   // page the user is on rather than the index it used to have.
   property string currentSectionId: "home"
   onSectionsChanged: {
+    // Menu look only joins the list once OmaMenu has answered its probe, so
+    // the service is told again here or that page would stay unknown to
+    // showSection.
+    root.publishSections()
     for (var i = 0; i < root.sections.length; i++) {
       if (root.sections[i].id !== root.currentSectionId) continue
       if (i !== root.sectionIndex) { root.lastSectionIndex = i; root.sectionIndex = i }
