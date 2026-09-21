@@ -19,7 +19,8 @@ Left alone, and listed so you can decide:
   - fonts and text size (set through Omarchy's own commands)
   - terminal, btop and starship lines
   - lock-explorer and OmaMenu settings (they belong to those plugins)
-  - the *.lacquer-backup-* copies made on first run
+  - the *.lacquer-backup-* copies made on first run (and the *.omastyle-backup-*
+    ones, if Lacquer was installed back when it was called Omastyle)
 
 Only files that carry Lacquer's own markers are deleted.
 """
@@ -156,7 +157,10 @@ def main(argv):
     backups = []
     for folder in (HYPR, os.path.join(HOME, ".config/omarchy")):
         try:
-            backups += [os.path.join(folder, f) for f in sorted(os.listdir(folder)) if ".lacquer-backup-" in f]
+            # ".omastyle-backup-" too: Lacquer was called Omastyle until
+            # September 2026, and the first-run copies keep the old name.
+            backups += [os.path.join(folder, f) for f in sorted(os.listdir(folder))
+                        if ".lacquer-backup-" in f or ".omastyle-backup-" in f]
         except OSError:
             pass
     kept.append("shell.toml and shell.json values set in Shell style, Bar, Plugins and Screensaver")
