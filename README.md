@@ -27,6 +27,11 @@ One app for how your Omarchy desktop looks.
 <td><img src="docs/media/curves.webp" alt="Curves: drag the bezier handles of an animation curve"><br><sub><b>Curves</b>: drag a bezier, every animation follows</sub></td>
 <td><img src="docs/media/menu-look.webp" alt="Menu look: size, corner radius, border and transparency of the Omarchy menu"><br><sub><b>Menu look</b>: size, corners, border, transparency</sub></td>
 </tr>
+<tr>
+<td><img src="docs/media/motion.webp" alt="Motion: one feel for the whole desktop, with a speed multiplier"><br><sub><b>Motion</b>: one feel for the whole desktop</sub></td>
+<td><img src="docs/media/borders.webp" alt="Borders and shape: window shape presets and a border gradient from the theme"><br><sub><b>Borders &amp; shape</b>: gradients from your theme</sub></td>
+<td><img src="docs/media/displays.webp" alt="Displays: resolution, refresh rate, scale and rotation with a countdown revert"><br><sub><b>Displays</b>: kept only if you confirm</sub></td>
+</tr>
 </table>
 
 > **1.0.** Lacquer has so far been used on one laptop (1080p, one screen,
@@ -118,7 +123,7 @@ Lacquer opens on **Home** (a `section` in the summon payload opens elsewhere):
   following focus. Change a setting and the miniature follows.
 - **The theme's palette** as soft discs drifting behind the page, and a
   swatch row that ripples.
-- **Search across every setting** (310 today: look & feel rows, animation
+- **Search across every setting** (355 today: look & feel rows, animation
   leaves, shell.toml tokens, and the groups of the Desktop, Screens and Apps
   views). Just start typing; Enter opens the section with the cursor on the
   match.
