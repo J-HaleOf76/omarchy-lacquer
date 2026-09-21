@@ -160,7 +160,9 @@ Item {
 
                   Text {
                     width: parent.width
-                    text: widgetCard.descriptor ? widgetCard.descriptor.displayName : widgetCard.widgetId
+                    // A widget from another plugin need not name itself; its
+                    // id is a better label than nothing.
+                    text: (widgetCard.descriptor && widgetCard.descriptor.displayName) || widgetCard.widgetId
                     color: app.foreground
                     font.family: app.fontFamily
                     font.pixelSize: Style.font.body

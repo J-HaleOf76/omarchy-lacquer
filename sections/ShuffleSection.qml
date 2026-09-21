@@ -17,7 +17,9 @@ Item {
   required property var app
 
   readonly property var engine: app.shuffle
-  readonly property bool ready: engine !== null && engine.stateLoaded
+  // === true, because the engine belongs to another plugin: a version without
+  // this property must read as "not ready", not as undefined.
+  readonly property bool ready: engine !== null && engine.stateLoaded === true
   readonly property bool live: !!(ready && engine.active)
   readonly property var st: ready ? engine.st : null
 
