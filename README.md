@@ -65,7 +65,10 @@ Lacquer also answers directly, whether or not the panel is open:
     omarchy-shell lacquer shuffleStatus
 
 A theme name that is not a theme, a section that is not a section and a
-wallpaper outside the current theme are all refused.
+wallpaper outside the current theme are all refused, and say so instead of
+answering `ok`. `setWallpaper` checks where the file is, not that it is there:
+a name that does not exist inside the current theme's backgrounds folder is
+handed to Omarchy and quietly does nothing.
 
 **What happens without you changing anything:** enabling the plugin adds its
 launcher entry and a theme-switch hook (which does nothing until you pin a GTK
