@@ -80,10 +80,13 @@ def write_text(path, text):
     # it points at and leave the link where the manager put it.
     if text.strip() == "" and os.path.isfile(path) and not os.path.islink(path):
         os.remove(path)
-        # And the folder it lived in, when Lacquer made it and nothing else is
-        # in it.
+        # And the folder it lived in, when nothing else is in it: switching a
+        # tool on can create ~/.config/bat, and switching it off again should
+        # not leave an empty one behind. Only a folder directly inside
+        # ~/.config is considered, so a home folder is never a candidate, and
+        # rmdir refuses anything that still has something in it.
         folder = os.path.dirname(path)
-        if folder == GEN_DIR:
+        if folder == GEN_DIR or os.path.dirname(folder) == os.path.join(HOME, ".config"):
             try:
                 os.rmdir(folder)
             except OSError:
