@@ -81,7 +81,9 @@ turn it on.
 
 - **Omarchy 4** (Quattro), with its Lua Hyprland config.
 - Everything else Lacquer calls ships with Omarchy: `aether`, `jq`, `lua`,
-  `python3`, `libvips`, `gsettings`, `hyprsunset`.
+  `python3`, `gsettings`, `hyprsunset`, and `imagemagick` for the boot unlock
+  screen's logo (that one page says so and stops if it is missing; nothing
+  else needs it).
 
 Optional, for one section each:
 
@@ -555,6 +557,8 @@ so the plugin directory comes from `Qt.resolvedUrl(".")` instead.
 
 | | |
 |---|---|
+| `manifest.json` | what the plugin is: its panel and service entry points |
+| `lacquer.desktop` | the launcher entry the service installs |
 | `Panel.qml` | the app: state, live preview, persistence, undo, Omaland import |
 | `ConfigRow.qml` | one look-and-feel option |
 | `LeafRow.qml` | one animation leaf |
@@ -566,10 +570,11 @@ so the plugin directory comes from `Qt.resolvedUrl(".")` instead.
 | `TomlEdit.js` | comment-preserving line editor for shell.toml |
 | `scan-plugins.py` | reads every installed plugin manifest off disk |
 | `AnimSchema.js` | the catalogue of animation leaves |
-| `StyleLua.js` | renders and parses the managed block |
+| `StyleLua.js` | renders and parses the managed block, the border gradient, the window rules and the monitor lines |
+| `MotionTokens.js` | the motion feels: curve families, durations and the leaves each one drives |
 | `read.lua` | recording stubs that report what a Lua chunk declares |
 | `Service.qml` | launcher entry, theme-set hook, Shuffle engine, reopen after a font restart |
-| `stores/` | one non-visual store per area: Hypr, ShellToml, ShellJson, Theme, ShuffleEngine, Aether, Desktop, Night, Screens, MenuLook, Apps |
+| `stores/` | one non-visual store per area: Hypr, ShellToml, ShellJson, Theme, ShuffleEngine, Aether, Desktop, Night, Screens, MenuLook, Apps, Motion, Borders, Monitors, Rules, Launcher, Tools, Companion |
 | `sections/HomeSection.qml` | Home: miniature, palette, search index, summary cards |
 | `sections/` | one view per pane; `ChoicePane.qml` renders the chip, stepper, icon, font, art and card groups shared by Desktop, Screens and Apps |
 | `ShuffleDeck.js`, `SunTimes.js` | OmaShuffle's deck and sunrise maths |
@@ -580,6 +585,12 @@ so the plugin directory comes from `Qt.resolvedUrl(".")` instead.
 | `shell-json-set` | one top-level `shell.json` key from a fresh read |
 | `lacquer-reapply.hook` | copied into `hooks/theme-set.d/` |
 | `lacquer-cleanup` | undoes Lacquer's changes before removal |
+| `app-theme` | the fenced block that makes bat, delta and fzf follow the theme |
+| `launcher-entry` | renames, re-icons or hides an app, in a copy of its `.desktop` |
+| `monitors-write` | owns the fenced block in `hypr/monitors.lua` |
+| `add-asset` | unpacks a picked font or cursor theme into place |
+| `unlock-screen`, `unlock-apply` | build and install the boot unlock screen for any theme |
+| `read-state` | a bounded reader for Lacquer's own state files |
 | `lacquer-report` | prints setup details and recent log lines for a bug report |
 
 ## Credits
