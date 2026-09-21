@@ -417,6 +417,8 @@ function renderBorders(spec) {
 // Omarchy's shipped `hl.monitor({ output = "", ... })` catch-all, so a named
 // monitor here wins while anything Lacquer does not name keeps following it.
 
+// The fences monitors-write looks for; that helper owns the file itself, so
+// nothing here writes it.
 var MONITORS_BEGIN = "-- >>> lacquer monitors block >>>"
 var MONITORS_END = "-- <<< lacquer monitors block <<<"
 
@@ -438,17 +440,6 @@ function renderMonitorsBody(list) {
   for (var i = 0; i < (list || []).length; i++)
     if (list[i] && list[i].name) lines.push(renderMonitor(list[i]))
   return lines.join("\n")
-}
-
-function renderMonitorsBlock(body) {
-  var header = MONITORS_BEGIN + "\n"
-    + "-- Written by Lacquer. Only what is between the fences is rewritten.\n"
-  if (!body) return header + MONITORS_END
-  return header + body + "\n" + MONITORS_END
-}
-
-function applyMonitorsBlock(text, body) {
-  return applyFences(text, body, MONITORS_BEGIN, MONITORS_END, renderMonitorsBlock(body))
 }
 
 function renderBlock(body) {
