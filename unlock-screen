@@ -217,9 +217,17 @@ def logo_command():
     if not theme:
         sys.exit("unlock-screen: the current theme has no readable colors.toml")
     c = theme["colors"]
+    try:
+        logo = make_logo(c["accent"])
+    except FileNotFoundError:
+        sys.exit("unlock-screen: ImageMagick (magick) is not installed, so the logo "
+                 "cannot be drawn; install imagemagick, or pick a theme that ships "
+                 "its own unlock screen")
+    except (OSError, subprocess.SubprocessError) as e:
+        sys.exit("unlock-screen: could not draw the logo: " + str(e))
     print(c["background"])
     print(c["foreground"])
-    print(make_logo(c["accent"]))
+    print(logo)
 
 
 if __name__ == "__main__":

@@ -19,7 +19,13 @@ case ${1:-} in
     exec omarchy-plymouth-set-by-theme "$2"
     ;;
   current)
-    mapfile -t made < <(python3 "$here/unlock-screen" logo)
+    # The helper prints why it could not draw the logo; pass that on rather than
+    # replacing it with something vaguer.
+    if ! logo_output=$(python3 "$here/unlock-screen" logo 2>&1); then
+      printf '%s\n' "$logo_output" >&2
+      exit 1
+    fi
+    mapfile -t made <<< "$logo_output"
     (( ${#made[@]} == 3 )) || { echo "unlock-apply: could not draw the theme's logo" >&2; exit 1; }
     [[ ${made[0]} =~ ^[0-9a-f]{6}$ && ${made[1]} =~ ^[0-9a-f]{6}$ ]] || { echo "unlock-apply: unexpected colours" >&2; exit 1; }
     [[ ${made[2]} == "$HOME/.local/state/omarchy/io.github.deunnis.lacquer/unlock/logo-"*.png ]] || { echo "unlock-apply: unexpected logo path" >&2; exit 1; }
