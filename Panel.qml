@@ -621,6 +621,11 @@ Item {
     hypr.leaves = ({})
     hypr.curves = ({})
     hypr.opaqueWindows = false
+    // The border gradient and the per-app window rules are Lacquer's too, and
+    // both are rendered into the same blocks; leaving them behind would make
+    // "Reset all" a half-measure. Undo carries both back (see snapshot()).
+    bordersStore.restoreSpec({ mode: "", amount: 0.4, angle: 45, inactive: false, groups: true })
+    rulesStore.restoreRules([])
     var text = toml.shellUserText
     var all = ShellSchema.allItems()
     for (var i = 0; i < all.length; i++) text = TomlEdit.unset(text, all[i].section, all[i].key)
