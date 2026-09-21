@@ -168,7 +168,11 @@ def main(argv):
     kept.append("lock-explorer and OmaMenu settings")
     kept.append("launcher entries you renamed, re-iconed or hid (undo each in App launcher)")
     kept.append("the boot unlock screen, if you set one (Lock & boot puts Omarchy's default back)")
-    kept.append("Lacquer Shell, the optional companion, if it is installed")
+    # Without Lacquer there is no longer anything that can turn the frame off,
+    # so say how to take the companion away as well.
+    kept.append("Lacquer Shell, the optional companion, if it is installed"
+                " \u2014 remove it with"
+                " `omarchy plugin remove io.github.deunnis.lacquer.shell`")
     kept += ["backup: " + b.replace(HOME, "~") for b in backups]
 
     if not actions:
