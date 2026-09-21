@@ -35,7 +35,9 @@ Item {
 
   function rescan() {
     if (!readProc.running) readProc.running = true
-    if (scanProc.running) return
+    // Never ask Hyprland what it has while a trial is on screen: the answer
+    // would be the trial, and that is exactly what a revert has to undo.
+    if (root.asking || scanProc.running) return
     scanProc.running = true
   }
 
@@ -102,8 +104,16 @@ Item {
 
   // Try a change: apply it live and start the countdown.
   function propose(name, change, label) {
-    if (root.asking) root.revert()
-    root.previous = root.specsWith(name, {})
+    // Trying a second thing without answering the first goes back to what the
+    // screens were before any of it — not to the trial that is on screen now.
+    // The new trial is applied straight over the old one rather than putting
+    // the screen back in between, which would be two mode changes in a row.
+    var before = root.asking ? root.previous : root.specsWith(name, {})
+    if (root.asking) {
+      root.pending = null
+      keepTimer.stop()
+    }
+    root.previous = before
     root.pending = { specs: root.specsWith(name, change), label: label }
     root.countdown = root.keepSeconds
     root.applyLive(root.pending.specs)
@@ -130,7 +140,7 @@ Item {
     root.countdown = 0
     if (back) root.applyLive(back)
     root.app.statusText = "Put the screen back"
-    root.rescan()
+    // The rescan waits for the change to land — settleTimer does it.
   }
 
   // Everything Lacquer wrote here goes; Omarchy's own lines stay.
@@ -162,7 +172,18 @@ Item {
     }
   }
 
-  Process { id: liveProc }
+  // A mode change is not finished when hyprctl returns: asking straight away
+  // gets the old answer, or the trial's. Give it a moment, then look.
+  Timer {
+    id: settleTimer
+    interval: 700
+    onTriggered: root.rescan()
+  }
+
+  Process {
+    id: liveProc
+    onExited: settleTimer.restart()
+  }
 
   Process {
     id: scanProc
