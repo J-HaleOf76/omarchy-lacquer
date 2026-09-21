@@ -63,13 +63,17 @@ def main():
     updated = replace(text, block)
     if updated == text:
         return
-    folder = os.path.dirname(PATH)
+    # Write through a symlink rather than over it: monitors.lua is often a link
+    # into a dotfile repository, and replacing the link would quietly stop the
+    # repository tracking it.
+    target = os.path.realpath(PATH)
+    folder = os.path.dirname(target)
     fd, tmp = tempfile.mkstemp(dir=folder, prefix=".monitors-lacquer-")
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as f:
             f.write(updated)
-        os.chmod(tmp, 0o644)
-        os.replace(tmp, PATH)
+        os.chmod(tmp, os.stat(target).st_mode & 0o777 if os.path.exists(target) else 0o644)
+        os.replace(tmp, target)
     except Exception:
         if os.path.exists(tmp):
             os.remove(tmp)

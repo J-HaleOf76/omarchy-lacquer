@@ -151,10 +151,15 @@ def change(app_id, what, value):
     if MARKER not in text:
         text = set_key(text, MARKER.split("=")[0], "true")
     os.makedirs(USER_DIR, exist_ok=True)
-    tmp = target + ".lacquer-new"
+    # Through a symlink rather than over it, in case the entry is one the user
+    # keeps in a dotfile repository.
+    real = os.path.realpath(target)
+    tmp = real + ".lacquer-new"
     with open(tmp, "w", encoding="utf-8") as f:
         f.write(text if text.endswith("\n") else text + "\n")
-    os.replace(tmp, target)
+    if os.path.exists(real):
+        os.chmod(tmp, os.stat(real).st_mode & 0o777)
+    os.replace(tmp, real)
 
 
 def reset(app_id):
