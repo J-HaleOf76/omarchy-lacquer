@@ -69,8 +69,16 @@ QtObject {
 
     // A theme by its folder name, the way `omarchy theme set` takes it.
     function applyTheme(slug: string): string {
-      if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(String(slug))) return "no theme called " + slug
-      Quickshell.execDetached(["omarchy-theme-set", String(slug)])
+      var name = String(slug)
+      if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(name)) return "no theme called " + name
+      // The switch is handed to Omarchy and cannot be waited for, so a name
+      // that is not installed is caught here rather than answered "ok" and
+      // silently doing nothing. Before the themes have been scanned the name
+      // is taken on trust, which is better than refusing a real one.
+      var known = root.shuffle ? root.shuffle.themeBySlug : null
+      if (known && Object.keys(known).length > 0 && !known[name])
+        return "no theme called " + name
+      Quickshell.execDetached(["omarchy-theme-set", name])
       return "ok"
     }
 
