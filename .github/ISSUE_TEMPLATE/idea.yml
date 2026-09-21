@@ -1,6 +1,6 @@
 name: Idea or missing setting
 description: A setting Lacquer should cover, or something that would make it nicer to use.
-labels: ["idea", "beta"]
+labels: ["idea"]
 body:
   - type: textarea
     id: idea

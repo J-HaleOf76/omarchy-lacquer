@@ -1,11 +1,11 @@
 name: Bug or something that looks wrong
 description: Something broke, did the wrong thing, or looks off on your setup.
-labels: ["bug", "beta"]
+labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for testing Lacquer. Setups that differ from the developer's (one 1080p laptop screen, foot, light themes) are exactly what the beta needs.
+        Thanks for trying Lacquer. Setups that differ from the developer's (one 1080p laptop screen, foot, light themes) are exactly what it most needs.
   - type: dropdown
     id: section
     attributes:
@@ -15,11 +15,16 @@ body:
         - Theme & wallpaper
         - Shuffle
         - Generate
+        - Motion
         - Fonts & text
         - GTK & icons
         - Cursor
         - Nightlight
+        - Size
+        - Displays
         - Windows / Decoration / Effects / Groups
+        - Borders & shape
+        - Screen frame
         - Animations / Curves
         - Shell style
         - Bar
@@ -28,6 +33,8 @@ body:
         - Screensaver
         - Terminals
         - btop & prompt
+        - App launcher
+        - App windows
         - Plugins
         - Install, update or lacquer-cleanup
         - Somewhere else
