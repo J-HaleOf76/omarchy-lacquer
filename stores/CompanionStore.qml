@@ -41,7 +41,8 @@ Item {
              style: f.style === "brackets" ? "brackets" : "corners",
              corners: Number(f.corners) || 0, frame: Number(f.frame) || 0,
              vignette: Number(f.vignette) || 0, scanlines: Number(f.scanlines) || 0,
-             grain: Number(f.grain) || 0, tint: String(f.tint || "") }
+             grain: Number(f.grain) || 0, tint: String(f.tint || ""),
+             hideFullscreen: f.hideFullscreen !== false }
   }
 
   function cloneMotion(m) {

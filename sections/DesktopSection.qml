@@ -183,6 +183,13 @@ Item {
         step: function(d) { c.step("frame", d, 0, 40, 1, "Frame", " px") }
       },
       {
+        id: "frame-fullscreen", kind: "chips", title: "Out of the way full screen",
+        note: "A film or a game playing full screen is not drawn on: the frame goes while it lasts and comes back after.",
+        current: f.hideFullscreen === false ? "off" : "on",
+        options: section.onOff(),
+        pick: function(v) { c.set("hideFullscreen", v === "on", v === "on" ? "Hidden while full screen" : "Always drawn") }
+      },
+      {
         id: "frame-vignette", kind: "stepper", title: "Vignette",
         note: "Darkens towards the edges.",
         value: Math.round(f.vignette * 100) + " %", unit: "",
