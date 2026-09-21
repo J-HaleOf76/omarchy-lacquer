@@ -209,11 +209,16 @@ Lacquer never made. Undo a bar or plugin change by changing it back.
 ## Backups
 
 Live apply means a mistake reaches disk, so the first time Lacquer ever runs
-it snapshots the three files it can write:
+it snapshots the three files it rewrites outright:
 
     ~/.config/hypr/looknfeel.lua.lacquer-backup-<timestamp>
     ~/.config/omarchy/shell.toml.lacquer-backup-<timestamp>
     ~/.config/omarchy/shell.json.lacquer-backup-<timestamp>
+
+The other files Lacquer writes — `hyprland.lua`, `autostart.lua`,
+`monitors.lua`, and a tool's own config when you ask one to follow the theme —
+are only ever added to between fences, and taking the fences out puts them back
+exactly, so they are not copied.
 
 Once only — a marker in `~/.local/state/omarchy/` — so the snapshot is of the
 state *before* Lacquer, not of whatever it wrote yesterday. If a migration is
@@ -415,9 +420,10 @@ than left as a husk.
 window with `opacity "0.985 0.96"` in `default/hypr/windows.lua`, which
 multiplies with the `decoration:*_opacity` globals and stops those sliders ever
 reaching 1.0. Cancelling it means a window rule, and window rules belong in
-`~/.config/hypr/hyprland.lua` — so Lacquer keeps a second managed block there,
-holding nothing but that rule. Both files are written before a single
-`hyprctl reload`, so Hyprland never reads a half-written pair.
+`~/.config/hypr/hyprland.lua` — so Lacquer keeps a second managed block there.
+That block also holds the per-app rules from **App windows**, and nothing else.
+Both files are written before a single `hyprctl reload`, so Hyprland never
+reads a half-written pair.
 
 Omarchy's defaults are read by running
 `$OMARCHY_PATH/default/hypr/looknfeel.lua` through `read.lua`, a set of
