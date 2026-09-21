@@ -1052,11 +1052,17 @@ Item {
     var out = []
     for (var i = 0; i < store.tools.length; i++) {
       var tool = store.tools[i]
+      // A config Lacquer cannot read as text is one it must not write, or it
+      // would replace it with nothing but its own block.
+      var unreadable = tool.readable === false
       out.push({
         id: "tool-" + tool.id, kind: "chips", title: tool.name,
-        note: tool.what + (tool.installed ? " Written into " + tool.path + "." : " Not installed here."),
+        note: tool.what + (unreadable
+          ? " " + (tool.blockedBy || tool.path) + " cannot be read as text, so Lacquer leaves it alone."
+          : tool.installed ? " Written into " + tool.path + "." : " Not installed here."),
         current: tool.on ? "on" : "off",
-        options: [{ value: "on", label: "Follow the theme" }, { value: "off", label: "Leave it alone" }],
+        options: unreadable ? []
+          : [{ value: "on", label: "Follow the theme" }, { value: "off", label: "Leave it alone" }],
         pick: (function(id) {
           return function(v) { store.set(id, v === "on") }
         })(tool.id)

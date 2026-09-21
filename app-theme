@@ -37,6 +37,24 @@ def read_capped(path):
         return None
 
 
+def read_or_refuse(path):
+    """The file's text, "" when there is no file yet — never a silent empty.
+
+    A file that exists but cannot be read here (too big, not UTF-8, not a
+    regular file) must not be treated as an empty one: writing would replace
+    somebody's config with nothing but Lacquer's block. Say so and stop.
+    """
+    if not os.path.lexists(path):
+        return ""
+    text = read_capped(path)
+    if text is None:
+        raise SystemExit(
+            "%s cannot be read as text (too large, not UTF-8, or not a regular\n"
+            "file), so Lacquer will not write to it. Nothing was changed."
+            % path.replace(HOME, "~"))
+    return text
+
+
 def colors():
     """The theme's palette, as #rrggbb strings."""
     out = {}
@@ -176,13 +194,11 @@ def is_on(tool):
 
 def apply(tool, on):
     spec = TOOLS[tool]
-    text = read_capped(spec["path"])
-    if text is None:
-        text = ""
+    text = read_or_refuse(spec["path"])
+    rc = read_or_refuse(BASHRC) if spec.get("sourced") else None
     body = spec["body"](colors()) if on else ""
     write_text(spec["path"], replace_block(text, body))
     if spec.get("sourced"):
-        rc = read_capped(BASHRC) or ""
         write_text(BASHRC, replace_block(rc, SOURCE_LINE if on else ""))
 
 
@@ -190,8 +206,14 @@ def scan():
     out = []
     for key in sorted(TOOLS):
         spec = TOOLS[key]
+        # fzf is switched on by writing two files, so both have to be readable
+        # for the switch to be offered at all.
+        paths = [spec["path"]] + ([BASHRC] if spec.get("sourced") else [])
+        bad = [p for p in paths if os.path.lexists(p) and read_capped(p) is None]
         out.append({"id": key, "name": spec["name"], "what": spec["what"],
                     "installed": installed(spec["command"]), "on": is_on(key),
+                    "readable": not bad,
+                    "blockedBy": bad[0].replace(HOME, "~") if bad else "",
                     "path": spec["path"].replace(HOME, "~")})
     print(json.dumps({"tools": out}))
 
@@ -205,9 +227,17 @@ def main():
     elif argv[0] in ("on", "off") and len(argv) == 2 and argv[1] in TOOLS:
         apply(argv[1], argv[0] == "on")
     elif argv[0] == "reapply":
+        # The theme hook calls this. One tool whose config has become
+        # unreadable must not stop the others from following the new theme.
+        failed = []
         for key in TOOLS:
             if is_on(key):
-                apply(key, True)
+                try:
+                    apply(key, True)
+                except SystemExit as why:
+                    failed.append("%s: %s" % (key, why))
+        if failed:
+            sys.exit("\n".join(failed))
     else:
         sys.exit(__doc__)
 
