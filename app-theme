@@ -102,11 +102,16 @@ def bat_body(c):
 
 
 def delta_body(c):
+    # Added lines take the theme's green and removed lines its red, darkened so
+    # the text stays readable on top; a theme without either falls back to the
+    # accent rather than colouring both the same.
+    added = c.get("green", c.get("bright_green", c["accent"]))
+    removed = c.get("red", c.get("urgent", c.get("bright_red", c["accent"])))
     return "\n".join([
         "[delta]",
         "    syntax-theme = ansi",
-        "    plus-style = syntax \"%s\"" % shade(c["accent"], 0.82),
-        "    minus-style = normal \"%s\"" % shade(c.get("urgent", c["accent"]), 0.82),
+        "    plus-style = syntax \"%s\"" % shade(added, 0.5),
+        "    minus-style = normal \"%s\"" % shade(removed, 0.5),
         "    line-numbers-zero-style = \"%s\"" % c["foreground"],
         "    file-style = \"%s\"" % c["accent"],
     ])
