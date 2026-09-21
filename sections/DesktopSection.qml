@@ -670,7 +670,10 @@ Item {
       {
         id: "bar-motion", kind: "chips", title: "Bar motion",
         note: "Lacquer Shell's bar, at the feel's pace (" + Math.round(Number(m.duration)) + " ms). "
-          + "Widgets glide when they change size, lift under the pointer, and fade in as they appear.",
+          + "Widgets glide when they change size, lift under the pointer, and fade in as they appear."
+          + (c.barIsOurs ? ""
+             : " The bar on screen is Omarchy's own right now, so none of this shows: enable Lacquer Shell's bar in "
+               + "`omarchy plugin list`, or check that it loaded (it needs Omarchy 4.0.4 or newer)."),
         current: m.enabled ? "on" : "off",
         options: section.onOff(),
         pick: function(v) { c.setMotion("enabled", v === "on", v === "on" ? "Bar motion on" : "Bar motion off") }

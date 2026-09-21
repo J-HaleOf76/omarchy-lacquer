@@ -22,6 +22,10 @@ Item {
 
   property bool present: false
   property bool probed: false
+  // Whether the bar on screen is the companion's. Omarchy falls back to its own
+  // bar when a replacement cannot load, and then the bar's motion settings
+  // would look like they were in charge when they are not.
+  property bool barIsOurs: false
   property bool confirming: false
   property var frame: null
   property var barMotion: null
@@ -100,8 +104,8 @@ Item {
     onExited: function(code) {
       root.present = code === 0 && String(probeOut.text || "").indexOf("lacquer.shell") >= 0
       root.probed = true
-      if (root.present) { readProc.running = true; motionRead.running = true }
-      else { root.frame = null; root.barMotion = null }
+      if (root.present) { readProc.running = true; motionRead.running = true; barProc.running = true }
+      else { root.frame = null; root.barMotion = null; root.barIsOurs = false }
     }
   }
 
@@ -117,6 +121,15 @@ Item {
         root.frame = null
       }
     }
+  }
+
+  // `omarchy plugin list` says which bar option is live: the built-in one is
+  // listed as disabled while a replacement is in use.
+  Process {
+    id: barProc
+    command: ["timeout", "-k", "2", "10", "bash", "-c",
+              "omarchy plugin list | grep -E '^omarchy.bar +disabled'"]
+    onExited: function(code) { root.barIsOurs = code === 0 }
   }
 
   Process {
