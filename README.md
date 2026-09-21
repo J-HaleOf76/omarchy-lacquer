@@ -67,7 +67,7 @@ Optional, for one section each:
 
 | Plugin | Adds |
 |---|---|
-| [Lacquer Shell](https://github.com/Deunnis/omarchy-lacquer-shell) | **Screen frame** (corners, frame, vignette, scanlines, grain) and an animated clone of the bar. Lacquer offers to install it when you open the section. |
+| [Lacquer Shell](https://github.com/Deunnis/omarchy-lacquer-shell) | **Screen frame** (corners, frame, vignette, scanlines, grain), and an animated clone of the bar (Omarchy 4.0.4+). Lacquer offers to install it when you open the section. |
 | [lock-explorer](https://github.com/SirJul1337/omarchy-lock-explorer) | **Lock & boot**: lock designs, unlock animation, clock and its own boot screens. Without it the section still sets when the screen locks and the boot unlock screen. |
 | [OmaMenu](https://github.com/Deunnis/OmaMenu) with Menu Look IPC | **Menu look**. Without it the section is not shown. |
 | [OmaShuffle](https://github.com/Deunnis/OmaShuffle) | Nothing extra: while it is installed, Lacquer's Shuffle stays out of its way. |

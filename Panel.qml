@@ -1564,7 +1564,9 @@ Item {
                 : "type to search · ←→ group · ↑↓ section · Enter open · Tab next section · Esc close"
               if (root.isGenerate) return (root.confirmGenerate ? "g again to generate and apply · Esc cancel" : "w pick wallpaper · f any image · l light/dark · g generate (asks first) · o open aether · Esc close")
               if (root.isShuffle) return "the shuffle keeps running with Lacquer closed · Tab section · Esc close"
-              if (root.section.id === "lock" || root.section.id === "screensaver" || root.section.id === "menulook" || root.section.id === "terminals" || root.section.id === "btop") return "↑↓ group · ←→ choose or step · Enter pick · Tab section · Esc close"
+              // Only the pages that pin a value or carry a default mention Del.
+              if (root.isDesktop && ["fonts", "gtk", "cursor", "sizes"].indexOf(root.section.id) < 0)
+                return "↑↓ group · ←→ choose or step · Enter pick · Tab section · Esc close"
               if (root.section.id === "nightlight") return "↑↓ group · ←→ choose or step · Enter pick · Tab section · Esc close"
               if (root.isDesktop) return "↑↓ group · ←→ choose or step a size · Enter pick · Del follow theme / default · Tab section · Esc close"
               if (root.isTheme) return "←→↑↓ hjkl choose · Enter apply · click a wallpaper to set it · Tab section · Esc close"
