@@ -83,8 +83,8 @@ Item {
       }
       SequentialAnimation {
         id: rowCascade
-        PauseAnimation { duration: 40 + rowLoader.index * 30 }
-        NumberAnimation { target: rowLoader; property: "appear"; to: 1; duration: Math.round(520 * app.design.mass); easing.type: Easing.OutQuint }
+        PauseAnimation { duration: 20 + rowLoader.index * 18 }
+        NumberAnimation { target: rowLoader; property: "appear"; to: 1; duration: Math.round(320 * app.design.mass); easing.type: Easing.OutQuint }
       }
       sourceComponent: modelData.kind === "header" ? headerRow
         : modelData.kind === "leaf" ? leafRow

@@ -48,7 +48,7 @@ Item {
       color: sw.checked ? sw.design.onAccent : sw.design.muted
       radius: sw.knob / 2
       // A little goo as it slides across, none at rest.
-      gooiness: 0.4
+      gooiness: 0.2
       animated: sw.design.motion
       mass: sw.design.mass * 0.8
       target: Qt.rect(sw.checked ? sw.width - sw.knob - 4 : 4, 4, sw.knob, sw.knob)

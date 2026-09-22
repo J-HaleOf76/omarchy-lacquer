@@ -59,7 +59,7 @@ Item {
     }
     naturalWidth = w + Math.max(0, n - 1) * flow.spacing
   }
-  implicitWidth: isRail ? 128 : naturalWidth
+  implicitWidth: isRail ? 176 : naturalWidth
   implicitHeight: flow.implicitHeight + (isUnderline ? 8 : 0)
 
   // Where each option sits, for the goo to be drawn around.
@@ -101,24 +101,24 @@ Item {
     visible: tabs.isRail && tabs.design.motion
     color: tabs.design.accent
     radius: 6
-    mass: tabs.design.mass * 1.6
+    mass: tabs.design.mass * 1.1
     gooiness: 0.5
     opacity: 0
   }
   Timer {
     id: dripTimer
-    interval: Math.round(520 * tabs.design.mass)
+    interval: Math.round(300 * tabs.design.mass)
     onTriggered: {
       var r = goo.cells[tabs.selectedIndex]
       if (!r) return
       var cx = r.x + r.width * 0.5
-      drip.opacity = 0.9
+      drip.opacity = 0.5
       drip.jump(Qt.rect(cx - 8, r.y + r.height - 6, 16, 8))
-      drip.target = Qt.rect(cx - 4.5, r.y + r.height + 24, 9, 10)
+      drip.target = Qt.rect(cx - 3.5, r.y + r.height + 14, 7, 7)
       dripFade.restart()
     }
   }
-  NumberAnimation { id: dripFade; target: drip; property: "opacity"; from: 0.9; to: 0; duration: Math.round(1100 * tabs.design.mass); easing.type: Easing.InQuad }
+  NumberAnimation { id: dripFade; target: drip; property: "opacity"; from: 0.5; to: 0; duration: Math.round(700 * tabs.design.mass); easing.type: Easing.InQuad }
 
   Flow {
     id: flow
@@ -181,7 +181,7 @@ Item {
           color: entry.selected && !tabs.isUnderline ? tabs.design.onAccent
                : entry.selected ? tabs.design.accent
                : entry.hot ? tabs.design.foreground : tabs.design.muted
-          Behavior on color { ColorAnimation { duration: 260 } }
+          Behavior on color { ColorAnimation { duration: 160 } }
         }
       }
 

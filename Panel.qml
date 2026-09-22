@@ -1429,8 +1429,8 @@ Item {
               id: pageEnter
               property string axis: "y"
               property int dir: 1
-              NumberAnimation { target: pageShift; property: pageEnter.axis; from: pageEnter.dir * Style.space(pageEnter.axis === "y" ? 12 : 16); to: 0; duration: Math.round(motionStore.uiDuration * 1.2); easing.type: Easing.OutQuint }
-              NumberAnimation { target: pageContent; property: "opacity"; from: 0; to: 1; duration: Math.round(motionStore.uiDuration * 0.8); easing.type: Easing.OutCubic }
+              NumberAnimation { target: pageShift; property: pageEnter.axis; from: pageEnter.dir * Style.space(pageEnter.axis === "y" ? 12 : 16); to: 0; duration: Math.round(motionStore.uiDuration * 0.75); easing.type: Easing.OutQuint }
+              NumberAnimation { target: pageContent; property: "opacity"; from: 0; to: 1; duration: Math.round(motionStore.uiDuration * 0.5); easing.type: Easing.OutCubic }
               onStopped: { pageShift.x = 0; pageShift.y = 0; pageContent.opacity = 1; pageScale.xScale = 1; pageScale.yScale = 1 }
             }
 

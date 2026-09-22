@@ -40,8 +40,8 @@ Canvas {
   property bool placed: false
 
   readonly property real damping: 0.44
-  readonly property real fast: 3.0
-  readonly property real slow: 2.1
+  readonly property real fast: 4.8
+  readonly property real slow: 3.6
 
   Behavior on el { enabled: goo.animated && goo.placed; SpringAnimation { spring: goo.kl; damping: goo.damping; mass: goo.mass; epsilon: 0.08 } }
   Behavior on er { enabled: goo.animated && goo.placed; SpringAnimation { spring: goo.kr; damping: goo.damping; mass: goo.mass; epsilon: 0.08 } }

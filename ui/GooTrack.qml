@@ -46,8 +46,8 @@ Canvas {
   property real c1: 0
   property bool placed: false
 
-  readonly property real spring: 2.4
-  readonly property real damping: 0.46
+  readonly property real spring: 4.4
+  readonly property real damping: 0.5
 
   Behavior on b0 { enabled: track.animated && track.placed; SpringAnimation { spring: track.spring; damping: track.damping; mass: track.mass; epsilon: 0.1 } }
   Behavior on b1 { enabled: track.animated && track.placed; SpringAnimation { spring: track.spring * 0.8; damping: track.damping; mass: track.mass; epsilon: 0.1 } }
@@ -66,8 +66,8 @@ Canvas {
     var h = cells[hovered]
     if (h && hovered !== selected) {
       var ha = along(h)
-      if (ha[0] > a[1]) hi += Math.min(26, (ha[0] - a[1]) * 0.2 + 6)
-      else if (ha[1] < a[0]) lo -= Math.min(26, (a[0] - ha[1]) * 0.2 + 6)
+      if (ha[0] > a[1]) hi += Math.min(10, (ha[0] - a[1]) * 0.08 + 3)
+      else if (ha[1] < a[0]) lo -= Math.min(10, (a[0] - ha[1]) * 0.08 + 3)
     }
     if (!placed) {
       b0 = lo; b1 = hi; c0 = c[0] + pad; c1 = c[1] + pad
@@ -159,7 +159,7 @@ Canvas {
 
     if (b1 - b0 < 1) return
     var lo = b0, hi = b1
-    var s = 1 + breath * 0.06
+    var s = 1 + breath * 0.025
 
     if (mode === "line") {
       // A drop hanging from the strand under the selection: wide where it

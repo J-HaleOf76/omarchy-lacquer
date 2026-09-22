@@ -72,7 +72,7 @@ Item {
     // stays under the pointer), how swollen it is, and how much the fill is
     // rippling.
     property real kx: slider.knobR + slider.progress * (slider.trackWidth - slider.knobR * 2)
-    Behavior on kx { enabled: slider.design.motion && !slider.dragging; SpringAnimation { spring: 2.2; damping: 0.5; mass: slider.design.mass; epsilon: 0.1 } }
+    Behavior on kx { enabled: slider.design.motion && !slider.dragging; SpringAnimation { spring: 4.0; damping: 0.52; mass: slider.design.mass; epsilon: 0.1 } }
     property real swell: slider.dragging ? 1 : (knobHover.containsMouse || slider.hasCursor ? 0.45 : 0)
     Behavior on swell { enabled: slider.design.motion; SpringAnimation { spring: 2.6; damping: 0.4; epsilon: 0.01 } }
     property real ripple: 0
@@ -103,7 +103,7 @@ Item {
       ctx.beginPath(); capsule(ox, ox + w, cy - th / 2, cy + th / 2); ctx.fill()
 
       var kx = ox + goo.kx
-      var R = slider.knobR + goo.swell * 2.5
+      var R = slider.knobR + goo.swell * 1.5
       // The fill, rippling along its top while it moves.
       ctx.fillStyle = slider.design.alpha(slider.design.accent, 0.5)
       ctx.beginPath()
@@ -111,7 +111,7 @@ Item {
       ctx.moveTo(ox + th / 2, t)
       for (var x = ox + th / 2; x < kx; x += 4) {
         var fade = Math.max(0, 1 - (kx - x) / 90)
-        ctx.lineTo(x, t - Math.sin(x / 5 + goo.phase) * goo.ripple * 1.8 * fade)
+        ctx.lineTo(x, t - Math.sin(x / 5 + goo.phase) * goo.ripple * 0.8 * fade)
       }
       ctx.lineTo(kx, t)
       ctx.lineTo(kx, b)

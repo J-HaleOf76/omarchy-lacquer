@@ -189,8 +189,8 @@ Item {
           }
           SequentialAnimation {
             id: groupCascade
-            PauseAnimation { duration: 30 + groupItem.index * 55 }
-            NumberAnimation { target: groupItem; property: "appear"; to: 1; duration: Math.round(560 * pane.design.mass); easing.type: Easing.OutQuint }
+            PauseAnimation { duration: 20 + groupItem.index * 30 }
+            NumberAnimation { target: groupItem; property: "appear"; to: 1; duration: Math.round(340 * pane.design.mass); easing.type: Easing.OutQuint }
           }
 
           Column {
