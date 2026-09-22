@@ -158,6 +158,13 @@ Item {
         width: parent.width
         wrapMode: Text.WordWrap
       }
+
+      // The animation, playing at the speed it is set to.
+      LqPreview {
+        design: root.design
+        kind: root.open && root.design && root.enabled_ ? "anim" : ""
+        duration: root.safeSpeed() * 100
+      }
     }
 
     Column {

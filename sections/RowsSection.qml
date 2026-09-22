@@ -41,8 +41,8 @@ Item {
       // past the rows on both sides.
       width: rowList.width - rowList.leftMargin - rowList.rightMargin - Style.spacing.md
 
-      // Each group of rows reads as one glossy card: every row draws its own
-      // slice of it, the first with the top corners and the sheen, the last
+      // Each group of rows reads as one card: every row draws its own slice
+      // of it, the first with the top corners, the last
       // with the bottom corners, and a hairline between the rest.
       readonly property bool isRow: modelData.kind !== "header"
       readonly property var prevEntry: index > 0 ? app.rows[index - 1] : null
@@ -63,19 +63,6 @@ Item {
         bottomRightRadius: rowLoader.lastInCard ? app.design.cardRadius : 0
 
         Rectangle {
-          visible: rowLoader.firstInCard
-          anchors.left: parent.left
-          anchors.right: parent.right
-          anchors.top: parent.top
-          height: Math.min(parent.height, 44)
-          topLeftRadius: parent.topLeftRadius
-          topRightRadius: parent.topRightRadius
-          gradient: Gradient {
-            GradientStop { position: 0; color: app.design.sheen }
-            GradientStop { position: 1; color: "transparent" }
-          }
-        }
-        Rectangle {
           visible: !rowLoader.firstInCard
           x: 16
           width: parent.width - 32
@@ -88,10 +75,7 @@ Item {
       // later appear as they always did.
       property real appear: 1
       opacity: Math.min(1, appear * 2)
-      transform: [
-        Translate { y: (1 - rowLoader.appear) * 18 },
-        Scale { origin.y: rowLoader.height; yScale: 1 - (rowLoader.appear - 1) * 0.16 }
-      ]
+      transform: Translate { y: (1 - rowLoader.appear) * 8 }
       Component.onCompleted: {
         if (!app.motion || !app.cascadeArmed || index > 16) return
         appear = 0
@@ -100,7 +84,7 @@ Item {
       SequentialAnimation {
         id: rowCascade
         PauseAnimation { duration: 40 + rowLoader.index * 30 }
-        NumberAnimation { target: rowLoader; property: "appear"; to: 1; duration: Math.round(700 * app.design.mass); easing.type: Easing.OutElastic; easing.amplitude: 1.05; easing.period: 0.4 }
+        NumberAnimation { target: rowLoader; property: "appear"; to: 1; duration: Math.round(520 * app.design.mass); easing.type: Easing.OutQuint }
       }
       sourceComponent: modelData.kind === "header" ? headerRow
         : modelData.kind === "leaf" ? leafRow

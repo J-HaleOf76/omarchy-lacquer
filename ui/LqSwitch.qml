@@ -19,7 +19,7 @@ Item {
   implicitHeight: 24
 
   readonly property real knob: height - 8
-  readonly property real trackRadius: design.rounding <= 0 ? 3 : height / 2
+  readonly property real trackRadius: height / 2
 
   Rectangle {
     id: track
@@ -46,15 +46,15 @@ Item {
     GooBlob {
       pad: 10
       color: sw.checked ? sw.design.onAccent : sw.design.muted
-      radius: sw.design.rounding <= 0 ? 2 : sw.knob / 2
+      radius: sw.knob / 2
+      // A little goo as it slides across, none at rest.
+      gooiness: 0.4
       animated: sw.design.motion
       mass: sw.design.mass * 0.8
       target: Qt.rect(sw.checked ? sw.width - sw.knob - 4 : 4, 4, sw.knob, sw.knob)
     }
   }
 
-  scale: mouse.pressed ? 0.92 : 1
-  Behavior on scale { enabled: sw.design.motion; SpringAnimation { spring: 4; damping: 0.16; mass: sw.design.mass } }
 
   MouseArea {
     id: mouse

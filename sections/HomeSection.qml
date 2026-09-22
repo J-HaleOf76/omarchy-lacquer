@@ -370,49 +370,6 @@ Item {
     onTriggered: home.tick += 0.066
   }
 
-  // Soft radial-gradient discs in the theme's colours.
-  Item {
-    id: blobs
-    anchors.fill: parent
-    opacity: home.themeInfo.mode === "light" ? 0.2 : 0.34
-
-    Repeater {
-      model: Math.min(5, home.palette.length)
-      Shape {
-        id: blob
-        required property int index
-        readonly property real size: blobs.width * (0.5 + 0.12 * (index % 3))
-        readonly property color tint: home.palette[index % home.palette.length]
-        readonly property real cx: blobs.width * (0.1 + 0.8 * ((index * 0.29) % 1)) - size / 2
-        readonly property real cy: blobs.height * (0.15 + 0.7 * ((index * 0.43) % 1)) - size / 2
-        readonly property real dx: blobs.width * 0.18
-        readonly property real dy: blobs.height * 0.16
-        width: size
-        height: size
-        // Periods of 70-110 s across and 55-80 s down, so the discs never line up.
-        x: cx + Math.sin(home.tick * (6.283 / (70 + index * 10)) + index * 1.7) * dx
-        y: cy + Math.cos(home.tick * (6.283 / (55 + index * 6)) + index) * dy
-
-        ShapePath {
-          strokeWidth: -1
-          fillGradient: RadialGradient {
-            centerX: blob.size / 2; centerY: blob.size / 2; centerRadius: blob.size / 2
-            focalX: blob.size / 2; focalY: blob.size / 2
-            GradientStop { position: 0.0; color: Qt.rgba(blob.tint.r, blob.tint.g, blob.tint.b, 0.9) }
-            GradientStop { position: 0.45; color: Qt.rgba(blob.tint.r, blob.tint.g, blob.tint.b, 0.45) }
-            GradientStop { position: 1.0; color: Qt.rgba(blob.tint.r, blob.tint.g, blob.tint.b, 0) }
-          }
-          PathAngleArc {
-            centerX: blob.size / 2; centerY: blob.size / 2
-            radiusX: blob.size / 2; radiusY: blob.size / 2
-            startAngle: 0; sweepAngle: 360
-          }
-        }
-
-      }
-    }
-  }
-
   // ================================================================ page
 
   Flickable {
@@ -444,7 +401,7 @@ Item {
             id: mini
             width: parent.width
             height: Math.round(width * 10 / 16)
-            radius: Math.max(4, Style.cornerRadius)
+            radius: Math.max(4, (app.design.cardRadius * 0.75))
             color: home.themeInfo.background || home.app.background
             clip: true
             border.width: 1
@@ -771,7 +728,7 @@ Item {
         id: searchBox
         width: parent.width
         height: Style.space(40)
-        radius: Style.cornerRadius
+        radius: (app.design.cardRadius * 0.75)
         color: Qt.rgba(home.app.background.r, home.app.background.g, home.app.background.b, 0.85)
         border.width: home.query !== "" ? Math.max(2, Style.space(2)) : 1
         border.color: home.query !== "" ? home.accent : Qt.rgba(home.app.foreground.r, home.app.foreground.g, home.app.foreground.b, 0.3)
@@ -843,7 +800,7 @@ Item {
         visible: home.query !== ""
         width: parent.width
         height: resultList.height + Style.spacing.sm * 2
-        radius: Math.max(4, Style.cornerRadius)
+        radius: Math.max(4, (app.design.cardRadius * 0.75))
         color: Qt.rgba(home.app.background.r, home.app.background.g, home.app.background.b, 0.86)
         border.width: 1
         border.color: Qt.rgba(home.app.foreground.r, home.app.foreground.g, home.app.foreground.b, 0.16)
@@ -867,7 +824,7 @@ Item {
           required property int index
           width: resultList.width
           height: resultColumn.implicitHeight + Style.spacing.md * 2
-          radius: Style.cornerRadius
+          radius: (app.design.cardRadius * 0.75)
           hasCursor: home.cursorAt === index
           foreground: home.app.foreground
           accent: home.accent
@@ -951,7 +908,7 @@ Item {
             onVisibleChanged: if (visible) home.cards[index] = card
             width: gridColumn.width
             height: cardColumn.implicitHeight + Style.spacing.lg * 2
-            radius: Math.max(4, Style.cornerRadius)
+            radius: Math.max(4, (app.design.cardRadius * 0.75))
             color: Qt.rgba(home.app.background.r, home.app.background.g, home.app.background.b, 0.82)
             border.width: 1
             border.color: Qt.rgba(home.app.foreground.r, home.app.foreground.g, home.app.foreground.b, 0.16)
@@ -1005,7 +962,7 @@ Item {
                   readonly property int flat: home.tileIndex(modelData.id)
                   width: cardColumn.width
                   height: tileColumn.implicitHeight + Style.spacing.sm * 2
-                  radius: Math.max(3, Style.cornerRadius - 2)
+                  radius: Math.max(3, (app.design.cardRadius * 0.75) - 2)
                   hasCursor: home.query === "" && home.cursorAt === flat
                   foreground: home.app.foreground
                   accent: home.accent

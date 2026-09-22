@@ -39,7 +39,7 @@ Item {
           id: sourcePreview
           width: Style.space(260)
           height: Math.round(width * 9 / 16)
-          radius: Style.cornerRadius
+          radius: (app.design.cardRadius * 0.75)
           color: section.app.background
           clip: true
           border.width: 1
@@ -115,7 +115,7 @@ Item {
                 required property var modelData
                 width: Style.space(26)
                 height: Style.space(26)
-                radius: Math.min(Style.cornerRadius, 4)
+                radius: Math.min((app.design.cardRadius * 0.75), 4)
                 color: modelData
                 border.width: 1
                 border.color: Qt.rgba(0, 0, 0, 0.15)
@@ -151,7 +151,7 @@ Item {
           required property var modelData
           height: walls.height
           width: Math.round(height * 16 / 9)
-          radius: Style.cornerRadius
+          radius: (app.design.cardRadius * 0.75)
           color: section.app.background
           border.width: modelData.path === section.store.source ? Math.max(2, Style.space(2)) : 0
           border.color: section.app.accent
@@ -239,7 +239,7 @@ Item {
       BorderSurface {
         width: parent.width
         height: generateRow.implicitHeight + Style.spacing.xxl
-        radius: Style.cornerRadius
+        radius: (app.design.cardRadius * 0.75)
         color: section.app.confirmGenerate ? Style.selectedFillFor(Color.urgent, Color.urgent) : "transparent"
         borderSpec: Border.controlSpec("normal", section.app.foreground, section.app.accent)
 

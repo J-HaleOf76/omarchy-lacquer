@@ -21,7 +21,7 @@ Canvas {
   // How far outside the parent it may bulge while overshooting.
   property real pad: 24
   // 0 = a plain rounded shape, 1 = full goo.
-  property real gooiness: 1
+  property real gooiness: 0
 
   anchors.fill: parent
   anchors.margins: -pad
@@ -39,9 +39,9 @@ Canvas {
   property real kb: 3
   property bool placed: false
 
-  readonly property real damping: 0.14
-  readonly property real fast: 6.2
-  readonly property real slow: 1.7
+  readonly property real damping: 0.44
+  readonly property real fast: 3.0
+  readonly property real slow: 2.1
 
   Behavior on el { enabled: goo.animated && goo.placed; SpringAnimation { spring: goo.kl; damping: goo.damping; mass: goo.mass; epsilon: 0.08 } }
   Behavior on er { enabled: goo.animated && goo.placed; SpringAnimation { spring: goo.kr; damping: goo.damping; mass: goo.mass; epsilon: 0.08 } }

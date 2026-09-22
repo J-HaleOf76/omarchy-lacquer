@@ -77,7 +77,7 @@ Item {
         width: parent.width
         height: handover.implicitHeight + Style.spacing.xxl
         visible: section.ready && section.engine.dormant === true
-        radius: Style.cornerRadius
+        radius: (app.design.cardRadius * 0.75)
         color: Style.selectedFillFor(section.app.accent, section.app.accent)
         borderSpec: Border.controlSpec("normal", section.app.accent, section.app.accent)
 
@@ -359,7 +359,7 @@ Item {
               readonly property bool isActive: !!(section.info.active && section.info.active.id === modelData.id)
               width: column.width
               height: slotRow.implicitHeight + Style.spacing.xxl
-              radius: Style.cornerRadius
+              radius: (app.design.cardRadius * 0.75)
               color: Style.normalFillFor(section.app.foreground, section.app.accent)
               borderSpec: Border.controlSpec(slotCard.isActive ? "focus" : "normal", section.app.foreground, section.app.accent)
 

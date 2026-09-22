@@ -132,7 +132,7 @@ Item {
           id: card
           anchors.fill: parent
           anchors.margins: Style.spacing.md
-          radius: Style.cornerRadius
+          radius: (app.design.cardRadius * 0.75)
           color: cell.modelData.background || section.app.background
           border.width: cell.isCurrent || cell.hasCursor ? Math.max(2, Style.space(2)) : (hover.hovered ? 1 : 0)
           border.color: cell.isCurrent ? section.app.accent
@@ -285,7 +285,7 @@ Item {
         readonly property bool isCurrent: modelData.path === section.store.currentWallpaper
         height: walls.height
         width: Math.round(height * 16 / 9)
-        radius: Style.cornerRadius
+        radius: (app.design.cardRadius * 0.75)
         color: section.app.background
         border.width: isCurrent ? Math.max(2, Style.space(2)) : 0
         border.color: section.app.accent

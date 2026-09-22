@@ -152,7 +152,7 @@ Item {
 
                 width: parent.width
                 height: widgetRow.implicitHeight + Style.spacing.lg
-                radius: Style.cornerRadius
+                radius: (app.design.cardRadius * 0.75)
                 color: Style.normalFillFor(app.foreground, app.accent)
                 borderSpec: Border.controlSpec("normal", app.foreground, app.accent)
 

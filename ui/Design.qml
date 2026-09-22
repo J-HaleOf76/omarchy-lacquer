@@ -42,11 +42,13 @@ QtObject {
   }
   readonly property color accentSoft: alpha(accent, dark ? 0.2 : 0.16)
 
-  // Corners follow the windows: a Sharp preset makes Lacquer sharp too.
+  // Window rounding still nudges how round the cards are.
   readonly property real rounding: app ? Math.max(0, Math.min(24, app.windowRounding)) : 8
-  readonly property real cardRadius: Math.round(rounding * 1.35)
-  readonly property real controlRadius: Math.round(Math.min(rounding, 16))
-  readonly property real pillRadius: rounding <= 0 ? 0 : 999
+  // Goo has no corners: controls are always fully round, and cards are round
+  // enough never to read as boxes — rounder still when the windows are.
+  readonly property real cardRadius: Math.round(16 + rounding * 0.6)
+  readonly property real controlRadius: 999
+  readonly property real pillRadius: 999
 
   // Words in a sans, numbers and keys in the theme's own mono.
   readonly property string sans: {

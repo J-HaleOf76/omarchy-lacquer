@@ -134,7 +134,7 @@ Item {
       Rectangle {
         visible: root.isColor && root.modified
         anchors.verticalCenter: parent.verticalCenter
-        radius: Style.cornerRadius
+        radius: height / 2
         color: Style.selectedFillFor(Color.urgent, Color.urgent)
         width: pinLabel.implicitWidth + Style.spacing.md
         height: pinLabel.implicitHeight + Style.spacing.xs
@@ -252,7 +252,7 @@ Item {
       visible: root.isColor
       width: Style.space(26)
       height: Style.space(20)
-      radius: Style.cornerRadius
+      radius: height / 2
       anchors.verticalCenter: parent.verticalCenter
       border.width: 1
       border.color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.35)

@@ -1,6 +1,6 @@
 import QtQuick
 
-// An action: a glossy pill that squishes when pressed and springs back.
+// An action: a round, flat pill.
 Item {
   id: button
 
@@ -34,27 +34,15 @@ Item {
 
   implicitWidth: row.implicitWidth + padX * 2
   implicitHeight: row.implicitHeight + padY * 2
-  opacity: enabled ? 1 : 0.4
 
   Rectangle {
     id: body
     anchors.fill: parent
-    radius: button.design.rounding <= 0 ? 0 : button.design.controlRadius
+    radius: height / 2
     color: button.selected ? (button.soft ? button.design.accentSoft : button.design.accent) : button.hot ? button.design.hover : button.design.raised
     border.width: button.selected && !button.soft ? 0 : 1
     border.color: button.danger ? "#d0485f" : (button.hasCursor || (button.soft && button.selected)) ? button.design.alpha(button.design.accent, 0.5) : button.design.hairline
     Behavior on color { ColorAnimation { duration: 160 } }
-
-    Rectangle {
-      anchors.fill: parent
-      anchors.margins: 1
-      radius: Math.max(0, parent.radius - 1)
-      visible: !button.selected || button.soft
-      gradient: Gradient {
-        GradientStop { position: 0; color: button.design.sheen }
-        GradientStop { position: 0.55; color: "transparent" }
-      }
-    }
   }
 
   Row {
@@ -81,15 +69,9 @@ Item {
     }
   }
 
-  // Squash on press (wider, flatter), then a jelly spring back to shape.
-  transform: Scale {
-    origin.x: button.width / 2
-    origin.y: button.height / 2
-    xScale: mouse.pressed ? 1.05 : 1
-    yScale: mouse.pressed ? 0.88 : 1
-    Behavior on xScale { enabled: button.design.motion; SpringAnimation { spring: 5; damping: 0.13; mass: button.design.mass } }
-    Behavior on yScale { enabled: button.design.motion; SpringAnimation { spring: 5; damping: 0.13; mass: button.design.mass } }
-  }
+  // A press darkens it for a moment rather than squashing it.
+  opacity: enabled ? (mouse.pressed ? 0.8 : 1) : 0.4
+  Behavior on opacity { NumberAnimation { duration: 120 } }
 
   MouseArea {
     id: mouse

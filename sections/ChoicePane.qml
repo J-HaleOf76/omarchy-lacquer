@@ -174,21 +174,11 @@ Item {
           }
           Timer { id: lingerTimer; interval: 380; onTriggered: groupItem.lingering = true }
 
-          // Cards drop in one after another and land like something soft:
-          // `appear` overshoots on an elastic curve, and the overshoot is what
-          // squashes and stretches the card.
+          // Cards settle in one after another, sinking slowly into place.
           property real appear: 1
-          opacity: Math.min(1, appear * 2)
+          opacity: Math.min(1, appear * 1.6)
           lifted: cardHover.hovered
-          transform: [
-            Translate { y: (1 - groupItem.appear) * 26 },
-            Scale {
-              origin.x: groupItem.width / 2
-              origin.y: groupItem.height
-              xScale: 1 + (groupItem.appear - 1) * 0.05
-              yScale: 1 - (groupItem.appear - 1) * 0.14
-            }
-          ]
+          transform: Translate { y: (1 - groupItem.appear) * 10 }
           Connections {
             target: pane
             function onCascadeRequested() {
@@ -200,7 +190,7 @@ Item {
           SequentialAnimation {
             id: groupCascade
             PauseAnimation { duration: 30 + groupItem.index * 55 }
-            NumberAnimation { target: groupItem; property: "appear"; to: 1; duration: Math.round(760 * pane.design.mass); easing.type: Easing.OutElastic; easing.amplitude: 1.1; easing.period: 0.38 }
+            NumberAnimation { target: groupItem; property: "appear"; to: 1; duration: Math.round(560 * pane.design.mass); easing.type: Easing.OutQuint }
           }
 
           Column {
@@ -395,7 +385,7 @@ Item {
                 required property int index
                 width: Style.space(196)
                 height: tileColumn.implicitHeight + Style.spacing.lg * 2
-                radius: Style.cornerRadius
+                radius: (app.design.cardRadius * 0.75)
                 bordered: true
                 current: modelData.value === groupItem.modelData.current
                 hasCursor: groupItem.groupHasCursor && index === pane.cursorOption
@@ -455,7 +445,7 @@ Item {
             visible: groupItem.modelData.kind === "art"
             width: parent.width
             height: visible ? Math.min(Style.space(180), artText.implicitHeight + Style.spacing.lg * 2) : 0
-            radius: Style.cornerRadius
+            radius: (app.design.cardRadius * 0.75)
             color: Qt.rgba(0, 0, 0, 0.85)
             clip: true
             Text {
@@ -505,7 +495,7 @@ Item {
                 required property int index
                 width: Style.space(196)
                 height: cardColumn.implicitHeight + Style.spacing.md * 2
-                radius: Style.cornerRadius
+                radius: (app.design.cardRadius * 0.75)
                 bordered: true
                 current: modelData.value === groupItem.modelData.current
                 hasCursor: groupItem.groupHasCursor && index === pane.cursorOption
@@ -522,7 +512,7 @@ Item {
                   Rectangle {
                     width: parent.width
                     height: Math.round(width * 9 / 16)
-                    radius: Math.max(0, Style.cornerRadius - 2)
+                    radius: Math.max(0, (app.design.cardRadius * 0.75) - 2)
                     color: "#000000"
                     clip: true
                     Image {
@@ -605,7 +595,7 @@ Item {
               required property int index
               width: fontList.width
               height: Style.space(34)
-              radius: Style.cornerRadius
+              radius: (app.design.cardRadius * 0.75)
               current: modelData.value === groupItem.modelData.current
               hasCursor: groupItem.groupHasCursor && index === pane.cursorOption
               foreground: pane.app.foreground

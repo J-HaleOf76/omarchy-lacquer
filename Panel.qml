@@ -289,6 +289,26 @@ Item {
   // "?" in the header, or the ? key: the keyboard shortcuts for this page.
   property bool showHints: false
 
+  // Someone is using Lacquer while they have moved the pointer over it or
+  // pressed a key in the last half minute. The ambient goo and the breathing
+  // run only then, so an open panel left alone costs nothing.
+  property bool lively: true
+  function poke() {
+    if (!root.lively) root.lively = true
+    idleTimer.restart()
+  }
+  Timer { id: idleTimer; interval: 30000; running: true; onTriggered: root.lively = false }
+
+  // The breath: a slow swell and settle, about one every four seconds.
+  property real breath: 0
+  property real breathT: 0
+  Timer {
+    interval: 66
+    repeat: true
+    running: root.opened && root.lively && root.motion
+    onTriggered: { root.breathT += 0.066; root.breath = Math.sin(root.breathT * 1.55) }
+  }
+
   readonly property string footerMessage: root.errorText !== "" ? root.errorText
     : root.statusText !== "" ? root.statusText
     : root.backupStamp !== "" ? "Backed up looknfeel.lua, shell.toml and shell.json as *.lacquer-backup-" + root.backupStamp
@@ -1076,12 +1096,32 @@ Item {
       anchors.centerIn: parent
       width: Math.min(Style.space(root.panelSizeSpec.w), window.width - Style.gapsOut * 4)
       height: Math.min(Style.space(root.panelSizeSpec.h), window.height - Style.gapsOut * 4)
-      radius: Style.cornerRadius
+      // As round as the cards inside it: no square window around the goo.
+      radius: root.design.cardRadius + 6
       color: root.background
       borderSpec: Border.surfaceSpec("menu", "border", Color.menu.border, Math.max(1, Style.space(2)))
       padding: Style.spacing.panelPadding
 
       MouseArea { anchors.fill: parent; onClicked: {} }
+
+      // Anything the pointer does over the panel counts as someone using it.
+      HoverHandler { onPointChanged: root.poke() }
+
+      // The slow goo behind everything. Inset so it stays inside the card's
+      // rounded corners.
+      AmbientGoo {
+        anchors.fill: parent
+        anchors.margins: card.radius * 0.5
+        design: root.design
+        palette: {
+          var info = root.theme.themeFor(root.theme.current) || ({})
+          var out = []
+          var raw = [info.accent].concat(info.colors || [])
+          for (var i = 0; i < raw.length && out.length < 7; i++) if (raw[i]) out.push(String(raw[i]))
+          return out.length ? out : [String(root.accent)]
+        }
+        running: root.opened && root.lively
+      }
 
       Item {
         id: keyCatcher
@@ -1089,6 +1129,7 @@ Item {
         focus: true
 
         Keys.onPressed: function(event) {
+          root.poke()
           var plain = !(event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier))
 
           if (event.modifiers & Qt.ControlModifier) {
@@ -1249,7 +1290,7 @@ Item {
           readonly property bool showing: !root.legacyDismissed && (hypr.legacyBlocks.length > 0 || root.legacyPresent.length > 0)
           Layout.preferredHeight: showing ? migrationRow.implicitHeight + Style.spacing.xxl : 0
           visible: showing
-          radius: Style.cornerRadius
+          radius: root.design.cardRadius
           color: Style.selectedFillFor(root.accent, root.accent)
           borderSpec: Border.controlSpec("normal", root.accent, root.accent)
 
@@ -1351,6 +1392,7 @@ Item {
               design: root.design
               style: "rail"
               fontSize: 14
+              breath: root.breath
               options: {
                 var out = []
                 for (var i = 0; i < root.railEntries.length; i++)
@@ -1381,16 +1423,14 @@ Item {
               Scale { id: pageScale; origin.x: pageContent.width / 2; origin.y: Style.space(40) }
             ]
 
-            // A new page drips into place: it lands a little stretched, like a
-            // drop hitting a surface, squashes, and wobbles back to shape.
+            // A new page sinks gently into place, as if settling under its
+            // own weight: a short slide and a fade, nothing that bounces.
             ParallelAnimation {
               id: pageEnter
               property string axis: "y"
               property int dir: 1
-              NumberAnimation { target: pageShift; property: pageEnter.axis; from: pageEnter.dir * Style.space(pageEnter.axis === "y" ? 34 : 42); to: 0; duration: Math.round(motionStore.uiDuration * 1.9); easing.type: Easing.OutElastic; easing.amplitude: 1.0; easing.period: 0.42 }
-              NumberAnimation { target: pageContent; property: "opacity"; from: 0; to: 1; duration: Math.round(motionStore.uiDuration * 0.5); easing.type: Easing.OutCubic }
-              NumberAnimation { target: pageScale; property: pageEnter.axis === "y" ? "yScale" : "xScale"; from: 1.07; to: 1; duration: Math.round(motionStore.uiDuration * 2.1); easing.type: Easing.OutElastic; easing.amplitude: 1.2; easing.period: 0.34 }
-              NumberAnimation { target: pageScale; property: pageEnter.axis === "y" ? "xScale" : "yScale"; from: 0.96; to: 1; duration: Math.round(motionStore.uiDuration * 2.1); easing.type: Easing.OutElastic; easing.amplitude: 1.2; easing.period: 0.34 }
+              NumberAnimation { target: pageShift; property: pageEnter.axis; from: pageEnter.dir * Style.space(pageEnter.axis === "y" ? 12 : 16); to: 0; duration: Math.round(motionStore.uiDuration * 1.2); easing.type: Easing.OutQuint }
+              NumberAnimation { target: pageContent; property: "opacity"; from: 0; to: 1; duration: Math.round(motionStore.uiDuration * 0.8); easing.type: Easing.OutCubic }
               onStopped: { pageShift.x = 0; pageShift.y = 0; pageContent.opacity = 1; pageScale.xScale = 1; pageScale.yScale = 1 }
             }
 
@@ -1408,6 +1448,7 @@ Item {
                 design: root.design
                 style: "pills"
                 fontSize: 14
+                breath: root.breath
                 options: root.subTabs
                 value: root.currentSub
                 onChanged: function(v) { root.goToSub(v) }

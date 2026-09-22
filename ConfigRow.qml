@@ -26,6 +26,19 @@ Item {
   // has rested on for a moment.
   property bool lingering: false
   readonly property bool open: hasCursor || lingering
+
+  // Which moving picture shows what this setting does, if any.
+  readonly property string previewKind: {
+    var k = item.key
+    if (["general:gaps_in", "general:gaps_out", "general:float_gaps", "general:gaps_workspaces"].indexOf(k) >= 0) return "gaps"
+    if (k === "general:border_size") return "border"
+    if (k === "decoration:rounding") return "corner"
+    if (["decoration:active_opacity", "decoration:inactive_opacity", "decoration:fullscreen_opacity"].indexOf(k) >= 0) return "opacity"
+    if (["decoration:dim_strength", "decoration:dim_special", "decoration:dim_around"].indexOf(k) >= 0) return "dim"
+    if (k === "decoration:blur:size") return "blur"
+    if (k === "decoration:shadow:range" || k === "decoration:glow:range") return "shadow"
+    return ""
+  }
   property var value: 0
   property bool modified: false
   property bool available: true
@@ -138,6 +151,13 @@ Item {
       font.pixelSize: 13
       width: parent.width
       wrapMode: Text.WordWrap
+    }
+
+    // What it does, moving: follows the slider while it is dragged.
+    LqPreview {
+      design: root.design
+      kind: root.open && root.design ? root.previewKind : ""
+      value: root.numValue
     }
   }
 
