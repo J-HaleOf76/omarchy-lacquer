@@ -7,14 +7,13 @@ One app for how your Omarchy desktop looks.
 [![Watch the 90-second tour](docs/media/video-thumbnail.webp)](https://github.com/Deunnis/omarchy-lacquer/releases/download/v0.3.0/lacquer-showcase.mp4)
 <sub>▶ [Watch the 90-second tour](https://github.com/Deunnis/omarchy-lacquer/releases/download/v0.3.0/lacquer-showcase.mp4) (MP4, 17 MB)</sub>
 
-| Group | Sections |
+| Main tab | Sub tabs › pages |
 |---|---|
-| Theme | Theme & wallpaper · Shuffle · Generate (aether) · **Motion** |
-| Desktop | Fonts & text · GTK & icons · Cursor · Nightlight · **Size** · **Displays** |
-| Windows | Windows · Decoration · Effects · Groups · **Borders & shape** · **Screen frame** · Animations · Curves |
-| Shell | Shell style · Bar · Menu look |
-| Screens | Lock & boot · Screensaver |
-| Apps | Terminals · btop & prompt · **App launcher** · **App windows** · Plugins |
+| Theme | Themes · Shuffle · Generate (aether) |
+| Desktop | Text › Fonts & text, Size · Look › GTK & icons, Cursor · Screens › Displays, Nightlight · Lock › Lock & boot, Screensaver |
+| Windows | Shape › Borders & shape, Decoration · Effects › Effects, Screen frame · Layout › Windows, Groups · Motion › Motion, Animations, Curves |
+| Shell | Style · Bar · Menu |
+| Apps | Terminals › Terminals, btop & prompt · Launcher › App launcher, App windows · Plugins |
 
 <table>
 <tr>
@@ -539,7 +538,8 @@ already exist.
 | `Backspace` | reset the row to Omarchy's default; in Desktop, unpin |
 | `Enter` | apply the chosen theme or choice |
 | `l` `g` `o` | Generate: light/dark, generate (asks first), open aether |
-| `Tab` / `Shift+Tab` | change section |
+| `Tab` / `Shift+Tab` | next / previous page, in the order of the tabs |
+| `?` | show the keys for this page |
 | `[` / `]` | change sub-tab, or pick a plugin |
 | `P` | play the curve preview |
 | `Ctrl+Z` | undo |
