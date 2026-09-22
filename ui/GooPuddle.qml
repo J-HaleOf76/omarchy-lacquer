@@ -16,11 +16,19 @@ Canvas {
   antialiasing: true
   renderStrategy: Canvas.Cooperative
 
-  function splash(x) {
+  // How hard the last drop landed: the droplet that jumps back out lands
+  // softer, so its ripple is smaller.
+  function splash(x, strength) {
     at = Math.max(0.1, Math.min(0.9, x / Math.max(1, width)))
     if (!design.motion) return
-    ripple = 1
+    ripple = strength === undefined ? 1 : strength
     settle.restart()
+  }
+
+  // The surface height at a point, so a droplet can leave from and return to it.
+  function surfaceY(x) {
+    var u = Math.max(0, Math.min(1, (x - 4) / Math.max(1, width - 8)))
+    return (height - 2) - ((height - 2) - height * 0.3) * Math.pow(Math.sin(Math.PI * u), 0.28)
   }
 
   NumberAnimation { id: settle; target: puddle; property: "ripple"; to: 0; duration: 1300; easing.type: Easing.OutCubic }

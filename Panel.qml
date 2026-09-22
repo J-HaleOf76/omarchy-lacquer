@@ -1434,7 +1434,8 @@ Item {
 
             Rectangle {
               id: fallingDrop
-              z: 1
+              // In front of the theme card, so you can watch it fall all the way.
+              z: 3
               width: 7
               height: 9
               radius: 3.5
@@ -1445,7 +1446,38 @@ Item {
               id: falling
               PauseAnimation { duration: 160 }
               NumberAnimation { id: fall; target: fallingDrop; property: "y"; easing.type: Easing.InQuad }
-              ScriptAction { script: { fallingDrop.opacity = 0; puddle.splash(fallingDrop.x + fallingDrop.width / 2) } }
+              ScriptAction { script: {
+                fallingDrop.opacity = 0
+                var cx = fallingDrop.x + fallingDrop.width / 2
+                puddle.splash(cx, 1)
+                // Like water: a small droplet jumps back up out of the puddle
+                // where the drop went in, hangs for a moment, and falls back.
+                var surface = puddle.y + puddle.surfaceY(cx - puddle.x)
+                rebound.x = cx - rebound.width / 2
+                rebound.y = surface - rebound.height / 2
+                reboundUp.from = rebound.y
+                reboundUp.to = rebound.y - 16
+                reboundDown.to = rebound.y
+                rebound.opacity = 0.8
+                bouncing.restart()
+              } }
+            }
+
+            Rectangle {
+              id: rebound
+              z: 3
+              width: 5
+              height: 5
+              radius: 2.5
+              color: root.design.accent
+              opacity: 0
+            }
+            SequentialAnimation {
+              id: bouncing
+              PauseAnimation { duration: 60 }
+              NumberAnimation { id: reboundUp; target: rebound; property: "y"; duration: 230; easing.type: Easing.OutQuad }
+              NumberAnimation { id: reboundDown; target: rebound; property: "y"; duration: 210; easing.type: Easing.InQuad }
+              ScriptAction { script: { rebound.opacity = 0; puddle.splash(rebound.x + rebound.width / 2 - puddle.x, 0.4) } }
             }
 
             ThemeGlance {
