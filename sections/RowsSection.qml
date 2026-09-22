@@ -87,8 +87,11 @@ Item {
       // Rows of a page just switched to cascade in; rows scrolled into view
       // later appear as they always did.
       property real appear: 1
-      opacity: appear
-      transform: Translate { x: (1 - rowLoader.appear) * Style.space(18) }
+      opacity: Math.min(1, appear * 2)
+      transform: [
+        Translate { y: (1 - rowLoader.appear) * 18 },
+        Scale { origin.y: rowLoader.height; yScale: 1 - (rowLoader.appear - 1) * 0.16 }
+      ]
       Component.onCompleted: {
         if (!app.motion || !app.cascadeArmed || index > 16) return
         appear = 0
@@ -96,8 +99,8 @@ Item {
       }
       SequentialAnimation {
         id: rowCascade
-        PauseAnimation { duration: 40 + rowLoader.index * 24 }
-        NumberAnimation { target: rowLoader; property: "appear"; to: 1; duration: 320; easing.type: Easing.OutCubic }
+        PauseAnimation { duration: 40 + rowLoader.index * 30 }
+        NumberAnimation { target: rowLoader; property: "appear"; to: 1; duration: Math.round(700 * app.design.mass); easing.type: Easing.OutElastic; easing.amplitude: 1.05; easing.period: 0.4 }
       }
       sourceComponent: modelData.kind === "header" ? headerRow
         : modelData.kind === "leaf" ? leafRow

@@ -8,6 +8,10 @@ Item {
   required property var design
   property real padding: 16
   property bool active: false
+  // Under the pointer: it rises a little on a spring and its shadow deepens.
+  property bool lifted: false
+  property real lift: lifted ? 1 : 0
+  Behavior on lift { enabled: card.design.motion; SpringAnimation { spring: 3.5; damping: 0.2; mass: card.design.mass } }
   default property alias content: inner.data
 
   implicitHeight: inner.childrenRect.height + padding * 2
@@ -15,16 +19,18 @@ Item {
   // A soft shadow, one step down.
   Rectangle {
     anchors.fill: parent
-    anchors.topMargin: 2
-    anchors.bottomMargin: -2
+    anchors.topMargin: 2 + card.lift * 2
+    anchors.bottomMargin: -2 - card.lift * 3
     radius: body.radius
     color: card.design.shade
-    opacity: 0.8
+    opacity: 0.8 + card.lift * 0.4
   }
 
   Rectangle {
     id: body
     anchors.fill: parent
+    anchors.topMargin: -card.lift * 2
+    anchors.bottomMargin: card.lift * 2
     radius: card.design.cardRadius
     color: card.design.raised
     border.width: 1
@@ -46,7 +52,7 @@ Item {
   Item {
     id: inner
     x: card.padding
-    y: card.padding
+    y: card.padding - card.lift * 2
     width: card.width - card.padding * 2
     height: childrenRect.height
   }

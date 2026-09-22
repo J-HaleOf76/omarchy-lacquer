@@ -174,9 +174,21 @@ Item {
           }
           Timer { id: lingerTimer; interval: 380; onTriggered: groupItem.lingering = true }
 
+          // Cards drop in one after another and land like something soft:
+          // `appear` overshoots on an elastic curve, and the overshoot is what
+          // squashes and stretches the card.
           property real appear: 1
-          opacity: appear
-          transform: Translate { y: (1 - groupItem.appear) * Style.space(12) }
+          opacity: Math.min(1, appear * 2)
+          lifted: cardHover.hovered
+          transform: [
+            Translate { y: (1 - groupItem.appear) * 26 },
+            Scale {
+              origin.x: groupItem.width / 2
+              origin.y: groupItem.height
+              xScale: 1 + (groupItem.appear - 1) * 0.05
+              yScale: 1 - (groupItem.appear - 1) * 0.14
+            }
+          ]
           Connections {
             target: pane
             function onCascadeRequested() {
@@ -187,8 +199,8 @@ Item {
           }
           SequentialAnimation {
             id: groupCascade
-            PauseAnimation { duration: 30 + groupItem.index * 45 }
-            NumberAnimation { target: groupItem; property: "appear"; to: 1; duration: 340; easing.type: Easing.OutCubic }
+            PauseAnimation { duration: 30 + groupItem.index * 55 }
+            NumberAnimation { target: groupItem; property: "appear"; to: 1; duration: Math.round(760 * pane.design.mass); easing.type: Easing.OutElastic; easing.amplitude: 1.1; easing.period: 0.38 }
           }
 
           Column {

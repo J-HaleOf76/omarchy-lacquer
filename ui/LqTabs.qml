@@ -71,7 +71,10 @@ Item {
       blob.target = Qt.rect(p.x, p.y, item.width, item.height)
     }
   }
-  onSelectedIndexChanged: Qt.callLater(placeBlob)
+  onSelectedIndexChanged: {
+    Qt.callLater(placeBlob)
+    if (isRail && design.motion) dripTimer.restart()
+  }
   onWidthChanged: Qt.callLater(placeBlob)
   onOptionsChanged: Qt.callLater(placeBlob)
 
@@ -93,6 +96,33 @@ Item {
     animated: tabs.design.motion
     mass: tabs.design.mass
   }
+
+  // On the rail, a drop of accent falls from the blob once it has landed:
+  // it starts stuck to the bottom of the pill, stretches a neck as it pulls
+  // away — the trailing edge is the slow one — and fades as it falls.
+  GooBlob {
+    id: drip
+    z: 1
+    visible: tabs.isRail && tabs.design.motion
+    color: tabs.design.accent
+    radius: 5
+    mass: tabs.design.mass * 1.3
+    opacity: 0
+  }
+  Timer {
+    id: dripTimer
+    interval: Math.round(300 * tabs.design.mass)
+    onTriggered: {
+      var b = blob.target
+      if (b.width <= 0) return
+      var cx = b.x + b.width * 0.5
+      drip.opacity = 1
+      drip.jump(Qt.rect(cx - 9, b.y + b.height - 10, 18, 10))
+      drip.target = Qt.rect(cx - 5, b.y + b.height + 36, 10, 11)
+      dripFade.restart()
+    }
+  }
+  NumberAnimation { id: dripFade; target: drip; property: "opacity"; from: 1; to: 0; duration: Math.round(820 * tabs.design.mass); easing.type: Easing.InCubic }
 
   Flow {
     id: flow

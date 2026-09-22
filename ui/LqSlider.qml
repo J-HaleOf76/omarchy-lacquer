@@ -39,9 +39,11 @@ Item {
   // pointer, so a release is compared with this instead.
   property real startValue: 0
   property real dragValue: value
-  readonly property real shown: dragging ? dragValue : value
+  // A value that is not a number sits at the start rather than nowhere.
+  readonly property real safeValue: isFinite(value) ? value : from
+  readonly property real shown: dragging ? dragValue : safeValue
   readonly property real range: Math.max(0.000001, to - from)
-  readonly property real progress: Math.max(0, Math.min(1, (shown - from) / range))
+  readonly property real progress: { var p = (shown - from) / range; return isFinite(p) ? Math.max(0, Math.min(1, p)) : 0 }
 
   implicitWidth: 320
   implicitHeight: 30
@@ -110,7 +112,7 @@ Item {
       hoverEnabled: true
       cursorShape: Qt.PointingHandCursor
       preventStealing: true
-      onPressed: function(m) { slider.startValue = slider.value; slider.dragging = true; slider.dragValue = slider.valueAt(m.x); slider.moved(slider.dragValue) }
+      onPressed: function(m) { slider.startValue = slider.safeValue; slider.dragging = true; slider.dragValue = slider.valueAt(m.x); slider.moved(slider.dragValue) }
       onPositionChanged: function(m) {
         if (!slider.dragging) return
         var v = slider.valueAt(m.x)

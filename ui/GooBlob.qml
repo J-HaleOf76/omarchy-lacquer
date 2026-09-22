@@ -49,6 +49,10 @@ Canvas {
   Behavior on eb { enabled: goo.animated && goo.placed; SpringAnimation { spring: goo.kb; damping: goo.damping; mass: goo.mass; epsilon: 0.08 } }
 
   function settle() {
+    // A target that is not a number (a slider handed undefined, say) would
+    // never be reached: NaN is never equal to itself, so the springs would
+    // run and repaint forever. Stay where it is instead.
+    if (!isFinite(target.x) || !isFinite(target.y) || !isFinite(target.width) || !isFinite(target.height)) return
     var tl = target.x + pad, tr = target.x + target.width + pad
     var tt = target.y + pad, tb = target.y + target.height + pad
     if (!placed || target.width <= 0) {
@@ -63,6 +67,13 @@ Canvas {
     kt = tt < et ? fast : slow
     kb = tb > eb ? fast : slow
     el = tl; er = tr; et = tt; eb = tb
+  }
+
+  // Put it somewhere at once, with no travel, e.g. to start a drip from.
+  function jump(r) {
+    placed = false
+    target = r
+    settle()
   }
 
   onTargetChanged: Qt.callLater(settle)

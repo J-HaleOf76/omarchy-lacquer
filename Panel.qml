@@ -1381,14 +1381,16 @@ Item {
               Scale { id: pageScale; origin.x: pageContent.width / 2; origin.y: Style.space(40) }
             ]
 
+            // A new page drips into place: it lands a little stretched, like a
+            // drop hitting a surface, squashes, and wobbles back to shape.
             ParallelAnimation {
               id: pageEnter
               property string axis: "y"
               property int dir: 1
-              NumberAnimation { target: pageShift; property: pageEnter.axis; from: pageEnter.dir * Style.space(pageEnter.axis === "y" ? 26 : 34); to: 0; duration: motionStore.uiDuration; easing.type: root.easingFor(motionStore.uiEasing) }
-              NumberAnimation { target: pageContent; property: "opacity"; from: 0; to: 1; duration: Math.round(motionStore.uiDuration * 0.63); easing.type: Easing.OutCubic }
-              NumberAnimation { target: pageScale; property: "xScale"; from: 0.985; to: 1; duration: Math.round(motionStore.uiDuration * 1.1); easing.type: Easing.OutBack; easing.overshoot: 1.6 }
-              NumberAnimation { target: pageScale; property: "yScale"; from: 0.985; to: 1; duration: Math.round(motionStore.uiDuration * 1.1); easing.type: Easing.OutBack; easing.overshoot: 1.6 }
+              NumberAnimation { target: pageShift; property: pageEnter.axis; from: pageEnter.dir * Style.space(pageEnter.axis === "y" ? 34 : 42); to: 0; duration: Math.round(motionStore.uiDuration * 1.9); easing.type: Easing.OutElastic; easing.amplitude: 1.0; easing.period: 0.42 }
+              NumberAnimation { target: pageContent; property: "opacity"; from: 0; to: 1; duration: Math.round(motionStore.uiDuration * 0.5); easing.type: Easing.OutCubic }
+              NumberAnimation { target: pageScale; property: pageEnter.axis === "y" ? "yScale" : "xScale"; from: 1.07; to: 1; duration: Math.round(motionStore.uiDuration * 2.1); easing.type: Easing.OutElastic; easing.amplitude: 1.2; easing.period: 0.34 }
+              NumberAnimation { target: pageScale; property: pageEnter.axis === "y" ? "xScale" : "yScale"; from: 0.96; to: 1; duration: Math.round(motionStore.uiDuration * 2.1); easing.type: Easing.OutElastic; easing.amplitude: 1.2; easing.period: 0.34 }
               onStopped: { pageShift.x = 0; pageShift.y = 0; pageContent.opacity = 1; pageScale.xScale = 1; pageScale.yScale = 1 }
             }
 
