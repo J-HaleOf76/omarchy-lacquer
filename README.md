@@ -9,11 +9,14 @@ One app for how your Omarchy desktop looks.
 
 | Main tab | Sub tabs › pages |
 |---|---|
-| Theme | Themes · Shuffle · Generate (aether) |
-| Desktop | Text › Fonts & text, Size · Look › GTK & icons, Cursor · Screens › Displays, Nightlight · Lock › Lock & boot, Screensaver |
-| Windows | Shape › Borders & shape, Decoration · Effects › Effects, Screen frame · Layout › Windows, Groups · Motion › Motion, Animations, Curves |
-| Shell | Style · Bar · Menu |
-| Apps | Terminals › Terminals, btop & prompt · Launcher › App launcher, App windows · Plugins |
+| Colours & wallpaper | Themes · Shuffle · Make a theme |
+| Screen & text | Text › Fonts & text size, Size of everything · Look of apps › Light or dark & icons, Mouse pointer · Screens › Resolution & scale, Night light · Lock screen › Lock & start-up screen, Screensaver |
+| Windows | Shape › Shape & border, Corners & see-through · Effects › Glass & shadow, Screen frame · Layout › Spacing & layout, Grouped windows · Motion › Motion feel, Animations, Animation curves |
+| Top bar & menus | Style · Top bar · App menu |
+| Apps | Terminal › Terminal, System monitor & prompt · App list › App list, App windows · Add-ons |
+
+Every setting is named in everyday words; resting on one opens its explanation,
+with the technical name in small print for anyone following a guide online.
 
 <table>
 <tr>

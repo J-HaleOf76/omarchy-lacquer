@@ -54,22 +54,22 @@ Item {
 
   readonly property var fontGroups: !section.d ? [] : [
     section.addGroup("font", "Add a font",
-      "A downloaded .ttf or .otf, or a .zip or .tar.gz of them. They go to ~/.local/share/fonts/ and appear in the lists below once the font cache is rebuilt."),
+      "A font file you downloaded (.ttf or .otf), or a .zip of them. It is added for you and shows up in the lists below."),
     {
-      id: "text-size", kind: "stepper", title: "Text size",
+      id: "text-size", kind: "stepper", tech: "omarchy display text size", title: "Text size",
       num: section.store.textPx, min: 9, max: 20, stepSize: 1,
-      note: "One knob for the shell, GTK apps and terminals, the same as `omarchy display text size`."
-        + (section.d.text.terminalPt ? " Terminals are at " + section.d.text.terminalPt + " pt now; "
+      note: "One setting for text everywhere: the top bar and menus, your apps and the terminal."
+        + (section.d.text.terminalPt ? " The terminal is at " + section.d.text.terminalPt + " pt now; "
            + section.store.textPx + " px sets them to " + Math.floor(section.store.textPx * 9 / 12 + 0.5) + " pt." : ""),
       value: section.store.textPx, unit: "px",
       step: function(delta) { section.store.stepTextSize(delta) },
       reset: function() { section.store.resetTextSize() }, resetLabel: "Default (12)"
     },
     {
-      id: "mono", kind: "chips", title: "Terminal & code font",
+      id: "mono", kind: "chips", tech: "omarchy font set", title: "Terminal font",
       note: section.store.confirmMono !== ""
-        ? "Pick " + section.store.confirmMono + " again to set it. The shell restarts to load it, and Lacquer reopens here."
-        : "Used by terminals and the shell. Setting one restarts the shell.",
+        ? "Pick " + section.store.confirmMono + " again to use it. The desktop reloads for a moment to load it, and this window comes back."
+        : "The font in the terminal, the window where you type commands, and in the top bar and menus. Changing it reloads the desktop for a moment.",
       current: section.d.mono.current,
       options: section.d.mono.list.map(function(f) {
         return { value: f, label: section.store.confirmMono === f ? "Set " + f + "?" : f }
@@ -77,16 +77,16 @@ Item {
       pick: function(v) { if (v !== section.d.mono.current) section.store.setMonoFont(v) }
     },
     {
-      id: "ui-size", kind: "stepper", title: "Interface font size",
+      id: "ui-size", kind: "stepper", tech: "GTK interface font size", title: "App text size",
       num: section.store.uiSize, min: 8, max: 20, stepSize: 1,
-      note: "The GTK interface font, before text size scales it.",
+      note: "The size of text inside your apps, before Text size makes everything bigger or smaller.",
       value: section.store.uiSize, unit: "pt",
       step: function(delta) { section.store.setUiFont("", section.store.uiSize + delta) },
       reset: function() { section.store.setUiFont("", 11) }, resetLabel: "Default (11)"
     },
     {
-      id: "ui-font", kind: "fonts", title: "Interface font",
-      note: "Used by GTK apps and anything following the desktop font. Currently " + section.d.ui.family + ".",
+      id: "ui-font", kind: "fonts", tech: "GTK interface font", title: "App font",
+      note: "The font used inside your apps. Right now it is " + section.d.ui.family + ".",
       current: section.d.ui.family,
       options: section.d.uiFonts.map(function(f) { return { value: f, label: f } }),
       pick: function(v) { section.store.setUiFont(v, section.store.uiSize) }
@@ -95,7 +95,7 @@ Item {
 
   readonly property var gtkGroups: !section.d ? [] : [
     {
-      id: "scheme", kind: "chips", title: "Light or dark apps",
+      id: "scheme", kind: "chips", tech: "gsettings color-scheme", title: "Light or dark apps",
       note: section.followNote("color-scheme", "one"),
       current: section.d.gsettings["color-scheme"],
       pinned: section.store.isPinned("color-scheme"),
@@ -104,7 +104,7 @@ Item {
       pick: function(v) { section.store.pin("color-scheme", v) }
     },
     {
-      id: "gtk", kind: "chips", title: "GTK theme",
+      id: "gtk", kind: "chips", tech: "GTK theme · gsettings gtk-theme", title: "App style",
       note: section.followNote("gtk-theme", "one"),
       current: section.d.gsettings["gtk-theme"],
       pinned: section.store.isPinned("gtk-theme"),
@@ -113,7 +113,7 @@ Item {
       pick: function(v) { section.store.pin("gtk-theme", v) }
     },
     {
-      id: "icons", kind: "icons", title: "Icon theme",
+      id: "icons", kind: "icons", tech: "gsettings icon-theme", title: "Icons",
       note: section.followNote("icon-theme", "a set"),
       current: section.d.gsettings["icon-theme"],
       pinned: section.store.isPinned("icon-theme"),
@@ -136,9 +136,9 @@ Item {
     if (!c.present) {
       if (c.confirming) {
         return [{
-          id: "install-confirm", kind: "chips", title: "Install Lacquer Shell?", noteAlways: true,
-          note: "This runs Omarchy's own installer in a terminal you can watch: "
-            + "`omarchy plugin add " + c.repo + " --enable`. It adds a second plugin that draws the frame; "
+          id: "install-confirm", kind: "chips", title: "Install the extra?", noteAlways: true,
+          note: "This opens a window where you can watch Omarchy's own installer add it: "
+            + "`omarchy plugin add " + c.repo + " --enable`. It is a second small add-on that draws the frame; "
             + "everything in it stays off until you turn it on, and you can remove it with "
             + "`omarchy plugin remove " + c.pluginId + "`.",
           options: [{ value: "yes", label: "Install it" }, { value: "no", label: "Not now" }],
@@ -146,29 +146,29 @@ Item {
         }]
       }
       return [{
-        id: "install", kind: "chips", title: "Needs the companion", noteAlways: true,
-        note: "Rounded screen corners, corner brackets, a frame around the display, a vignette, scanlines and grain are drawn by a second, optional plugin \u2014 Lacquer Shell \u2014 because something has to stay on screen to draw them. Lacquer works fine without it.",
+        id: "install", kind: "chips", title: "Needs a small extra", noteAlways: true,
+        note: "Rounded screen corners, a frame around the screen, darker edges, old-TV lines and grain are drawn by a small optional extra called Lacquer Shell, because something has to stay on screen to draw them. Lacquer works fine without it.",
         options: [{ value: "install", label: "Tell me more / install" }],
         pick: function(v) { c.askInstall() }
       }]
     }
     if (!c.frame) return [{
-      id: "no-answer", kind: "chips", title: "Companion installed", noteAlways: true,
-      note: "Lacquer Shell is installed but has not answered yet. If this stays, restart the shell with `omarchy restart shell`.",
+      id: "no-answer", kind: "chips", title: "The extra is installed", noteAlways: true,
+      note: "Lacquer Shell is installed but has not answered yet. If this stays, restart the desktop from the Omarchy menu (Update \u203a Restart).",
       options: []
     }]
     var f = c.frame
     return [
       {
         id: "frame-on", kind: "chips", title: "Screen frame",
-        note: "Drawn above everything, and it takes no clicks: the desktop underneath behaves exactly as before.",
+        note: "Drawn over everything, but clicks go straight through it: the desktop underneath works exactly as before.",
         current: f.enabled ? "on" : "off",
         options: section.onOffWords(),
         pick: function(v) { c.set("enabled", v === "on", v === "on" ? "Screen frame on" : "Screen frame off") }
       },
       {
         id: "frame-style", kind: "chips", title: "Corners",
-        note: "Rounded cuts the display's corners; brackets draws a short stroke in each corner instead.",
+        note: "Rounded makes the screen's corners round; brackets draws a short line in each corner instead.",
         current: f.style,
         options: [{ value: "corners", label: "Rounded" }, { value: "brackets", label: "Brackets" }],
         pick: function(v) { c.set("style", v, v === "corners" ? "Rounded corners" : "Corner brackets") }
@@ -180,28 +180,28 @@ Item {
         step: function(d) { c.step("corners", d, 0, 200, 4, f.style === "brackets" ? "Bracket" : "Corner", " px") }
       },
       {
-        id: "frame-width", kind: "stepper", title: "Frame width",
+        id: "frame-width", kind: "stepper", title: "Frame thickness",
         num: Math.round(f.frame), min: 0, max: 40, stepSize: 1,
-        note: "A line just inside the screen's edge, in the theme's accent colour.",
+        note: "A line just inside the edge of the screen, in your theme's main colour.",
         value: Math.round(f.frame), unit: "px",
         step: function(d) { c.step("frame", d, 0, 40, 1, "Frame", " px") }
       },
       {
-        id: "frame-fullscreen", kind: "chips", title: "Out of the way full screen",
-        note: "A film or a game playing full screen is not drawn on: the frame goes while it lasts and comes back after.",
+        id: "frame-fullscreen", kind: "chips", title: "Hide during full screen",
+        note: "While a film or a game fills the screen, the frame steps out of the way, and comes back afterwards.",
         current: f.hideFullscreen === false ? "off" : "on",
         options: section.onOffWords(),
         pick: function(v) { c.set("hideFullscreen", v === "on", v === "on" ? "Hidden while full screen" : "Always drawn") }
       },
       {
-        id: "frame-vignette", kind: "stepper", title: "Vignette",
+        id: "frame-vignette", kind: "stepper", title: "Darker edges",
         num: f.vignette, min: 0, max: 1, stepSize: 0.05, format: function(v) { return Math.round(v * 100) + " %" },
-        note: "Darkens towards the edges.",
+        note: "Makes the screen a little darker towards its edges.",
         value: Math.round(f.vignette * 100) + " %", unit: "",
         step: function(d) { c.step("vignette", d, 0, 1, 0.05, "Vignette", "%") }
       },
       {
-        id: "frame-scanlines", kind: "stepper", title: "Scanlines",
+        id: "frame-scanlines", kind: "stepper", title: "Old-TV lines",
         num: f.scanlines, min: 0, max: 1, stepSize: 0.05, format: function(v) { return Math.round(v * 100) + " %" },
         value: Math.round(f.scanlines * 100) + " %", unit: "",
         step: function(d) { c.step("scanlines", d, 0, 1, 0.05, "Scanlines", "%") }
@@ -209,7 +209,7 @@ Item {
       {
         id: "frame-grain", kind: "stepper", title: "Grain",
         num: f.grain, min: 0, max: 1, stepSize: 0.05, format: function(v) { return Math.round(v * 100) + " %" },
-        note: "A still speckle over the screen. Drawn once, so it costs nothing to leave on.",
+        note: "A faint still texture over the screen. It is drawn once, so it doesn't slow anything down.",
         value: Math.round(f.grain * 100) + " %", unit: "",
         step: function(d) { c.step("grain", d, 0, 1, 0.05, "Grain", "%") }
       }
@@ -227,7 +227,7 @@ Item {
     var out = [{
       id: "which-launcher-app", kind: "chips", title: "App",
       note: store.changedCount === 0
-        ? "Every app the launcher can show. Nothing is changed until you change it."
+        ? "Every app in the app list. Nothing changes until you change it."
         : store.changedCount + (store.changedCount === 1 ? " app has" : " apps have") + " been changed; those are marked.",
       current: store.picked,
       options: store.apps.map(function(a) {
@@ -237,9 +237,9 @@ Item {
     }]
     if (!entry) return out
     out.push({
-      id: "launcher-name", kind: "text", title: "Name",
-      note: "What the launcher calls it. Enter to save.",
-      value: entry.name, placeholder: "Name in the launcher",
+      id: "launcher-name", kind: "text", tech: "~/.local/share/applications", title: "Name",
+      note: "What the app list calls it. Press Enter to save.",
+      value: entry.name, placeholder: "Name in the app list",
       commit: function(v) { if (v && v !== entry.name) store.set("name", v, "Renamed to " + v) }
     })
     out.push({
@@ -249,16 +249,16 @@ Item {
       pick: function(v) { store.pickIcon() }
     })
     out.push({
-      id: "launcher-hidden", kind: "chips", title: "In the launcher",
-      note: "Hidden apps still run; they just stop cluttering the list.",
+      id: "launcher-hidden", kind: "chips", title: "Show in the app list",
+      note: "Hidden apps still work; they just stop showing up in the list.",
       current: entry.hidden ? "hidden" : "shown",
       options: [{ value: "shown", label: "Show it" }, { value: "hidden", label: "Hide it" }],
       pick: function(v) { store.set("hidden", v === "hidden" ? "on" : "off", v === "hidden" ? "Hidden from the launcher" : "Back in the launcher") }
     })
     if (entry.managed) {
       out.push({
-        id: "launcher-reset", kind: "chips", title: "Reset this entry",
-        note: "Deletes Lacquer's copy; the packaged entry takes over again.",
+        id: "launcher-reset", kind: "chips", title: "Undo my changes",
+        note: "Puts the name, icon and visibility back to how the app came.",
         options: [{ value: "reset", label: "Back to how it was packaged" }],
         pick: function(v) { store.reset() }
       })
@@ -278,10 +278,10 @@ Item {
     var picked = store.picked
     var rule = store.current
     var out = [{
-      id: "which-app", kind: "chips", title: "App",
+      id: "which-app", kind: "chips", tech: "matched by window class", title: "App",
       note: store.known.length === 0
-        ? "Nothing is open to point at yet. Open the app you want to rule, then come back."
-        : "Apps with rules, and everything on screen right now. A rule matches the window class exactly.",
+        ? "No app is open yet. Open the app you want to change, then come back here."
+        : "Apps you have changed, and every app open right now.",
       current: picked,
       options: store.known.map(function(k) {
         return { value: k.match, label: k.name + (k.ruled ? "  \u00b7  ruled" : "") }
@@ -290,16 +290,16 @@ Item {
     }]
     if (!picked) return out
     out.push({
-      id: "float", kind: "chips", title: "Floating",
-      note: "Take this app out of the tiling layout, or force it into it.",
+      id: "float", kind: "chips", title: "Float or fill a spot",
+      note: "A floating window can sit anywhere, on top of the others; otherwise windows fill a spot on the screen side by side.",
       current: rule && rule.float !== undefined ? (rule.float ? "float" : "tile") : "",
       options: [{ value: "", label: "Follow the layout" }, { value: "float", label: "Always float" },
                 { value: "tile", label: "Always tile" }],
       pick: function(v) { store.set("float", v === "" ? undefined : v === "float", v === "" ? "Follows the layout" : (v === "float" ? "Floats" : "Tiles")) }
     })
     out.push({
-      id: "size", kind: "chips", title: "Size when it floats",
-      note: "Only used while the window floats.",
+      id: "size", kind: "chips", title: "Size when floating",
+      note: "Only used while the window is floating.",
       current: rule && rule.width > 0 ? rule.width + "x" + rule.height : "",
       options: [{ value: "", label: "Leave it" }, { value: "800x600", label: "800\u00d7600" },
                 { value: "1100x700", label: "1100\u00d7700" }, { value: "1280x800", label: "1280\u00d7800" },
@@ -311,30 +311,30 @@ Item {
       }
     })
     out.push({
-      id: "centered", kind: "chips", title: "Centred",
+      id: "centered", kind: "chips", title: "Open in the middle",
       current: rule && rule.center ? "on" : "off", options: section.onOffWords(),
       pick: function(v) { store.set("center", v === "on", v === "on" ? "Opens centred" : "Opens where the layout puts it") }
     })
     out.push({
-      id: "workspace", kind: "chips", title: "Opens on",
-      note: "Send this app to the same workspace every time. `special` is the scratchpad.",
+      id: "workspace", kind: "chips", tech: "Hyprland workspace", title: "Opens on desktop",
+      note: "Always open this app on the same desktop. The scratchpad is a hidden desktop you can pop up over the others.",
       current: rule ? rule.workspace : "",
       options: [{ value: "", label: "Wherever you are" }].concat([1, 2, 3, 4, 5, 6].map(function(n) {
-        return { value: String(n), label: "Workspace " + n }
+        return { value: String(n), label: "Desktop " + n }
       })).concat([{ value: "special", label: "Scratchpad" }]),
       pick: function(v) { store.set("workspace", v, v === "" ? "Opens wherever you are" : "Opens on " + v) }
     })
     out.push({
-      id: "opacity", kind: "chips", title: "Opacity",
-      note: "Overrides the global window opacity for this app only.",
+      id: "opacity", kind: "chips", title: "See-through",
+      note: "How see-through this app's windows are, whatever the other windows are set to.",
       current: rule && rule.opacity !== "" ? rule.opacity : "",
-      options: [{ value: "", label: "Follow the global" }, { value: 1, label: "Solid" },
+      options: [{ value: "", label: "Like the others" }, { value: 1, label: "Solid" },
                 { value: 0.95, label: "95 %" }, { value: 0.9, label: "90 %" }, { value: 0.8, label: "80 %" }],
       pick: function(v) { store.set("opacity", v, v === "" ? "Follows the global opacity" : "Opacity " + v) }
     })
     out.push({
       id: "effects-off", kind: "chips", title: "Turn off for this app",
-      note: "Handy for apps that draw their own chrome, or that a blur makes slow.",
+      note: "Handy for apps that draw their own window edges, or that frosted glass slows down.",
       options: [{ value: "noBlur", label: (rule && rule.noBlur ? "\u2713 " : "") + "Blur" },
                 { value: "noShadow", label: (rule && rule.noShadow ? "\u2713 " : "") + "Shadow" },
                 { value: "noBorder", label: (rule && rule.noBorder ? "\u2713 " : "") + "Border" },
@@ -346,8 +346,8 @@ Item {
     })
     if (rule) {
       out.push({
-        id: "forget-rule", kind: "chips", title: "Remove",
-        note: "Takes every rule for this app back out of hyprland.lua.",
+        id: "forget-rule", kind: "chips", tech: "~/.config/hypr/hyprland.lua", title: "Remove",
+        note: "Forget everything you set for this app here.",
         options: [{ value: "forget", label: "Remove the rules for " + picked }],
         pick: function(v) { store.forget(picked) }
       })
@@ -370,7 +370,7 @@ Item {
     return [
       {
         id: "mode-" + m.name, kind: "chips", title: label,
-        note: "Resolution and refresh rate. " + m.width + "\u00d7" + m.height + " at "
+        note: "How sharp the screen is (resolution) and how smoothly it updates (refresh rate). " + m.width + "\u00d7" + m.height + " at "
           + Math.round(m.refreshRate) + " Hz right now"
           + (m.availableModes && m.availableModes.length ? ", " + modes.length + " to choose from." : "."),
         current: current,
@@ -378,8 +378,8 @@ Item {
         pick: function(v) { section.mon.propose(m.name, { mode: v }, m.name + " at " + v.replace("@", " @ ")) }
       },
       {
-        id: "scale-" + m.name, kind: "chips", title: "Scale",
-        note: "Everything is drawn this much bigger. Fractional scales can blur apps that do not handle them.",
+        id: "scale-" + m.name, kind: "chips", title: "Make things bigger",
+        note: "Draw everything on this screen bigger. In-between sizes like 125 % can make a few older apps look a little blurry.",
         current: Number(m.scale),
         options: scales.map(function(s) { return { value: s, label: s === 1 ? "100 %" : Math.round(s * 100) + " %" } }),
         pick: function(v) { section.mon.propose(m.name, { scale: v }, m.name + " at " + Math.round(v * 100) + " %") }
@@ -402,7 +402,7 @@ Item {
         id: "keep", kind: "chips", title: "Keep this?", noteAlways: true,
         note: "Trying " + section.mon.pending.label + ". Without a Keep it goes back in "
           + section.mon.countdown + " second" + (section.mon.countdown === 1 ? "" : "s")
-          + ", so a screen that went black comes back on its own.",
+          + ", so if the screen went black it comes back by itself.",
         options: [{ value: "keep", label: "Keep it" }, { value: "revert", label: "Put it back" }],
         pick: function(v) { if (v === "keep") section.mon.keep(); else section.mon.revert() }
       })
@@ -411,9 +411,9 @@ Item {
       out = out.concat(section.monitorGroupsFor(section.mon.monitors[i]))
     if (section.mon.managed) {
       out.push({
-        id: "forget", kind: "chips", title: "Written by Lacquer",
-        note: "Your screen settings are in a Lacquer block in ~/.config/hypr/monitors.lua. Omarchy's own lines above it are untouched.",
-        options: [{ value: "forget", label: "Hand them back to Omarchy" }],
+        id: "forget", kind: "chips", tech: "~/.config/hypr/monitors.lua", title: "Saved by Lacquer",
+        note: "Lacquer is keeping your screen settings. Omarchy's own are still there underneath, untouched.",
+        options: [{ value: "forget", label: "Go back to Omarchy's settings" }],
         pick: function(v) { section.mon.forget() }
       })
     }
@@ -479,34 +479,34 @@ Item {
 
   readonly property var sizeGroups: !section.d ? [] : [
     {
-      id: "desktop-scale", kind: "chips", title: "Desktop size",
-      note: "Text, cursor, window gaps and the bar's height in one go"
+      id: "desktop-scale", kind: "chips", title: "Size of everything",
+      note: "Text, the pointer, the space between windows and the top bar's height, all at once"
         + (section.scaleNow === "" ? ". Your own numbers don't match any of these right now." : ".")
-        + " Everything it sets stays editable in Fonts & text, Cursor, Windows and Bar.",
+        + " Each of them can still be changed on its own afterwards.",
       current: section.scaleNow,
       options: section.scalePresets.map(function(p) { return { value: p.value, label: p.label } }),
       pick: function(v) { section.applyScale(v) }
     },
     {
-      id: "text-size", kind: "stepper", title: "Text size",
+      id: "text-size", kind: "stepper", tech: "omarchy display text size", title: "Text size",
       num: section.store.textPx, min: 9, max: 20, stepSize: 1,
-      note: "The same knob as Fonts & text: the shell, GTK apps and terminals.",
+      note: "The same setting as in Fonts & text size: text everywhere.",
       value: section.store.textPx, unit: "px",
       step: function(d) { section.store.stepTextSize(d) },
       reset: function() { section.store.resetTextSize() }, resetLabel: "Default (12)"
     },
     {
       id: "panel-size", kind: "chips", title: "This window",
-      note: "How big Lacquer itself opens. Saved for next time.",
+      note: "How big this window opens. Remembered for next time.",
       current: section.app.panelSize,
       options: section.app.panelSizes.map(function(p) { return { value: p.value, label: p.label } }),
       pick: function(v) { section.app.setPanelSize(v) }
     },
     {
-      id: "size-where", kind: "chips", title: "Go to",
-      note: "Each surface on its own: the bar's height, menu size, notification and lock sizes in Shell style, gaps in Windows.",
-      options: [{ value: "bar", label: "Bar" }, { value: "shell", label: "Shell style" },
-                { value: "windows", label: "Windows" }, { value: "cursor", label: "Cursor" }],
+      id: "size-where", kind: "chips", title: "More of this",
+      note: "Each part on its own: the top bar, menus and notifications in Bar & menu style, the space between windows in Spacing & layout.",
+      options: [{ value: "bar", label: "Top bar" }, { value: "shell", label: "Bar & menu style" },
+                { value: "windows", label: "Spacing & layout" }, { value: "cursor", label: "Mouse pointer" }],
       pick: function(v) { section.app.showSectionById(v) }
     }
   ]
@@ -517,23 +517,23 @@ Item {
   // undo step; the gradient itself derives its colours from the theme at
   // config-load time (StyleLua.renderBorders), so it survives theme switches.
   readonly property var shapePresets: [
-    { value: "sharp", label: "Sharp", blurb: "No rounding, a hairline border, nothing behind it.",
+    { value: "sharp", label: "Sharp", blurb: "Square corners, a thin border and no shadow.",
       keys: { "decoration:rounding": 0, "decoration:rounding_power": 2, "general:border_size": 1,
               "decoration:shadow:enabled": false, "decoration:glow:enabled": false },
       border: { mode: "", amount: 0.4, angle: 45, inactive: false, groups: true } },
-    { value: "soft", label: "Soft", blurb: "Rounded corners, a light gradient and a soft shadow.",
+    { value: "soft", label: "Soft", blurb: "Rounded corners, a gentle colour fade on the border and a soft shadow.",
       keys: { "decoration:rounding": 12, "decoration:rounding_power": 2, "general:border_size": 2,
               "decoration:shadow:enabled": true, "decoration:shadow:range": 20, "decoration:glow:enabled": false },
       border: { mode: "lighter", amount: 0.35, angle: 45, inactive: false, groups: true } },
-    { value: "pill", label: "Pill", blurb: "Deep corners and a hue shift around the border.",
+    { value: "pill", label: "Pill", blurb: "Very round corners and a border that turns through the colours.",
       keys: { "decoration:rounding": 24, "decoration:rounding_power": 4, "general:border_size": 2,
               "decoration:shadow:enabled": false, "decoration:glow:enabled": false },
       border: { mode: "hue", amount: 0.12, angle: 90, inactive: false, groups: true } },
-    { value: "neon", label: "Neon", blurb: "A thick spinning gradient with a glow behind it.",
+    { value: "neon", label: "Neon", blurb: "A thick, slowly turning colour border with a glow behind it.",
       keys: { "decoration:rounding": 8, "decoration:rounding_power": 2, "general:border_size": 3,
               "decoration:glow:enabled": true, "decoration:glow:range": 12, "decoration:shadow:enabled": false },
       border: { mode: "hue", amount: 0.25, angle: 0, inactive: true, groups: true }, spin: true },
-    { value: "paper", label: "Paper", blurb: "A thin border, a sharp shadow and dimmed unfocused windows.",
+    { value: "paper", label: "Paper", blurb: "A thin border, a crisp shadow, and the windows you aren't using a little darker.",
       keys: { "decoration:rounding": 4, "decoration:rounding_power": 2, "general:border_size": 1,
               "decoration:shadow:enabled": true, "decoration:shadow:sharp": true, "decoration:shadow:range": 8,
               "decoration:dim_inactive": true, "decoration:glow:enabled": false },
@@ -571,29 +571,29 @@ Item {
   readonly property var borderGroups: [
     {
       id: "shape", kind: "chips", title: "Window shape",
-      note: "Rounding, border width, shadow, glow and the border gradient in one go. Every one of them stays editable afterwards, here and in Decoration and Effects.",
+      note: "Sets the corners, border, shadow, glow and border colour fade in one go. Each can still be changed on its own afterwards.",
       options: section.shapePresets.map(function(p) { return { value: p.value, label: p.label } }),
       pick: function(v) { section.applyShape(v) }
     },
     {
-      id: "gradient", kind: "chips", title: "Border gradient",
-      note: "Lacquer never pins a colour: it asks Hyprland for the border colour your theme just set and builds the second stop from it, so the gradient re-derives itself on every theme switch."
+      id: "gradient", kind: "chips", tech: "Hyprland col.active_border", title: "Border colour fade",
+      note: "The border can fade from your theme's colour into a second shade. Lacquer works the second shade out from your theme each time, so it always matches when you change theme."
         + (section.app.borders.on ? "" : " Right now the border is the theme's flat colour.")
         + (section.borderWidth < 2
-           ? " Your window border is " + section.borderWidth + " px, so any gradient on it is nearly invisible \u2014 widen it under Window shape or in Windows."
+           ? " Your window border is only " + section.borderWidth + " px thick, so a fade is hard to see \u2014 make it thicker under Window shape or in Spacing & layout."
            : ""),
       current: section.app.borders.spec.mode,
       options: [{ value: "", label: "Theme colour" }, { value: "lighter", label: "Lighter" },
-                { value: "darker", label: "Darker" }, { value: "unfocused", label: "To unfocused" },
-                { value: "hue", label: "Hue shift" }],
+                { value: "darker", label: "Darker" }, { value: "unfocused", label: "Towards other windows' colour" },
+                { value: "hue", label: "Colour turn" }],
       pick: function(v) { section.app.borders.setMode(v) }
     },
     {
-      id: "gradient-amount", kind: "stepper", title: section.app.borders.spec.mode === "hue" ? "Hue turn" : "Blend",
+      id: "gradient-amount", kind: "stepper", title: section.app.borders.spec.mode === "hue" ? "Colour turn" : "How far it fades",
       num: section.app.borders.spec.amount, min: 0.05, max: 0.95, stepSize: 0.05, format: function(v) { return section.app.borders.spec.mode === "hue" ? Math.round(v * 360) + "\u00b0" : Math.round(v * 100) + " %" },
       note: section.app.borders.spec.mode === "hue"
-        ? "How far around the colour wheel the second stop sits."
-        : "How far the second stop moves from the theme's colour.",
+        ? "How far round the colour wheel the second shade is."
+        : "How different the second shade is from your theme's colour.",
       value: section.app.borders.spec.mode === "hue"
         ? Math.round(section.app.borders.spec.amount * 360) + "\u00b0"
         : Math.round(section.app.borders.spec.amount * 100) + " %",
@@ -601,38 +601,38 @@ Item {
       step: function(d) { section.app.borders.stepAmount(d) }
     },
     {
-      id: "gradient-angle", kind: "stepper", title: "Gradient angle",
+      id: "gradient-angle", kind: "stepper", title: "Fade direction",
       num: Math.round(section.app.borders.spec.angle / 15) * 15, min: 0, max: 345, stepSize: 15, format: function(v) { return Math.round(v) + "\u00b0" },
-      note: "Which way the gradient runs across the border.",
+      note: "Which way the fade runs across the border.",
       value: section.app.borders.spec.angle + "\u00b0", unit: "",
       step: function(d) { section.app.borders.stepAngle(d) }
     },
     {
-      id: "gradient-spin", kind: "chips", title: "Spin the gradient",
-      note: "Hyprland turns the angle on its own, so the border keeps moving. It repaints the border continuously, which costs a little GPU.",
+      id: "gradient-spin", kind: "chips", title: "Keep the fade turning",
+      note: "The fade slowly turns round the window by itself. It keeps redrawing the border, which uses a little graphics power.",
       current: section.app.borders.spinning ? "on" : "off",
       options: section.onOffWords(),
       pick: function(v) { section.app.borders.setSpin(v === "on") }
     },
     {
-      id: "gradient-where", kind: "chips", title: "Unfocused windows too",
-      note: "Give the unfocused border the same treatment, derived from its own colour.",
+      id: "gradient-where", kind: "chips", title: "Other windows too",
+      note: "Give the windows you aren't using a fade too, worked out from their own border colour.",
       current: section.app.borders.spec.inactive ? "on" : "off",
       options: section.onOffWords(),
       pick: function(v) { section.app.borders.toggle("inactive", v === "on") }
     },
     {
       id: "gradient-groups", kind: "chips", title: "Grouped windows too",
-      note: "The tab bar on grouped windows follows the same gradient.",
+      note: "The tabs on grouped windows fade the same way.",
       current: section.app.borders.spec.groups ? "on" : "off",
       options: section.onOffWords(),
       pick: function(v) { section.app.borders.toggle("groups", v === "on") }
     },
     {
-      id: "corners-where", kind: "chips", title: "Go to",
-      note: "Rounding, opacity and dimming live in Decoration; blur, shadow and glow in Effects.",
-      options: [{ value: "decoration", label: "Decoration" }, { value: "effects", label: "Effects" },
-                { value: "windows", label: "Windows" }],
+      id: "corners-where", kind: "chips", title: "More of this",
+      note: "Corners, see-through and darkening have their own page, and so do frosted glass, shadow and glow.",
+      options: [{ value: "decoration", label: "Corners & see-through" }, { value: "effects", label: "Glass & shadow" },
+                { value: "windows", label: "Spacing & layout" }],
       pick: function(v) { section.app.showSectionById(v) }
     }
   ]
@@ -659,21 +659,21 @@ Item {
     {
       id: "speed", kind: "stepper", title: "Speed",
       num: section.app.feel.speed, min: 0.5, max: 2, stepSize: 0.1, format: function(v) { return v.toFixed(1) + "\u00d7" },
-      note: "Multiplies the whole feel: 2\u00d7 is twice as quick, 0.5\u00d7 half as quick. Everything keeps its shape.",
+      note: "Makes the whole feel faster or slower: 2\u00d7 is twice as quick, 0.5\u00d7 half as quick.",
       value: section.app.feel.speed.toFixed(1) + "\u00d7", unit: "",
       step: function(d) { section.app.feel.stepSpeed(d) }
     },
     {
-      id: "app-motion", kind: "chips", title: "Lacquer's own animations",
-      note: "Page transitions, the rail marker, row cascades and Home's live miniature. Ctrl+M does the same.",
+      id: "app-motion", kind: "chips", title: "This app's animations",
+      note: "The goo, the pages sliding in and the little live picture on Home. Ctrl+M does the same.",
       current: section.app.motion ? "on" : "off",
       options: [{ value: "on", label: "On" }, { value: "off", label: "Off" }],
       pick: function(v) { section.app.setMotion(v === "on") }
     },
     {
-      id: "where", kind: "chips", title: "Go to",
-      note: "Every animation one at a time, and the named curves they share.",
-      options: [{ value: "animations", label: "Animations" }, { value: "curves", label: "Curves" }],
+      id: "where", kind: "chips", title: "More of this",
+      note: "Every animation on its own, and the curves that shape how they speed up and slow down.",
+      options: [{ value: "animations", label: "Animations" }, { value: "curves", label: "Animation curves" }],
       pick: function(v) { section.app.showSectionById(v) }
     }
   ].concat(section.barMotionGroups)
@@ -686,19 +686,19 @@ Item {
     var m = c.barMotion
     return [
       {
-        id: "bar-motion", kind: "chips", title: "Bar motion",
-        note: "Lacquer Shell's bar, at the feel's pace (" + Math.round(Number(m.duration)) + " ms). "
-          + "Widgets glide when they change size, lift under the pointer, and fade in as they appear."
+        id: "bar-motion", kind: "chips", title: "Top bar animations",
+        note: "The extra's top bar moves at the same pace (" + Math.round(Number(m.duration)) + " ms). "
+          + "Things in it glide when they change size, lift under the pointer, and fade in as they appear."
           + (c.barIsOurs ? ""
-             : " The bar on screen is Omarchy's own right now, so none of this shows: enable Lacquer Shell's bar in "
-               + "`omarchy plugin list`, or check that it loaded (it needs Omarchy 4.0.4 or newer)."),
+             : " The top bar on screen is Omarchy's own right now, so none of this shows: turn on Lacquer Shell's bar in "
+               + "the Omarchy menu, or check that it loaded (it needs Omarchy 4.0.4 or newer)."),
         current: m.enabled ? "on" : "off",
         options: section.onOffWords(),
         pick: function(v) { c.setMotion("enabled", v === "on", v === "on" ? "Bar motion on" : "Bar motion off") }
       },
       {
-        id: "bar-motion-parts", kind: "chips", title: "What moves in the bar",
-        options: [{ value: "glide", label: (m.glide ? "\u2713 " : "") + "Glide" },
+        id: "bar-motion-parts", kind: "chips", title: "What moves in the top bar",
+        options: [{ value: "glide", label: (m.glide ? "\u2713 " : "") + "Glide when resizing" },
                   { value: "hover", label: (m.hover ? "\u2713 " : "") + "Hover lift" },
                   { value: "appear", label: (m.appear ? "\u2713 " : "") + "Fade in" }],
         pick: function(v) { c.setMotion(v, !(m[v] === true), (m[v] === true ? "Off: " : "On: ") + v) }
@@ -720,13 +720,13 @@ Item {
   readonly property var savedCursor: section.store.block ? section.store.block.cursor : null
 
   readonly property var cursorGroups: !section.d ? [] : [
-    section.addGroup("cursor", "Add a cursor theme",
-      "A downloaded theme folder, or its .zip or .tar.gz. It goes to ~/.local/share/icons/ and shows up below; only the theme's own files are taken."),
+    section.addGroup("cursor", "Add a pointer style",
+      "A pointer style you downloaded, as a folder or a .zip. It is added for you and shows up below."),
     {
-      id: "cursor-theme", kind: "chips", title: "Cursor theme",
+      id: "cursor-theme", kind: "chips", tech: "~/.config/hypr/autostart.lua · XCURSOR_THEME", title: "Pointer style",
       note: section.savedCursor
-        ? "Applied live and saved in ~/.config/hypr/autostart.lua, so it survives a restart. Apps already open may keep the old cursor until relaunched."
-        : "Using the system default. Picking one applies it live and saves it in ~/.config/hypr/autostart.lua.",
+        ? "Used straight away and kept after a restart. Apps that were already open may show the old pointer until you reopen them."
+        : "Using the standard pointer. Picking one uses it straight away and keeps it after a restart.",
       current: section.cursorTheme,
       pinned: section.savedCursor !== null,
       pinnedText: section.savedCursor ? "saved: " + section.savedCursor.theme + " " + section.savedCursor.size : "",
@@ -737,8 +737,8 @@ Item {
       pick: function(v) { section.store.setCursor(v, section.cursorSize) }
     },
     {
-      id: "cursor-size", kind: "chips", title: "Cursor size",
-      note: "Hyprland and GTK both follow this.",
+      id: "cursor-size", kind: "chips", tech: "XCURSOR_SIZE", title: "Pointer size",
+      note: "Everything follows this, the desktop and your apps.",
       current: section.cursorSize,
       options: [16, 20, 24, 32, 40, 48, 64].map(function(n) { return { value: n, label: String(n) } }),
       pick: function(v) { section.store.setCursor(section.cursorTheme, v) }
@@ -750,25 +750,25 @@ Item {
 
   readonly property var nightGroups: !section.ns ? [] : [
     {
-      id: "now", kind: "chips", title: "Right now",
+      id: "now", kind: "chips", tech: "hyprsunset", title: "Right now",
       note: section.ns.running
-        ? "hyprsunset is running" + (section.ns.temperature ? " at " + section.ns.temperature + " K." : ".")
+        ? "The night light is on" + (section.ns.temperature ? " at " + section.ns.temperature + " K." : ".")
           + (section.night.scheduled ? " The schedule takes over again at its next change." : "")
-        : "hyprsunset is not running; picking a warmth starts it.",
+        : "The night light is off; picking a warmth turns it on.",
       current: section.ns.temperature && section.ns.temperature < 6000 ? section.ns.temperature : "off",
       options: [{ value: "off", label: "Off" }].concat(section.nowTemps.map(function(t) { return { value: t, label: t + " K" } })),
       pick: function(v) { section.night.setNow(v) }
     },
     {
-      id: "schedule", kind: "chips", title: "Schedule",
+      id: "schedule", kind: "chips", tech: "~/.config/hypr/hyprsunset.conf", title: "Every evening",
       note: section.night.confirmReplace
-        ? "hyprsunset.conf has a hand-written schedule. Pick On again to replace it; the old file is kept as a backup."
+        ? "You already have your own night-light times. Pick On again to replace them; a copy of yours is kept."
         : section.night.custom
-          ? "hyprsunset.conf has a hand-written schedule, which Lacquer leaves alone."
+          ? "You already have your own night-light times, so Lacquer leaves them alone."
           : section.night.scheduled
-            ? "A warmer screen every evening. hyprsunset starts with Hyprland"
+            ? "A warmer screen every evening. It starts by itself when you log in"
               + (section.ns.autostartElsewhere ? " (from your own autostart line)." : " (added to autostart.lua by Lacquer).")
-            : "Off. hyprsunset.conf is Omarchy's default and nothing starts hyprsunset at login.",
+            : "Off. The night light doesn't come on by itself.",
       current: section.night.custom ? "" : (section.night.scheduled ? "on" : "off"),
       options: [{ value: "off", label: "Off" }, { value: "on", label: section.night.confirmReplace ? "Replace it?" : "On" }],
       pick: function(v) { section.night.setScheduled(v === "on") }
@@ -785,9 +785,9 @@ Item {
       step: function(d) { section.night.shiftTime("morning", d * 30) }
     },
     {
-      id: "warmth", kind: "stepper", title: "Evening warmth",
+      id: "warmth", kind: "stepper", title: "How warm",
       num: section.night.warmth, min: 2500, max: 6000, stepSize: 250,
-      note: "Lower is warmer. Omarchy's nightlight toggle uses 4000 K.",
+      note: "Lower numbers are warmer and more orange. Omarchy's own night-light button uses 4000 K.",
       value: section.night.warmth, unit: "K",
       step: function(d) { section.night.stepWarmth(d) }
     }
@@ -825,15 +825,15 @@ Item {
       note += " Right now the boot screen uses the \u201c" + u.active + "\u201d Plymouth theme; picking here switches it back to Omarchy's."
     note += " Applying asks for your password in a small terminal and rebuilds the boot image, which takes a minute."
     return {
-      id: "unlock-screen", kind: "cards", title: "Boot unlock screen", note: note,
+      id: "unlock-screen", kind: "cards", tech: "Plymouth boot splash", title: "Start-up password screen", note: note,
       current: u.onBoot, options: options,
       pick: function(v) { section.screens.setUnlock(v) }
     }
   }
 
   readonly property var lockAfterGroup: !section.sd ? null : {
-    id: "lock-after", kind: "chips", title: "Lock after",
-    note: "Idle time before the session locks (shell.json).",
+    id: "lock-after", kind: "chips", tech: "shell.json · idle.lock", title: "Lock after",
+    note: "How long the computer can sit untouched before the screen locks.",
     current: section.sd.idle.lock,
     options: section.secondsChips([120, 300, 600, 900, 1800, 3600]),
     pick: function(v) { section.screens.setIdle("lock", v) }
@@ -842,7 +842,7 @@ Item {
   readonly property var lockGroups: !section.sd ? [] : !section.sd.lockExplorer ? [
     {
       id: "stock-lock", kind: "chips", title: "Lock screen",
-      note: "Omarchy's lock screen follows your theme on its own: the wallpaper, blurred, behind a password field in the theme's colours. Its colours can be tuned under Shell style \u203a Lock screen.",
+      note: "The lock screen already follows your theme: your wallpaper, blurred, behind a password box in your theme's colours. Its colours can be changed under Bar & menu style \u203a Lock screen.",
       options: [{ value: "lock", label: "Lock now" }, { value: "colours", label: "Lock screen colours" }],
       pick: function(v) { if (v === "lock") section.screens.lockNow(); else section.app.showSectionById("shell") }
     },
@@ -850,7 +850,7 @@ Item {
     section.unlockGroup
   ].filter(function(g) { return !!g }) : [
     {
-      id: "design", kind: "chips", title: "Lock design",
+      id: "design", kind: "chips", title: "Lock screen design",
       note: (function() {
         for (var i = 0; i < section.sd.designs.length; i++)
           if (section.sd.designs[i].active) return section.sd.designs[i].name + ": " + section.sd.designs[i].description + "."
@@ -862,8 +862,8 @@ Item {
     },
     {
       id: "try", kind: "chips", title: "Try it",
-      note: "Shows the chosen design full screen without locking. Click to close it.",
-      options: [{ value: "preview", label: "Preview lock screen" }, { value: "styling", label: "Open lock-explorer" }, { value: "editor", label: "Design editor" }],
+      note: "Shows the chosen design full screen without actually locking. Click to close it.",
+      options: [{ value: "preview", label: "Preview lock screen" }, { value: "styling", label: "Open the lock screen app" }, { value: "editor", label: "Design editor" }],
       pick: function(v) { if (v === "preview") section.screens.previewDesign(section.ls.design); else section.screens.openExplorer(v) }
     },
     {
@@ -873,7 +873,7 @@ Item {
       pick: function(v) { section.screens.setUnlockAnimation(v) }
     },
     {
-      id: "unlock-ms", kind: "stepper", title: "Unlock length",
+      id: "unlock-ms", kind: "stepper", title: "Unlock animation length",
       num: section.screens.unlockMs, min: 0, max: 2000, stepSize: 100,
       value: section.screens.unlockMs, unit: "ms",
       step: function(d) { section.screens.stepUnlockMs(d) }
@@ -885,13 +885,13 @@ Item {
       pick: function(v) { section.screens.setClock(v) }
     },
     {
-      id: "blank", kind: "stepper", title: "Blank the screen after",
-      note: section.ls.keepDisplayOn ? "Ignored while the display is kept on." : "How long the lock screen stays lit with no input.",
+      id: "blank", kind: "stepper", title: "Turn the screen off after",
+      note: section.ls.keepDisplayOn ? "Not used while the screen is kept on." : "How long the lock screen stays lit when nobody touches anything.",
       value: section.screens.formatSeconds(section.screens.blankMs / 1000), unit: "",
       step: function(d) { section.screens.stepBlank(d) }
     },
     {
-      id: "keep-on", kind: "chips", title: "Keep the display on while locked",
+      id: "keep-on", kind: "chips", title: "Keep the screen on while locked",
       current: section.ls.keepDisplayOn ? "on" : "off",
       options: [{ value: "off", label: "Off" }, { value: "on", label: "On" }],
       pick: function(v) { section.screens.setKeepDisplayOn(v === "on") }
@@ -899,12 +899,12 @@ Item {
     section.lockAfterGroup,
     section.unlockGroup,
     {
-      id: "boot", kind: "cards", title: "lock-explorer boot screen",
-      note: section.ls.bootApplying ? "lock-explorer is rebuilding the boot screen…"
+      id: "boot", kind: "cards", tech: "lock-explorer · Plymouth", title: "Start-up screen design",
+      note: section.ls.bootApplying ? "The start-up screen is being saved\u2026"
         : section.ls.boot !== (section.ls.bootApplied || "stock")
           ? "Chosen: " + section.ls.boot + ", but the boot screen still shows " + (section.ls.bootApplied || "stock")
-            + ". Building it needs your password, so it happens in lock-explorer's Boot tab."
-          : "This is what shows while the laptop boots. Choosing only marks it; lock-explorer's Boot tab builds it.",
+            + ". Saving it needs your password, so it happens in the lock screen app's Boot tab."
+          : "This is what shows while the computer starts. Choosing one only marks it; the lock screen app's Boot tab saves it.",
       current: section.ls.boot,
       options: section.sd.bootCards.map(function(c) {
         return { value: c.id, label: c.name, preview: c.preview,
@@ -913,8 +913,8 @@ Item {
       pick: function(v) { section.screens.setBoot(v) }
     },
     {
-      id: "boot-apply", kind: "chips", title: "Build the boot screen",
-      options: [{ value: "boot", label: "Open the Boot tab to apply" }],
+      id: "boot-apply", kind: "chips", title: "Save the start-up screen",
+      options: [{ value: "boot", label: "Open the Boot tab to save it" }],
       pick: function(v) { section.screens.openExplorer(v) }
     }
   ].filter(function(g) { return !!g })
@@ -927,24 +927,24 @@ Item {
       pick: function(v) { section.screens.setScreensaverEnabled(v === "on") }
     },
     {
-      id: "after", kind: "chips", title: "Start after",
-      note: "Idle time before the screensaver starts (shell.json). The lock follows at "
+      id: "after", kind: "chips", tech: "shell.json · idle.screensaver", title: "Start after",
+      note: "How long the computer can sit untouched before the screensaver starts. The screen locks at "
         + section.screens.formatSeconds(section.sd.idle.lock) + ".",
       current: section.sd.idle.screensaver,
       options: section.secondsChips([60, 150, 300, 600, 900, 1800]),
       pick: function(v) { section.screens.setIdle("screensaver", v) }
     },
     {
-      id: "ss-art", kind: "art", title: "Screensaver art",
-      note: section.sd.screensaver.isDefault ? "The Omarchy logo." : "Your own art, in ~/.config/omarchy/branding/screensaver.txt.",
+      id: "ss-art", kind: "art", tech: "~/.config/omarchy/branding/screensaver.txt", title: "Screensaver picture",
+      note: section.sd.screensaver.isDefault ? "The Omarchy logo." : "Your own picture.",
       art: section.sd.screensaver.text,
       options: [{ value: "preview", label: "Preview" }, { value: "image", label: "From an image…" },
                 { value: "text", label: "Edit text" }, { value: "reset", label: "Omarchy logo" }],
       pick: function(v) { section.screens.branding("screensaver", v) }
     },
     {
-      id: "about-art", kind: "art", title: "About screen art",
-      note: section.sd.about.isDefault ? "The Omarchy icon." : "Your own art, in ~/.config/omarchy/branding/about.txt.",
+      id: "about-art", kind: "art", tech: "~/.config/omarchy/branding/about.txt", title: "About screen picture",
+      note: section.sd.about.isDefault ? "The Omarchy icon." : "Your own picture.",
       art: section.sd.about.text,
       options: [{ value: "preview", label: "Preview" }, { value: "image", label: "From an image…" },
                 { value: "text", label: "Edit text" }, { value: "reset", label: "Omarchy icon" }],
@@ -955,8 +955,8 @@ Item {
   readonly property var ml: section.menuLook.look
 
   readonly property var menuGroups: !section.menuLook.probed ? [] : !section.menuLook.available ? [
-    { id: "missing", kind: "chips", title: "Menu look",
-      note: "omamenu is not answering. Menu Look needs io.github.omamenu on its local-look-ipc branch.", options: [] }
+    { id: "missing", kind: "chips", title: "App menu look",
+      note: "The app menu add-on (OmaMenu) isn't answering, so its look can't be changed from here right now.", options: [] }
   ] : [
     {
       id: "scope", kind: "chips", title: "Applies to",
@@ -980,16 +980,16 @@ Item {
       step: function(d) { section.menuLook.step("cornerRadius", d) }
     },
     {
-      id: "border", kind: "stepper", title: "Border width",
+      id: "border", kind: "stepper", title: "Border thickness",
       num: section.ml.borderWidth, min: -1, max: 6, stepSize: 1, format: function(v) { return v < 0 ? "theme" : Math.round(v) + " px" },
-      note: "Shell style's [menu] border-width wins over this when it is set.",
+      note: "If Bar & menu style sets a menu border, that one wins.",
       value: section.ml.borderWidth < 0 ? "theme" : section.ml.borderWidth, unit: section.ml.borderWidth < 0 ? "" : "px",
       step: function(d) { section.menuLook.step("borderWidth", d) }
     },
     {
-      id: "transparency", kind: "stepper", title: "Transparency",
+      id: "transparency", kind: "stepper", title: "See-through",
       num: section.ml.transparency, min: 0, max: 90, stepSize: 5, format: function(v) { return Math.round(v) + " %" },
-      note: "Above 0 %, this replaces Shell style's [menu] background-alpha.",
+      note: "Above 0 %, this replaces the menu see-through setting in Bar & menu style.",
       value: section.ml.transparency, unit: "%",
       step: function(d) { section.menuLook.step("transparency", d) }
     },
@@ -1021,11 +1021,11 @@ Item {
 
   readonly property var terminalGroups: !section.ai ? [] : !section.tv ? [
     { id: "none", kind: "chips", title: "Terminals", options: [],
-      note: "No installed terminal with a config Lacquer knows (foot, alacritty, kitty, ghostty)." }
+      note: "No terminal Lacquer knows how to change is installed (it knows foot, Alacritty, kitty and Ghostty)." }
   ] : [
     {
       id: "which", kind: "chips", title: "Applies to",
-      note: "Every installed terminal gets the same settings. The font and its size live in Fonts & text."
+      note: "The terminal is the window where you type commands. Every terminal app you have gets the same settings; the font is in Fonts & text size."
         + (section.ai.terminals.some(function(t) { return t.name === "foot" }) ? " foot shows a change in new windows only." : ""),
       current: "",
       options: section.ai.terminals.map(function(t) {
@@ -1034,7 +1034,7 @@ Item {
       pick: function(v) { }
     },
     {
-      id: "padding", kind: "stepper", title: "Padding",
+      id: "padding", kind: "stepper", title: "Space around the text",
       value: section.apps.shown("terminal", "padding", section.tv.padding), unit: "px",
       step: function(d) {
         var cur = section.apps.shown("terminal", "padding", section.tv.padding)
@@ -1042,20 +1042,20 @@ Item {
       }
     },
     {
-      id: "cursor", kind: "chips", title: "Cursor",
+      id: "cursor", kind: "chips", title: "Text cursor shape",
       current: section.tv.cursor,
       options: [{ value: "block", label: "Block" }, { value: "beam", label: "Beam" }, { value: "underline", label: "Underline" }],
       pick: function(v) { section.apps.set("terminal", "cursor", v, "Terminal cursor: " + v) }
     },
     {
-      id: "blink", kind: "chips", title: "Cursor blink",
+      id: "blink", kind: "chips", title: "Blinking text cursor",
       current: section.tv.blink ? "on" : "off",
       options: [{ value: "off", label: "Off" }, { value: "on", label: "On" }],
       pick: function(v) { section.apps.set("terminal", "blink", v, v === "on" ? "Cursor blinks" : "Cursor steady") }
     },
     {
-      id: "opacity", kind: "stepper", title: "Background opacity",
-      note: "Multiplies with Hyprland's window opacity (Windows › Decoration).",
+      id: "opacity", kind: "stepper", title: "See-through background",
+      note: "Adds to the see-through setting for all windows in Corners & see-through.",
       value: section.apps.shown("terminal", "opacity", section.tv.opacity), unit: "%",
       step: function(d) {
         var cur = section.apps.shown("terminal", "opacity", section.tv.opacity)
@@ -1078,8 +1078,8 @@ Item {
       out.push({
         id: "tool-" + tool.id, kind: "chips", title: tool.name, noteAlways: unreadable,
         note: tool.what + (unreadable
-          ? " " + (tool.blockedBy || tool.path) + " cannot be read as text, so Lacquer leaves it alone."
-          : tool.installed ? " Written into " + tool.path + "." : " Not installed here."),
+          ? " " + (tool.blockedBy || tool.path) + " can't be read, so Lacquer leaves it alone."
+          : tool.installed ? " Saved in " + tool.path + "." : " Not installed on this computer."),
         current: tool.on ? "on" : "off",
         options: unreadable ? []
           : [{ value: "on", label: "Follow the theme" }, { value: "off", label: "Leave it alone" }],
@@ -1093,25 +1093,25 @@ Item {
 
   readonly property var btopGroups: !section.ai ? [] : [].concat(!section.ai.btop ? [] : [
     {
-      id: "btop-bg", kind: "chips", title: "btop background",
-      note: section.ai.btop.running ? "btop is running and reloads each change at once." : "Its colours always follow the theme.",
+      id: "btop-bg", kind: "chips", title: "System monitor background",
+      note: section.ai.btop.running ? "The system monitor is open and shows each change straight away." : "Its colours always follow your theme.",
       current: String(section.ai.btop.theme_background).toLowerCase(),
       options: [{ value: "true", label: "Theme colour" }, { value: "false", label: "Transparent" }],
       pick: function(v) { section.apps.set("btop", "theme_background", v, "btop background") }
     },
     {
-      id: "btop-corners", kind: "chips", title: "btop rounded corners",
+      id: "btop-corners", kind: "chips", title: "System monitor rounded corners",
       current: String(section.ai.btop.rounded_corners).toLowerCase(), options: section.onOff(),
       pick: function(v) { section.apps.set("btop", "rounded_corners", v, "btop corners") }
     },
     {
-      id: "btop-graph", kind: "chips", title: "btop graphs",
+      id: "btop-graph", kind: "chips", title: "System monitor graphs",
       current: section.ai.btop.graph_symbol,
       options: [{ value: "braille", label: "Braille" }, { value: "block", label: "Block" }, { value: "tty", label: "TTY" }],
       pick: function(v) { section.apps.set("btop", "graph_symbol", v, "btop graphs: " + v) }
     },
     {
-      id: "btop-update", kind: "stepper", title: "btop refresh",
+      id: "btop-update", kind: "stepper", title: "System monitor update speed",
       value: section.apps.shown("btop", "update_ms", Number(section.ai.btop.update_ms)), unit: "ms",
       step: function(d) {
         var cur = section.apps.shown("btop", "update_ms", Number(section.ai.btop.update_ms))
@@ -1119,22 +1119,22 @@ Item {
       }
     },
     {
-      id: "btop-vim", kind: "chips", title: "btop vim keys",
+      id: "btop-vim", kind: "chips", tech: "btop · vim_keys", title: "System monitor arrow keys",
       current: String(section.ai.btop.vim_keys).toLowerCase(), options: section.onOff(),
       pick: function(v) { section.apps.set("btop", "vim_keys", v, "btop vim keys") }
     }
   ]).concat(!section.ai.starship ? [] : [
     {
-      id: "star-newline", kind: "chips", title: "Blank line before the prompt",
-      note: "Starship, the shell prompt. New prompts pick changes up straight away.",
+      id: "star-newline", kind: "chips", tech: "starship · add_newline", title: "Empty line before each command",
+      note: "The prompt is the line in the terminal where you type. New lines pick up the change straight away.",
       current: section.ai.starship.add_newline === undefined || section.ai.starship.add_newline === ""
         ? "true" : String(section.ai.starship.add_newline).toLowerCase(),  // starship's own default
       options: section.onOff(),
       pick: function(v) { section.apps.set("starship", "add_newline", v, "Prompt spacing") }
     },
     {
-      id: "star-timeout", kind: "stepper", title: "Prompt command timeout",
-      note: "How long a slow prompt module may run before starship skips it.",
+      id: "star-timeout", kind: "stepper", tech: "starship · command_timeout", title: "Prompt time limit",
+      note: "How long the prompt waits for slow extra information before leaving it out.",
       value: section.apps.shown("starship", "command_timeout", Number(section.ai.starship.command_timeout)), unit: "ms",
       step: function(d) {
         var cur = section.apps.shown("starship", "command_timeout", Number(section.ai.starship.command_timeout))

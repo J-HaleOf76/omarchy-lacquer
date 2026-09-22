@@ -311,28 +311,28 @@ Item {
 
   readonly property string footerMessage: root.errorText !== "" ? root.errorText
     : root.statusText !== "" ? root.statusText
-    : root.backupStamp !== "" ? "Backed up looknfeel.lua, shell.toml and shell.json as *.lacquer-backup-" + root.backupStamp
+    : root.backupStamp !== "" ? "Kept a copy of your settings before changing anything, just in case (*.lacquer-backup-" + root.backupStamp + ")"
     : ""
 
   readonly property string keyHints: {
     if (root.isHome) return homeSection.query !== ""
       ? "↑↓ choose · Enter open · Backspace edit · Esc clear"
-      : "type to search · ←→ group · ↑↓ section · Enter open · Tab next section · Esc close"
-    if (root.isGenerate) return (root.confirmGenerate ? "g again to generate and apply · Esc cancel" : "w pick wallpaper · f any image · l light/dark · g generate (asks first) · o open aether · Esc close")
-    if (root.isShuffle) return "the shuffle keeps running with Lacquer closed · Tab section · Esc close"
+      : "type to search · ←→ group · ↑↓ section · Enter open · Tab next page · Esc close"
+    if (root.isGenerate) return (root.confirmGenerate ? "g again to generate and apply · Esc cancel" : "w pick a wallpaper · f any picture · l light or dark · g make the theme (asks first) · o open the theme maker · Esc close")
+    if (root.isShuffle) return "the shuffle keeps working while Lacquer is closed · Tab next page · Esc close"
     // Only the pages that pin a value or carry a default mention Del.
     if (root.isDesktop && ["fonts", "gtk", "cursor", "sizes"].indexOf(root.section.id) < 0)
-      return "↑↓ group · ←→ choose or step · Enter pick · Tab section · Esc close"
-    if (root.section.id === "nightlight") return "↑↓ group · ←→ choose or step · Enter pick · Tab section · Esc close"
-    if (root.isDesktop) return "↑↓ group · ←→ choose or step a size · Enter pick · Del follow theme / default · Tab section · Esc close"
-    if (root.isTheme) return "←→↑↓ hjkl choose · Enter apply · click a wallpaper to set it · Tab section · Esc close"
-    if (root.isBar) return "◀ ▶ section · ▲ ▼ order · ✕ off the bar · Tab section · Esc close"
-    if (root.isPlugins) return "[ ] pick a plugin, then edit its settings with the mouse · Tab section · Esc close"
+      return "↑↓ group · ←→ choose or step · Enter pick · Tab next page · Esc close"
+    if (root.section.id === "nightlight") return "↑↓ group · ←→ choose or step · Enter pick · Tab next page · Esc close"
+    if (root.isDesktop) return "↑↓ group · ←→ choose or step a size · Enter pick · Del back to normal · Tab next page · Esc close"
+    if (root.isTheme) return "←→↑↓ hjkl choose · Enter apply · click a wallpaper to set it · Tab next page · Esc close"
+    if (root.isBar) return "◀ ▶ move · ▲ ▼ order · ✕ take off the bar · Tab next page · Esc close"
+    if (root.isPlugins) return "[ ] pick an add-on, then change its settings with the mouse · Tab next page · Esc close"
     var hint = root.isCurves
-      ? "drag a handle · P play · Tab section"
-      : "↑↓ kj row · ←→ hl adjust · Space toggle · Backspace reset · Tab section"
-        + ((root.isShell || root.isAnimations) ? " · [ ] sub-tab" : "")
-    return hint + " · Ctrl+Z undo · Esc close   —   colors stay with your theme"
+      ? "drag a handle · P play · Tab next page"
+      : "↑↓ kj row · ←→ hl adjust · Space toggle · Backspace reset · Tab next page"
+        + ((root.isShell || root.isAnimations) ? " · [ ] next tab" : "")
+    return hint + " · Ctrl+Z undo · Esc close"
   }
 
   // Reset all asks once, then acts on a second press within a few seconds.
@@ -376,63 +376,63 @@ Item {
   readonly property var sections: {
     var out = [
       { id: "home", group: "", pane: "home", icon: "󰋜", title: "Home",
-        blurb: "Everything Lacquer can change, and what it is set to now." },
-      { id: "theme", group: "Theme", pane: "theme", icon: "", title: "Theme & wallpaper",
-        blurb: "Every installed theme and the active theme's wallpapers. A theme retints the whole desktop." },
-      { id: "shuffle", group: "Theme", pane: "shuffle", icon: "󰒝", title: "Shuffle",
-        blurb: "A new theme on every boot, or light and dark themes that follow sunrise and sunset." },
-      { id: "generate", group: "Theme", pane: "generate", icon: "󰏘", title: "Generate",
-        blurb: "Build a theme from any wallpaper with aether, or apply one of its saved blueprints." },
-      { id: "motion", group: "Theme", pane: "desktop", kind: "motion", icon: "✦", title: "Motion",
-        blurb: "One feel for how the whole desktop moves: curves and speeds for windows, workspaces and Lacquer itself." },
-      { id: "fonts", group: "Desktop", pane: "desktop", kind: "fonts", icon: "󰛖", title: "Fonts & text",
-        blurb: "Text size everywhere, the terminal font and the interface font." },
-      { id: "gtk", group: "Desktop", pane: "desktop", kind: "gtk", icon: "󰉼", title: "GTK & icons",
-        blurb: "Light or dark apps, the GTK theme and the icon set. A pick here is held through theme switches." },
-      { id: "cursor", group: "Desktop", pane: "desktop", kind: "cursor", icon: "󰇀", title: "Cursor",
-        blurb: "Pointer theme and size, applied live and kept across restarts." },
-      { id: "nightlight", group: "Desktop", pane: "desktop", kind: "night", icon: "󰖔", title: "Nightlight",
-        blurb: "A warmer screen now, or every evening on a schedule." },
-      { id: "sizes", group: "Desktop", pane: "desktop", kind: "sizes", icon: "⤢", title: "Size",
-        blurb: "How big everything is: text, cursor, gaps, the bar \u2014 and this window." },
-      { id: "displays", group: "Desktop", pane: "desktop", kind: "monitors", icon: "▣", title: "Displays",
-        blurb: "Resolution, refresh rate, scale and rotation of each screen \u2014 tried first, kept only if you say so." }
+        blurb: "Everything you can change, and what it is set to now." },
+      { id: "theme", group: "Theme", pane: "theme", icon: "", title: "Themes & wallpaper",
+        blurb: "Pick a theme, which recolours everything, and one of its wallpapers." },
+      { id: "shuffle", group: "Theme", pane: "shuffle", icon: "󰒝", title: "Theme shuffle",
+        blurb: "A different theme every time you start the computer, or a light one by day and a dark one at night." },
+      { id: "generate", group: "Theme", pane: "generate", icon: "󰏘", title: "Make a theme",
+        blurb: "Make a new theme from any picture, using its colours." },
+      { id: "motion", group: "Theme", pane: "desktop", kind: "motion", icon: "✦", title: "Motion feel",
+        blurb: "One setting for how everything moves: windows, desktops and this app." },
+      { id: "fonts", group: "Desktop", pane: "desktop", kind: "fonts", icon: "󰛖", title: "Fonts & text size",
+        blurb: "How big text is everywhere, and the fonts used for apps and the terminal." },
+      { id: "gtk", group: "Desktop", pane: "desktop", kind: "gtk", icon: "󰉼", title: "Light or dark & icons",
+        blurb: "Whether apps are light or dark, how they are styled, and which icons they use. A choice here stays when you change theme." },
+      { id: "cursor", group: "Desktop", pane: "desktop", kind: "cursor", icon: "󰇀", title: "Mouse pointer",
+        blurb: "The look and size of the mouse pointer." },
+      { id: "nightlight", group: "Desktop", pane: "desktop", kind: "night", icon: "󰖔", title: "Night light",
+        blurb: "A warmer, easier-on-the-eyes screen now, or every evening." },
+      { id: "sizes", group: "Desktop", pane: "desktop", kind: "sizes", icon: "⤢", title: "Size of everything",
+        blurb: "Make text, the pointer, the gaps between windows and the top bar bigger or smaller together, and choose how big this window opens." },
+      { id: "displays", group: "Desktop", pane: "desktop", kind: "monitors", icon: "▣", title: "Resolution & scale",
+        blurb: "How sharp and how big things look on each screen, and which way up it is. Tried first, kept only if you say so." }
     ]
     for (var i = 0; i < LookSchema.SECTIONS.length; i++) {
       var look = LookSchema.SECTIONS[i]
       out.push({ id: look.id, group: "Windows", pane: "rows", icon: look.icon, title: look.title,
                  blurb: look.blurb, groups: look.groups })
     }
-    out.push({ id: "borders", group: "Windows", pane: "desktop", kind: "borders", icon: "◰", title: "Borders & shape",
-               blurb: "Window shape presets, and a border gradient built from your theme's own colours." })
+    out.push({ id: "borders", group: "Windows", pane: "desktop", kind: "borders", icon: "◰", title: "Shape & border",
+               blurb: "Ready-made window shapes, and a border colour that fades between shades of your theme." })
     out.push({ id: "frame", group: "Windows", pane: "desktop", kind: "frame", icon: "⬚", title: "Screen frame",
-               blurb: "Rounded screen corners, a frame around the display and a wash over it \u2014 drawn by the optional companion." })
+               blurb: "Rounded screen corners, a frame around the screen and a soft shade over it, drawn by an optional extra." })
     out.push({ id: "animations", group: "Windows", pane: "rows", icon: "󱐋", title: "Animations",
-               blurb: "Speed, curve and style for every animation Hyprland can play." })
-    out.push({ id: "curves", group: "Windows", pane: "curves", icon: "󰓅", title: "Curves",
-               blurb: "Named bezier curves. Drag either handle; every leaf using the curve follows." })
-    out.push({ id: "shell", group: "Shell", pane: "rows", icon: "󰒓", title: "Shell style",
-               blurb: "Type, spacing and chrome for the bar, menus and every panel." })
-    out.push({ id: "bar", group: "Shell", pane: "bar", icon: "󰞍", title: "Bar",
-               blurb: "Where the bar sits, and which widgets it carries." })
+               blurb: "How fast each kind of animation plays and how it moves." })
+    out.push({ id: "curves", group: "Windows", pane: "curves", icon: "󰓅", title: "Animation curves",
+               blurb: "The shape of an animation's speed-up and slow-down. Drag either handle; everything using that curve follows." })
+    out.push({ id: "shell", group: "Shell", pane: "rows", icon: "󰒓", title: "Bar & menu style",
+               blurb: "Text size, spacing and colours of the top bar, menus, pop-ups and notifications." })
+    out.push({ id: "bar", group: "Shell", pane: "bar", icon: "󰞍", title: "Top bar",
+               blurb: "Where the top bar sits, and what it shows." })
     // Needs OmaMenu with its Menu Look IPC; without it the section is left out.
     if (menuLookStore.available)
-    out.push({ id: "menulook", group: "Shell", pane: "desktop", kind: "menu", icon: "󰍜", title: "Menu look",
-               blurb: "The Omarchy menu's size, corners, border and transparency, live." })
-    out.push({ id: "lock", group: "Screens", pane: "desktop", kind: "lock", icon: "󰌾", title: "Lock & boot",
-               blurb: "When the screen locks, and the boot unlock screen in any theme's colours; lock designs through lock-explorer." })
+    out.push({ id: "menulook", group: "Shell", pane: "desktop", kind: "menu", icon: "󰍜", title: "App menu look",
+               blurb: "The size, corners, border and see-through look of the app menu." })
+    out.push({ id: "lock", group: "Screens", pane: "desktop", kind: "lock", icon: "󰌾", title: "Lock & start-up screen",
+               blurb: "When the screen locks, and the screen asking for your password when the computer starts." })
     out.push({ id: "screensaver", group: "Screens", pane: "desktop", kind: "screensaver", icon: "󱄄", title: "Screensaver",
-               blurb: "When the screensaver starts, and the art it and the About screen show." })
-    out.push({ id: "terminals", group: "Apps", pane: "desktop", kind: "terminal", icon: "󰆍", title: "Terminals",
-               blurb: "Padding, cursor and background opacity for every installed terminal." })
-    out.push({ id: "btop", group: "Apps", pane: "desktop", kind: "btop", icon: "󰄨", title: "btop & prompt",
-               blurb: "How btop draws, and the starship prompt's spacing. Colours stay with the theme." })
-    out.push({ id: "launcher", group: "Apps", pane: "desktop", kind: "launcher", icon: "≡", title: "App launcher",
-               blurb: "What an app is called in the launcher, the icon it shows, and whether it appears at all." })
+               blurb: "When the screensaver starts, and the picture it shows." })
+    out.push({ id: "terminals", group: "Apps", pane: "desktop", kind: "terminal", icon: "󰆍", title: "Terminal",
+               blurb: "Spacing, cursor and see-through background of the terminal, the window where you type commands." })
+    out.push({ id: "btop", group: "Apps", pane: "desktop", kind: "btop", icon: "󰄨", title: "System monitor & prompt",
+               blurb: "How the system monitor shows your computer's activity, and the spacing of the terminal's prompt line." })
+    out.push({ id: "launcher", group: "Apps", pane: "desktop", kind: "launcher", icon: "≡", title: "App list",
+               blurb: "What each app is called in the app list, its icon, and whether it shows up at all." })
     out.push({ id: "apprules", group: "Apps", pane: "desktop", kind: "rules", icon: "◱", title: "App windows",
-               blurb: "How one app's windows behave and look: floating, size, workspace, opacity and effects." })
-    out.push({ id: "plugins", group: "Apps", pane: "plugins", icon: "󰏖", title: "Plugins",
-               blurb: "Settings for every installed plugin, from its own manifest." })
+               blurb: "How one app's windows open: floating or filling a spot, their size, desktop and see-through look." })
+    out.push({ id: "plugins", group: "Apps", pane: "plugins", icon: "󰏖", title: "Add-on settings",
+               blurb: "Settings for each add-on you have installed." })
     // Where each page lives: main tab (group), then sub tab (sub). A sub tab
     // holding more than one page shows them as a third row. Keyboard Tab
     // walks this order, so it is also the order the pages are listed in.
@@ -456,26 +456,26 @@ Item {
 
   // [page id, main tab, sub tab], in the order they are shown.
   readonly property var pagePlaces: [
-    ["theme", "Theme", "Themes"], ["shuffle", "Theme", "Shuffle"], ["generate", "Theme", "Generate"],
-    ["fonts", "Desktop", "Text"], ["sizes", "Desktop", "Text"],
-    ["gtk", "Desktop", "Look"], ["cursor", "Desktop", "Look"],
-    ["displays", "Desktop", "Screens"], ["nightlight", "Desktop", "Screens"],
-    ["lock", "Desktop", "Lock"], ["screensaver", "Desktop", "Lock"],
+    ["theme", "Colours & wallpaper", "Themes"], ["shuffle", "Colours & wallpaper", "Shuffle"], ["generate", "Colours & wallpaper", "Make a theme"],
+    ["fonts", "Screen & text", "Text"], ["sizes", "Screen & text", "Text"],
+    ["gtk", "Screen & text", "Look of apps"], ["cursor", "Screen & text", "Look of apps"],
+    ["displays", "Screen & text", "Screens"], ["nightlight", "Screen & text", "Screens"],
+    ["lock", "Screen & text", "Lock screen"], ["screensaver", "Screen & text", "Lock screen"],
     ["borders", "Windows", "Shape"], ["decoration", "Windows", "Shape"],
     ["effects", "Windows", "Effects"], ["frame", "Windows", "Effects"],
     ["windows", "Windows", "Layout"], ["groups", "Windows", "Layout"],
     ["motion", "Windows", "Motion"], ["animations", "Windows", "Motion"], ["curves", "Windows", "Motion"],
-    ["shell", "Shell", "Style"], ["bar", "Shell", "Bar"], ["menulook", "Shell", "Menu"],
-    ["terminals", "Apps", "Terminals"], ["btop", "Apps", "Terminals"],
-    ["launcher", "Apps", "Launcher"], ["apprules", "Apps", "Launcher"],
-    ["plugins", "Apps", "Plugins"]
+    ["shell", "Top bar & menus", "Style"], ["bar", "Top bar & menus", "Top bar"], ["menulook", "Top bar & menus", "App menu"],
+    ["terminals", "Apps", "Terminal"], ["btop", "Apps", "Terminal"],
+    ["launcher", "Apps", "App list"], ["apprules", "Apps", "App list"],
+    ["plugins", "Apps", "Add-ons"]
   ]
 
   readonly property var mainTabs: [
-    { title: "Theme", icon: "" },
-    { title: "Desktop", icon: "󰍹" },
+    { title: "Colours & wallpaper", icon: "" },
+    { title: "Screen & text", icon: "󰍹" },
     { title: "Windows", icon: "󱆏" },
-    { title: "Shell", icon: "󰒓" },
+    { title: "Top bar & menus", icon: "󰒓" },
     { title: "Apps", icon: "󰀻" }
   ]
 
@@ -1383,7 +1383,7 @@ Item {
           // between them.
           Item {
             id: rail
-            Layout.preferredWidth: Style.space(132)
+            Layout.preferredWidth: Style.space(186)
             Layout.fillHeight: true
             function placeMarker() {}
 

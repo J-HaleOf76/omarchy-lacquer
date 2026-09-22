@@ -29,7 +29,7 @@ Item {
       width: flick.width - Style.spacing.xxl
       spacing: Style.spacing.lg
 
-      LqLabel { design: app.design; text: "From a wallpaper"; foreground: section.app.foreground; fontFamily: section.app.fontFamily }
+      LqLabel { design: app.design; text: "From a picture"; foreground: section.app.foreground; fontFamily: section.app.fontFamily }
 
       Row {
         width: parent.width
@@ -209,7 +209,7 @@ Item {
 
       PanelSeparator { foreground: section.app.foreground; width: parent.width }
 
-      LqLabel { design: app.design; text: "Also theme"; foreground: section.app.foreground; fontFamily: section.app.fontFamily }
+      LqLabel { design: app.design; text: "Also colour these code editors"; foreground: section.app.foreground; fontFamily: section.app.fontFamily }
 
       Row {
         spacing: Style.spacing.xxl
@@ -258,12 +258,12 @@ Item {
             color: section.app.foreground
             font.family: section.app.fontFamily
             font.pixelSize: Style.font.caption
-            text: section.store.generating ? "aether is working…"
+            text: section.store.generating ? "Making your theme…"
               : section.app.confirmGenerate
-                ? "This switches your whole desktop to a new theme called “aether” and sets this wallpaper"
+                ? "This switches your whole desktop to a new theme made from these colours (it is called “aether”, after the tool that makes it) and sets this picture as the wallpaper"
                   + ((section.store.includeZed || section.store.includeVscode || section.store.includeNeovim)
-                     ? ", and writes theme files into the editors ticked above." : ".")
-                : "Builds an Omarchy theme from this palette and applies it."
+                     ? ", and colours the code editors ticked above to match." : ".")
+                : "Makes a theme from these colours and switches to it."
           }
 
           LqButton {
@@ -304,12 +304,12 @@ Item {
       Item {
         width: parent.width
         height: bpHeader.implicitHeight
-        LqLabel { design: app.design; id: bpHeader; text: "Saved blueprints"; foreground: section.app.foreground; fontFamily: section.app.fontFamily }
+        LqLabel { design: app.design; id: bpHeader; text: "Saved theme designs"; foreground: section.app.foreground; fontFamily: section.app.fontFamily }
         LqButton {
           design: app.design
           anchors.right: parent.right
           anchors.verticalCenter: bpHeader.verticalCenter
-          text: "Open aether"
+          text: "Open the theme maker"
           iconText: "󰏘"
           bordered: true
           foreground: section.app.foreground
@@ -323,7 +323,7 @@ Item {
         visible: section.store.blueprints.length === 0
         width: parent.width
         wrapMode: Text.WordWrap
-        text: "No blueprints yet. Save one from aether's own window and it will appear here, ready to apply without opening aether."
+        text: "No saved designs yet. Save one in the theme maker and it will show up here, ready to use in one click."
         color: Qt.darker(section.app.foreground, 1.55)
         font.family: section.app.fontFamily
         font.pixelSize: Style.font.caption

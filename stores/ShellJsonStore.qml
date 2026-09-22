@@ -239,7 +239,7 @@ Item {
               if ((root.plugins[i].schema || []).length > 0) { app.selectedPlugin = root.plugins[i].id; break }
           }
         } catch (e) {
-          app.errorText = "Could not read plugin manifests"
+          app.errorText = "Could not read your add-ons' details"
         }
       }
     }
@@ -271,14 +271,14 @@ Item {
         root.barConfig = JSON.parse(text())
       } catch (e) {
         root.barConfig = ({})
-        app.errorText = "shell.json is not valid JSON"
+        app.errorText = "Omarchy's settings file (shell.json) is damaged, so it was left alone"
       }
     }
     onLoadFailed: { root.shellJsonText = ""; root.barConfig = ({}) }
     onSaved: root.jsonSelfWrite = false
     onSaveFailed: {
       root.jsonSelfWrite = false
-      app.errorText = "Could not write ~/.config/omarchy/shell.json"
+      app.errorText = "Could not save Omarchy's settings file (shell.json)"
     }
     onFileChanged: { if (root.jsonSelfWrite) return; reload() }
   }

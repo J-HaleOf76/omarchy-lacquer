@@ -316,7 +316,7 @@ Item {
       Text {
         anchors.centerIn: parent
         visible: walls.count === 0
-        text: "This theme ships no wallpapers. Add images to ~/.config/omarchy/backgrounds/"
+        text: "This theme comes without wallpapers. Put pictures in the Backgrounds folder of your Omarchy settings (~/.config/omarchy/backgrounds) to add some."
           + section.store.current + "/"
         color: Qt.darker(section.app.foreground, 1.6)
         font.family: section.app.fontFamily

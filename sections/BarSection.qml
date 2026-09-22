@@ -33,7 +33,7 @@ Item {
 
       LqLabel {
         design: app.design
-        text: "Placement"
+        text: "Where it sits"
         foreground: app.foreground
         fontFamily: app.fontFamily
       }
@@ -76,7 +76,7 @@ Item {
         width: parent.width
 
         Text {
-          text: "Transparent"
+          text: "See-through"
           color: app.foreground
           font.family: app.fontFamily
           font.pixelSize: Style.font.body
@@ -95,7 +95,7 @@ Item {
         }
 
         Text {
-          text: "Bar height and colours live under Shell → Surfaces."
+          text: "The bar's height and colours are in Bar & menu style › Bar & pop-ups."
           color: Qt.darker(app.foreground, 1.6)
           font.family: app.fontFamily
           font.pixelSize: Style.font.caption
@@ -107,7 +107,7 @@ Item {
 
       LqLabel {
         design: app.design
-        text: "Layout"
+        text: "What it shows"
         foreground: app.foreground
         fontFamily: app.fontFamily
       }
@@ -115,7 +115,7 @@ Item {
       Text {
         width: parent.width
         wrapMode: Text.WordWrap
-        text: "◀ ▶ move a widget between sections, ▲ ▼ reorder it, ✕ takes it off the bar."
+        text: "Each box is one thing the bar shows. ◀ ▶ moves it to another part of the bar, ▲ ▼ changes its order, ✕ takes it off."
         color: Qt.darker(app.foreground, 1.55)
         font.family: app.fontFamily
         font.pixelSize: Style.font.caption
@@ -240,7 +240,7 @@ Item {
 
       LqLabel {
         design: app.design
-        text: "Not on the bar"
+        text: "Things you can add"
         foreground: app.foreground
         fontFamily: app.fontFamily
       }

@@ -82,7 +82,7 @@ Item {
     if (root.generating || !name) return
     root.generating = true
     root.applyingBlueprint = name
-    root.app.statusText = "Applying blueprint " + name + "…"
+    root.app.statusText = "Using the saved design " + name + "…"
     runProc.command = ["aether", "--apply-blueprint", name]
     runProc.startDetached()
     doneTimeout.restart()

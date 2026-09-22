@@ -465,7 +465,7 @@ Item {
     onExited: function(code) {
       if (code !== 0) {
         root.blockRead = false
-        app.errorText = "The block in looknfeel.lua could not be read, so Lacquer will not "
+        app.errorText = "Lacquer's part of your window look settings (looknfeel.lua) has a mistake in it, so Lacquer will not "
           + "overwrite it. " + String(blockReader.err || "").trim()
         return
       }
@@ -489,7 +489,7 @@ Item {
     onExited: function(code) {
       windowsReader.failed = code !== 0
       if (code !== 0) {
-        app.errorText = "The block in hyprland.lua could not be read, so Lacquer will not "
+        app.errorText = "Lacquer's part of your window settings (hyprland.lua) has a mistake in it, so Lacquer will not "
           + "overwrite it. " + String(windowsReader.err || "").trim()
         return
       }
@@ -578,7 +578,7 @@ Item {
     onLoaded: if (root.baselineReady) root.readBlock(text())
     onLoadFailed: { root.overrides = ({}); root.leaves = ({}); root.curves = ({}); root.blockRead = true }
     onSaved: root.noteSaved()
-    onSaveFailed: { root.selfWrite = false; app.errorText = "Could not write ~/.config/hypr/looknfeel.lua" }
+    onSaveFailed: { root.selfWrite = false; app.errorText = "Could not save your window look settings (~/.config/hypr/looknfeel.lua)" }
     // Adopt an external edit rather than overwriting it from a stale copy —
     // but never mid-edit, or a re-read would yank a slider out from under the
     // user.
@@ -608,7 +608,7 @@ Item {
     onSaveFailed: {
       root.selfWrite = false
       root.pendingSaves = 0
-      app.errorText = "Could not write ~/.config/hypr/hyprland.lua"
+      app.errorText = "Could not save your app window settings (~/.config/hypr/hyprland.lua)"
     }
     onFileChanged: {
       if (root.selfWrite || persistTimer.running) return

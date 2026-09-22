@@ -153,6 +153,17 @@ Item {
       wrapMode: Text.WordWrap
     }
 
+    // The real name, in small print, for anyone following a guide online.
+    Text {
+      visible: root.open && text !== ""
+      text: String(root.item.key || "").indexOf("lacquer:") === 0 ? "" : "Hyprland · " + root.item.key
+      color: root.design ? root.design.faint : Qt.darker(root.foreground, 2)
+      font.family: root.design ? root.design.mono : root.fontFamily
+      font.pixelSize: 11
+      width: parent.width
+      elide: Text.ElideRight
+    }
+
     // What it does, moving: follows the slider while it is dragged.
     LqPreview {
       design: root.design

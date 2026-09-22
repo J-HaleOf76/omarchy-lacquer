@@ -103,7 +103,7 @@ Item {
     case "generate": return app.aether.blueprints.length > 0 ? app.aether.blueprints.length + " blueprints" : "A theme from any wallpaper"
     case "fonts": return d ? d.mono.current + " · " + (d.text.px || 12) + " px" : "Text size and fonts"
     case "gtk":
-      if (!d) return "Apps, GTK and icons"
+      if (!d) return "Apps and icons"
       var pins = 0
       for (var p in app.desktop.pins) pins++
       return d.gsettings["icon-theme"] + (pins > 0 ? " · " + pins + " pinned" : " · follows theme")
@@ -121,7 +121,7 @@ Item {
     case "curves": return app.hypr.curveNames.length + " curves"
     case "sizes": return "Text " + app.desktop.textPx + " px"
     case "frame":
-      if (!app.companion.present) return "Needs the companion plugin"
+      if (!app.companion.present) return "Needs a small extra"
       return app.companion.on ? "On" : "Off"
     case "launcher":
       var lc = app.launcher.changedCount
@@ -162,7 +162,7 @@ Item {
       return tv ? tv.cursor + " cursor · " + tv.padding + " px padding" : "Padding, cursor, opacity"
     case "btop":
       var ai = app.apps.info
-      return ai && ai.btop ? ai.btop.graph_symbol + " graphs · " + ai.btop.update_ms + " ms" : "btop and the prompt"
+      return ai && ai.btop ? ai.btop.graph_symbol + " graphs · " + ai.btop.update_ms + " ms" : "System monitor and prompt"
     case "plugins": return app.sjson.plugins.length + " plugins"
     }
     return ""
@@ -203,27 +203,27 @@ Item {
   // Only the labels a person would look for; groups in the Desktop, Screens
   // and Apps views are listed by their visible titles.
   readonly property var choiceGroups: ({
-    fonts: ["Add a font", "Text size", "Terminal & code font", "Interface font size", "Interface font"],
-    gtk: ["Light or dark apps", "GTK theme", "Icon theme"],
-    cursor: ["Add a cursor theme", "Cursor theme", "Cursor size"],
-    motion: ["Motion feel", "Speed", "Lacquer's own animations", "Bar motion", "What moves in the bar"],
-    sizes: ["Desktop size", "Text size", "This window"],
-    displays: ["Scale", "Rotation", "Keep this?"],
-    frame: ["Screen frame", "Corners", "Frame width", "Vignette", "Scanlines", "Grain"],
-    launcher: ["App", "Name", "Icon", "In the launcher"],
-    apprules: ["App", "Floating", "Size when it floats", "Centred", "Opens on", "Opacity"],
-    borders: ["Window shape", "Border gradient", "Blend", "Gradient angle", "Spin the gradient", "Unfocused windows too", "Grouped windows too"],
-    nightlight: ["Right now", "Schedule", "Warmer from", "Back to normal at", "Evening warmth"],
-    lock: ["Lock screen", "Lock design", "Try it", "Unlock animation", "Unlock length", "Clock", "Blank the screen after", "Keep the display on while locked", "Lock after", "Boot unlock screen", "lock-explorer boot screen", "Build the boot screen"],
-    screensaver: ["Screensaver", "Start after", "Screensaver art", "About screen art"],
-    menulook: ["Size", "Corner radius", "Border width", "Transparency"],
-    terminals: ["Padding", "Cursor", "Cursor blink", "Background opacity"],
-    btop: ["btop background", "btop rounded corners", "btop graphs", "btop refresh", "btop vim keys", "Blank line before the prompt", "Prompt command timeout"],
-    theme: ["Themes", "Wallpaper", "Light and dark filter"],
-    shuffle: ["Shuffle on boot", "Day & Night", "Location", "Rotation", "History"],
-    generate: ["Palette from a wallpaper", "Light or dark palette", "Zed, VS Code and Neovim", "Blueprints", "Open aether"],
-    bar: ["Bar position", "Transparent bar", "Bar widgets", "Widget layout"],
-    plugins: ["Plugin settings"]
+    fonts: ["Add a font", "Text size", "Terminal font", "App text size", "App font"],
+    gtk: ["Light or dark apps", "App style", "Icons"],
+    cursor: ["Add a pointer style", "Pointer style", "Pointer size"],
+    motion: ["Motion feel", "Speed", "This app's animations", "Top bar animations", "What moves in the top bar"],
+    sizes: ["Size of everything", "Text size", "This window"],
+    displays: ["Make things bigger", "Themes in the shuffle", "Keep this?"],
+    frame: ["Screen frame", "Corners", "Frame thickness", "Darker edges", "Old-TV lines", "Grain"],
+    launcher: ["App", "Name", "Icon", "Show in the app list"],
+    apprules: ["App", "Float or fill a spot", "Size when floating", "Open in the middle", "Opens on desktop", "See-through"],
+    borders: ["Window shape", "Border colour fade", "How far it fades", "Fade direction", "Keep the fade turning", "Other windows too", "Grouped windows too"],
+    nightlight: ["Right now", "Every evening", "Warmer from", "Back to normal at", "How warm"],
+    lock: ["Lock screen", "Lock screen design", "Try it", "Unlock animation", "Unlock animation length", "Clock", "Turn the screen off after", "Keep the screen on while locked", "Lock after", "Start-up password screen", "Start-up screen design", "Save the start-up screen"],
+    screensaver: ["Screensaver", "Start after", "Screensaver picture", "About screen picture"],
+    menulook: ["Size", "Corner radius", "Border thickness", "See-through"],
+    terminals: ["Space around the text", "Text cursor shape", "Blinking text cursor", "See-through background"],
+    btop: ["System monitor background", "System monitor rounded corners", "System monitor graphs", "System monitor update speed", "System monitor arrow keys", "Empty line before each command", "Prompt time limit"],
+    theme: ["Themes", "Wallpaper", "Light or dark themes"],
+    shuffle: ["New theme every start-up", "Day & Night", "Location", "Themes in the shuffle", "History"],
+    generate: ["Colours from a picture", "Light or dark colours", "Colour your code editors", "Saved theme designs", "Open the theme maker"],
+    bar: ["Bar position", "Transparent bar", "What the bar shows", "Arrange the bar"],
+    plugins: ["Add-on settings"]
   })
 
   function iconOf(id) { var s = sectionById(id); return s ? s.icon : "" }

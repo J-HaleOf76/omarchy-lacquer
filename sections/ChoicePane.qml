@@ -257,7 +257,7 @@ Item {
 
           Item {
             width: parent.width
-            height: groupItem.open && !!groupItem.modelData.note ? noteText.implicitHeight : 0
+            height: groupItem.open && !!groupItem.modelData.note ? noteText.implicitHeight + (groupItem.modelData.tech ? 18 : 0) : 0
             visible: height > 0.5
             clip: true
             Behavior on height { enabled: pane.design.motion; SpringAnimation { spring: 3.2; damping: 0.22; mass: pane.design.mass } }
@@ -272,6 +272,19 @@ Item {
               lineHeight: 1.15
               opacity: groupItem.open ? 1 : 0
               Behavior on opacity { NumberAnimation { duration: 220 } }
+            }
+            // The real name, in small print, for anyone following a guide.
+            Text {
+              anchors.top: noteText.bottom
+              anchors.topMargin: 4
+              visible: !!groupItem.modelData.tech
+              width: parent.width
+              text: groupItem.modelData.tech || ""
+              color: pane.design.faint
+              font.family: pane.design.mono
+              font.pixelSize: 11
+              elide: Text.ElideRight
+              opacity: groupItem.open ? 1 : 0
             }
           }
 

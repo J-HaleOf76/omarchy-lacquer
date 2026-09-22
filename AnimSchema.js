@@ -21,11 +21,11 @@ var WINDOW_STYLES = [
   { value: "popin 70%", label: "Pop in 70%" },
   { value: "popin 87%", label: "Pop in 87%" },
   { value: "slide", label: "Slide" },
-  { value: "slide left", label: "Slide left" },
-  { value: "slide right", label: "Slide right" },
-  { value: "slide top", label: "Slide top" },
-  { value: "slide bottom", label: "Slide bottom" },
-  { value: "gnomed", label: "Gnomed" }
+  { value: "slide left", label: "Slide from the left" },
+  { value: "slide right", label: "Slide from the right" },
+  { value: "slide top", label: "Slide from the top" },
+  { value: "slide bottom", label: "Slide from the bottom" },
+  { value: "gnomed", label: "Grow from a line" }
 ]
 
 var LAYER_STYLES = [
@@ -39,18 +39,18 @@ var LAYER_STYLES = [
 var WORKSPACE_STYLES = [
   { value: "", label: "None" },
   { value: "slide", label: "Slide" },
-  { value: "slidevert", label: "Slide vertical" },
+  { value: "slidevert", label: "Slide up and down" },
   { value: "fade", label: "Fade" },
   { value: "slidefade", label: "Slide + fade" },
   { value: "slidefade 20%", label: "Slide + fade 20%" },
-  { value: "slidefadevert", label: "Slide + fade vertical" },
-  { value: "slidefadevert 20%", label: "Slide + fade vert 20%" }
+  { value: "slidefadevert", label: "Slide up and down + fade" },
+  { value: "slidefadevert 20%", label: "Slide up and down + fade 20%" }
 ]
 
 var ANGLE_STYLES = [
   { value: "", label: "None" },
-  { value: "once", label: "Once" },
-  { value: "loop", label: "Loop" }
+  { value: "once", label: "Turn once" },
+  { value: "loop", label: "Keep turning" }
 ]
 
 function leaf(name, label, description, parent, styles) {
@@ -68,86 +68,86 @@ var SECTIONS = [
     id: "windows",
     icon: "󰆏",
     title: "Windows",
-    blurb: "Opening, closing and moving tiled or floating windows.",
+    blurb: "Windows opening, closing and moving.",
     leaves: [
-      leaf("windows", "Windows", "Parent of the three below. Setting it sets any leaf you have not overridden.", "global", WINDOW_STYLES),
-      leaf("windowsIn", "Window opens", "A window appearing.", "windows", WINDOW_STYLES),
-      leaf("windowsOut", "Window closes", "A window disappearing.", "windows", WINDOW_STYLES),
-      leaf("windowsMove", "Window moves", "Moving or resizing, including retiling after a close.", "windows", WINDOW_STYLES)
+      leaf("windows", "All window animations", "Sets every window animation below at once, except ones you have changed on their own.", "global", WINDOW_STYLES),
+      leaf("windowsIn", "A window opens", "A new window appearing.", "windows", WINDOW_STYLES),
+      leaf("windowsOut", "A window closes", "A window going away.", "windows", WINDOW_STYLES),
+      leaf("windowsMove", "A window moves", "Moving or resizing a window, and the others shuffling up when one closes.", "windows", WINDOW_STYLES)
     ]
   },
   {
     id: "layers",
     icon: "󰓪",
-    title: "Layers",
-    blurb: "Layer surfaces — the bar, menus, notifications and the launcher.",
+    title: "Bars & menus",
+    blurb: "The top bar, menus, notifications and the app launcher appearing and going away.",
     leaves: [
-      leaf("layers", "Layers", "Parent of the two below.", "global", LAYER_STYLES),
-      leaf("layersIn", "Layer opens", "A layer surface appearing, such as the Omarchy menu.", "layers", LAYER_STYLES),
-      leaf("layersOut", "Layer closes", "A layer surface disappearing.", "layers", LAYER_STYLES)
+      leaf("layers", "All bar and menu animations", "Sets the two below at once.", "global", LAYER_STYLES),
+      leaf("layersIn", "A menu or panel opens", "The top bar, a menu, a notification or the app launcher appearing, like the Omarchy menu.", "layers", LAYER_STYLES),
+      leaf("layersOut", "A menu or panel closes", "A menu, notification or panel going away.", "layers", LAYER_STYLES)
     ]
   },
   {
     id: "fade",
     icon: "󰶉",
-    title: "Fade",
-    blurb: "Opacity transitions. These run alongside the movement animations.",
+    title: "Fades",
+    blurb: "Things fading in and out. These happen alongside the movements.",
     leaves: [
-      leaf("fade", "Fade", "Parent of every fade below.", "global", NO_STYLE),
-      leaf("fadeIn", "Fade in", "A window fading up as it opens.", "fade", NO_STYLE),
-      leaf("fadeOut", "Fade out", "A window fading down as it closes.", "fade", NO_STYLE),
-      leaf("fadeSwitch", "Focus switch", "Cross-fade when focus moves between windows.", "fade", NO_STYLE),
-      leaf("fadeShadow", "Shadow", "Drop shadow fading with focus.", "fade", NO_STYLE),
-      leaf("fadeDim", "Dim", "The inactive-window dim fading in and out.", "fade", NO_STYLE),
-      leaf("fadeLayers", "Layers", "Parent of the two below.", "fade", NO_STYLE),
-      leaf("fadeLayersIn", "Layer fade in", "A layer surface fading up.", "fadeLayers", NO_STYLE),
-      leaf("fadeLayersOut", "Layer fade out", "A layer surface fading down.", "fadeLayers", NO_STYLE),
-      leaf("fadePopups", "Popups", "Parent of the two below.", "fade", NO_STYLE),
-      leaf("fadePopupsIn", "Popup fade in", "An xdg popup fading up.", "fadePopups", NO_STYLE),
-      leaf("fadePopupsOut", "Popup fade out", "An xdg popup fading down.", "fadePopups", NO_STYLE),
-      leaf("fadeDpms", "Screen wake", "Fading the output back after DPMS blanks it.", "fade", NO_STYLE)
+      leaf("fade", "All fades", "Sets every fade below at once.", "global", NO_STYLE),
+      leaf("fadeIn", "Fade in", "A window fading into view as it opens.", "fade", NO_STYLE),
+      leaf("fadeOut", "Fade out", "A window fading away as it closes.", "fade", NO_STYLE),
+      leaf("fadeSwitch", "Switching windows", "The soft change when you move from one window to another.", "fade", NO_STYLE),
+      leaf("fadeShadow", "Shadow", "The shadow fading as you switch windows.", "fade", NO_STYLE),
+      leaf("fadeDim", "Darkening", "Other windows darkening and brightening as you switch.", "fade", NO_STYLE),
+      leaf("fadeLayers", "Menus and panels", "Sets the two below at once.", "fade", NO_STYLE),
+      leaf("fadeLayersIn", "A menu fades in", "A menu or panel fading into view.", "fadeLayers", NO_STYLE),
+      leaf("fadeLayersOut", "A menu fades out", "A menu or panel fading away.", "fadeLayers", NO_STYLE),
+      leaf("fadePopups", "Small pop-ups", "Sets the two below at once.", "fade", NO_STYLE),
+      leaf("fadePopupsIn", "A pop-up fades in", "A right-click menu or a small pop-up inside an app fading into view.", "fadePopups", NO_STYLE),
+      leaf("fadePopupsOut", "A pop-up fades out", "A small pop-up fading away.", "fadePopups", NO_STYLE),
+      leaf("fadeDpms", "Screen waking up", "The screen fading back in after it turned itself off.", "fade", NO_STYLE)
     ]
   },
   {
     id: "workspaces",
     icon: "󰕰",
-    title: "Workspaces",
-    blurb: "Switching workspaces, and the special (scratchpad) workspace.",
+    title: "Desktops",
+    blurb: "Switching between desktops, and the hidden scratchpad desktop.",
     leaves: [
-      leaf("workspaces", "Workspaces", "Parent of the two below. Off in stock Omarchy.", "global", WORKSPACE_STYLES),
-      leaf("workspacesIn", "Workspace enters", "The workspace being switched to.", "workspaces", WORKSPACE_STYLES),
-      leaf("workspacesOut", "Workspace leaves", "The workspace being switched away from.", "workspaces", WORKSPACE_STYLES),
-      leaf("specialWorkspace", "Special workspace", "Parent of the two below.", "workspaces", WORKSPACE_STYLES),
-      leaf("specialWorkspaceIn", "Special enters", "The scratchpad sliding in.", "specialWorkspace", WORKSPACE_STYLES),
-      leaf("specialWorkspaceOut", "Special leaves", "The scratchpad sliding out.", "specialWorkspace", WORKSPACE_STYLES)
+      leaf("workspaces", "All desktop switching", "Sets the ones below at once. Off in a fresh Omarchy.", "global", WORKSPACE_STYLES),
+      leaf("workspacesIn", "The desktop you go to", "The desktop sliding in when you switch to it.", "workspaces", WORKSPACE_STYLES),
+      leaf("workspacesOut", "The desktop you leave", "The desktop sliding out when you switch away.", "workspaces", WORKSPACE_STYLES),
+      leaf("specialWorkspace", "The scratchpad", "Sets the two below at once. The scratchpad is a hidden desktop you can pop up over the others.", "workspaces", WORKSPACE_STYLES),
+      leaf("specialWorkspaceIn", "The scratchpad appears", "The scratchpad sliding into view.", "specialWorkspace", WORKSPACE_STYLES),
+      leaf("specialWorkspaceOut", "The scratchpad goes", "The scratchpad sliding away.", "specialWorkspace", WORKSPACE_STYLES)
     ]
   },
   {
     id: "borders",
     icon: "󰝤",
     title: "Borders",
-    blurb: "Border colour transitions. The colours themselves come from your theme.",
+    blurb: "Border colours changing. The colours themselves come from your theme.",
     leaves: [
-      leaf("border", "Border colour", "Border easing between focused and unfocused.", "global", NO_STYLE),
-      leaf("borderangle", "Gradient angle", "Rotation of a gradient border. Loop makes it spin forever.", "global", ANGLE_STYLES),
-      leaf("glowangle", "Glow angle", "Rotation of a gradient glow.", "global", ANGLE_STYLES),
-      leaf("shadowangle", "Shadow angle", "Rotation of a gradient shadow.", "global", ANGLE_STYLES)
+      leaf("border", "Border colour change", "The border changing colour as you move between windows.", "global", NO_STYLE),
+      leaf("borderangle", "Border fade turning", "How a border colour fade turns round the window. Loop keeps it turning.", "global", ANGLE_STYLES),
+      leaf("glowangle", "Glow turning", "How a glow's colours turn round the window.", "global", ANGLE_STYLES),
+      leaf("shadowangle", "Shadow turning", "How a shadow's colours turn round the window.", "global", ANGLE_STYLES)
     ]
   },
   {
     id: "global",
     icon: "󱐋",
-    title: "Global",
-    blurb: "The root of the tree, and the leaves that hang off it directly.",
+    title: "Everything",
+    blurb: "Settings that every other animation starts from.",
     leaves: [
-      leaf("global", "Global", "Turning this off disables every animation at once.", "", NO_STYLE),
-      leaf("zoomFactor", "Zoom", "The compositor zoom easing.", "global", NO_STYLE),
-      leaf("monitorAdded", "Monitor added", "A display being plugged in.", "global", NO_STYLE)
+      leaf("global", "Everything", "Turn this off to stop every animation at once.", "", NO_STYLE),
+      leaf("zoomFactor", "Zooming in", "The screen zooming in and out, for anyone using the zoom.", "global", NO_STYLE),
+      leaf("monitorAdded", "Plugging in a screen", "A new screen appearing when you connect it.", "global", NO_STYLE)
     ]
   }
 ]
 
-var CURVES_SECTION = { id: "curves", icon: "󰓅", title: "Curves", blurb: "Named bezier curves. Drag either handle; every leaf using the curve follows." }
+var CURVES_SECTION = { id: "curves", icon: "󰓅", title: "Animation curves", blurb: "The shape of an animation's speed-up and slow-down. Drag either handle; every animation using that curve follows." }
 
 function sectionFor(id) {
   for (var i = 0; i < SECTIONS.length; i++)

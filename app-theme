@@ -177,25 +177,25 @@ def shade(hex_color, factor):
 
 TOOLS = {
     "bat": {
-        "name": "bat",
+        "name": "File viewer (bat)",
         "command": "bat",
         "path": os.path.join(HOME, ".config/bat/config"),
         "body": bat_body,
-        "what": "Follows the terminal's colours, so it changes with every theme.",
+        "what": "Shows files in the terminal in colour. It will follow your theme.",
     },
     "delta": {
-        "name": "delta",
+        "name": "Code changes (delta)",
         "command": "delta",
         "path": os.path.join(HOME, ".gitconfig"),
         "body": delta_body,
-        "what": "git's diff colours, from the theme's palette.",
+        "what": "Colours the before-and-after view when you compare code with git, using your theme's colours.",
     },
     "fzf": {
-        "name": "fzf",
+        "name": "Quick search list (fzf)",
         "command": "fzf",
         "path": os.path.join(GEN_DIR, "fzf.sh"),
         "body": fzf_body,
-        "what": "The picker's colours. A one-line source is added to ~/.bashrc.",
+        "what": "The pop-up search list some terminal commands use, in your theme's colours.",
         "sourced": True,
     },
 }

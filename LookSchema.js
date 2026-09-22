@@ -46,56 +46,56 @@ var SECTIONS = [
   {
     id: "windows",
     icon: "󰆏",
-    title: "Windows",
-    blurb: "Spacing, borders and how windows are arranged.",
+    title: "Spacing & layout",
+    blurb: "The space around windows and how they arrange themselves.",
     groups: [
-      group("Gaps and borders", [
-        item("general:gaps_in", "Inner gaps", "Space between adjacent windows.", "int",
+      group("Space and borders", [
+        item("general:gaps_in", "Space between windows", "How much room is left between windows sitting next to each other.", "int",
              { min: 0, max: 40, unit: "px" }),
-        item("general:gaps_out", "Outer gaps", "Space between windows and the screen edge.", "int",
+        item("general:gaps_out", "Space around the edge", "How much room is left between your windows and the edge of the screen.", "int",
              { min: 0, max: 80, unit: "px" }),
-        item("general:gaps_workspaces", "Workspace gaps", "Extra space between workspaces while they slide.", "int",
+        item("general:gaps_workspaces", "Space when switching desktops", "A gap shown between two desktops while one slides over to the next.", "int",
              { min: 0, max: 100, unit: "px" }),
-        item("general:float_gaps", "Floating gaps", "Gap around floating windows. 0 follows the inner gap.", "int",
+        item("general:float_gaps", "Space around floating windows", "Room kept around windows that float freely instead of filling a spot. 0 uses the same space as between windows.", "int",
              { min: 0, max: 40, unit: "px" }),
-        item("general:border_size", "Border width", "Thickness of the window border. Color comes from your theme.", "int",
+        item("general:border_size", "Border thickness", "How thick the coloured line around each window is. Its colour comes from your theme.", "int",
              { min: 0, max: 12, unit: "px" }),
-        item("decoration:border_part_of_window", "Border inside window", "Count the border as part of the window rather than drawing it outside.", "bool")
+        item("decoration:border_part_of_window", "Border inside the window", "Draw the border on the window's own edge instead of just outside it.", "bool")
       ]),
       group("Snapping", [
-        item("general:snap:enabled", "Snapping", "Snap floating windows to each other and to screen edges.", "bool"),
-        item("general:snap:window_gap", "Snap distance", "How close a floating window gets before it snaps to another.", "int",
+        item("general:snap:enabled", "Snap floating windows into place", "When you drag a floating window close to another window or to the edge of the screen, it lines up with it.", "bool"),
+        item("general:snap:window_gap", "Snap to other windows from", "How close a dragged window has to get to another window before it snaps against it.", "int",
              { min: 0, max: 50, unit: "px", needs: "general:snap:enabled" }),
-        item("general:snap:monitor_gap", "Snap to edges", "How close a floating window gets before it snaps to a screen edge.", "int",
+        item("general:snap:monitor_gap", "Snap to the screen edge from", "How close a dragged window has to get to the edge of the screen before it snaps against it.", "int",
              { min: 0, max: 50, unit: "px", needs: "general:snap:enabled" })
       ]),
-      group("Tiling engine", [
-        item("general:layout", "Engine", "Scrolling gives you niri-style side-scrolling columns.", "enum",
+      group("How windows are arranged", [
+        item("general:layout", "How windows arrange themselves", "Split: every new window shares the space with the one you are in. Main and stack: one big window with the rest lined up beside it. Scrolling: windows sit in a long row you scroll along.", "enum",
              { options: [
-                 { value: "dwindle", label: "Dwindle" },
-                 { value: "master", label: "Master" },
+                 { value: "dwindle", label: "Split" },
+                 { value: "master", label: "Main and stack" },
                  { value: "scrolling", label: "Scrolling" }
                ] }),
 
-        item("dwindle:preserve_split", "Preserve split", "Keep the split direction when a window closes.", "bool",
+        item("dwindle:preserve_split", "Keep the arrangement", "When a window closes, the others keep being side by side or above each other as they were.", "bool",
              { needs: "general:layout", needsValue: "dwindle" }),
-        item("dwindle:smart_split", "Smart split", "Pick the split direction from where in the window you drop.", "bool",
+        item("dwindle:smart_split", "Split where you drop it", "When you drag a window onto another, which half it lands in depends on where you let go.", "bool",
              { needs: "general:layout", needsValue: "dwindle" }),
-        item("dwindle:force_split", "Split side", "Where a new window lands.", "enum",
+        item("dwindle:force_split", "Where a new window opens", "Which side of the window you are in a new window appears on.", "enum",
              { numeric: true, needs: "general:layout", needsValue: "dwindle",
                options: [
-                 { value: 0, label: "Cursor" },
-                 { value: 1, label: "Before" },
-                 { value: 2, label: "After" }
+                 { value: 0, label: "Where the pointer is" },
+                 { value: 1, label: "Left or above" },
+                 { value: 2, label: "Right or below" }
                ] }),
-        item("dwindle:split_width_multiplier", "Split bias", "Above 1.0 favours splitting side by side.", "float",
+        item("dwindle:split_width_multiplier", "Prefer side by side", "Above 1.0, new windows go next to each other more often than above and below.", "float",
              { min: 0.5, max: 2.0, step: 0.05, decimals: 2, needs: "general:layout", needsValue: "dwindle" }),
-        item("dwindle:default_split_ratio", "Split ratio", "Size of a new split relative to its sibling.", "float",
+        item("dwindle:default_split_ratio", "Size of a new window", "How big a new window is compared with the one it shares its space with.", "float",
              { min: 0.5, max: 1.5, step: 0.05, decimals: 2, needs: "general:layout", needsValue: "dwindle" }),
 
-        item("master:mfact", "Master size", "Fraction of the screen the master window takes.", "float",
+        item("master:mfact", "Main window size", "How much of the screen the main window takes; the others share the rest.", "float",
              { min: 0.1, max: 0.9, step: 0.01, decimals: 2, needs: "general:layout", needsValue: "master" }),
-        item("master:orientation", "Master side", "Which edge the master window occupies.", "enum",
+        item("master:orientation", "Main window side", "Which side of the screen the main window sits on.", "enum",
              { needs: "general:layout", needsValue: "master",
                options: [
                  { value: "left", label: "Left" },
@@ -104,17 +104,17 @@ var SECTIONS = [
                  { value: "bottom", label: "Bottom" },
                  { value: "center", label: "Center" }
                ] }),
-        item("master:new_status", "New windows", "Where a newly opened window goes.", "enum",
+        item("master:new_status", "Where new windows go", "Whether a new window becomes the main one, joins the others, or follows your usual choice.", "enum",
              { needs: "general:layout", needsValue: "master",
                options: [
-                 { value: "master", label: "Master" },
-                 { value: "slave", label: "Slave" },
-                 { value: "inherit", label: "Inherit" }
+                 { value: "master", label: "Becomes the main one" },
+                 { value: "slave", label: "Joins the others" },
+                 { value: "inherit", label: "Your usual choice" }
                ] }),
 
-        item("scrolling:column_width", "Column width", "Fraction of the screen one column takes. 0.97 shows one at a time.", "float",
+        item("scrolling:column_width", "Column width", "How much of the screen one column of windows takes. 0.97 shows one window at a time.", "float",
              { min: 0.2, max: 1.0, step: 0.01, decimals: 2, needs: "general:layout", needsValue: "scrolling" }),
-        item("scrolling:fullscreen_on_one_column", "Fill on one column", "Let a lone column use the whole screen.", "bool",
+        item("scrolling:fullscreen_on_one_column", "One column fills the screen", "When only one column is open, let it use the whole screen.", "bool",
              { needs: "general:layout", needsValue: "scrolling" })
       ])
     ]
@@ -122,85 +122,85 @@ var SECTIONS = [
   {
     id: "decoration",
     icon: "󰝤",
-    title: "Decoration",
-    blurb: "Corners, transparency and dimming.",
+    title: "Corners & see-through",
+    blurb: "Rounded corners, see-through windows, and darkening the ones you aren't using.",
     groups: [
       group("Corners", [
-        item("decoration:rounding", "Rounding", "Corner radius. 0 is square. The bar and menus follow this too.", "int",
+        item("decoration:rounding", "Window corners", "How round the corners of your windows are. 0 is square. The top bar and menus round to match.", "int",
              { min: 0, max: 30, unit: "px" }),
-        item("decoration:rounding_power", "Roundness curve", "2.0 is a circle; higher gets you a squircle.", "float",
+        item("decoration:rounding_power", "Corner shape", "2.0 is an even curve; higher gives a softer, more squarish corner.", "float",
              { min: 1.0, max: 10.0, step: 0.1, decimals: 1 })
       ]),
-      group("Opacity", [
+      group("See-through", [
         // Omarchy tags every window and applies opacity "0.985 0.96" in
         // default/hypr/windows.lua. That rule multiplies with the globals
         // below, so without this switch the sliders top out at 0.985.
-        item(OPAQUE_WINDOWS_KEY, "Full opacity", "Cancel Omarchy's blanket window opacity rule so these sliders can reach 1.0.", "bool",
+        item(OPAQUE_WINDOWS_KEY, "Allow fully solid windows", "Omarchy makes every window very slightly see-through. Turn this on so the settings below can make windows completely solid.", "bool",
              { synthetic: true, fallback: false }),
-        item("decoration:active_opacity", "Focused", "Opacity of the focused window.", "float",
+        item("decoration:active_opacity", "The window you are using", "How solid the window you are working in is. 1.00 is fully solid; lower lets the background show through.", "float",
              { min: 0.3, max: 1.0, step: 0.01, decimals: 2 }),
-        item("decoration:inactive_opacity", "Unfocused", "Opacity of every other window.", "float",
+        item("decoration:inactive_opacity", "Other windows", "How solid every other window is. 1.00 is fully solid.", "float",
              { min: 0.3, max: 1.0, step: 0.01, decimals: 2 }),
-        item("decoration:fullscreen_opacity", "Fullscreen", "Opacity while a window is fullscreen.", "float",
+        item("decoration:fullscreen_opacity", "A window filling the screen", "How solid a window is while it fills the whole screen.", "float",
              { min: 0.3, max: 1.0, step: 0.01, decimals: 2 })
       ]),
-      group("Dimming", [
-        item("decoration:dim_inactive", "Dim unfocused", "Darken every window except the focused one.", "bool"),
-        item("decoration:dim_strength", "Dim strength", "How far unfocused windows are darkened.", "float",
+      group("Darkening", [
+        item("decoration:dim_inactive", "Darken other windows", "Shade every window except the one you are using, so it stands out.", "bool"),
+        item("decoration:dim_strength", "How much darker", "How strongly the other windows are shaded.", "float",
              { min: 0.0, max: 1.0, step: 0.01, decimals: 2, needs: "decoration:dim_inactive" }),
-        item("decoration:dim_special", "Special workspace dim", "Dimming applied behind a special workspace.", "float",
+        item("decoration:dim_special", "Darken behind the scratchpad", "How much the screen darkens behind the scratchpad, the hidden desktop you can pop up over the others.", "float",
              { min: 0.0, max: 1.0, step: 0.01, decimals: 2 }),
-        item("decoration:dim_around", "Dim around", "Dimming behind windows using the dimaround window rule.", "float",
+        item("decoration:dim_around", "Darken around pop-up windows", "How much the rest of the screen darkens behind windows that are set to shade what is around them.", "float",
              { min: 0.0, max: 1.0, step: 0.01, decimals: 2 }),
-        item("decoration:dim_modal", "Dim behind modals", "Darken a window while one of its dialogs is open.", "bool")
+        item("decoration:dim_modal", "Darken behind dialogs", "Shade a window while one of its little dialog windows, like Save or Open, is showing.", "bool")
       ])
     ]
   },
   {
     id: "effects",
     icon: "󱒛",
-    title: "Effects",
-    blurb: "Blur, shadow and glow. These cost GPU time.",
+    title: "Glass & shadow",
+    blurb: "Frosted glass, shadows and glow. These make your graphics work a little harder.",
     groups: [
-      group("Blur", [
-        item("decoration:blur:enabled", "Blur", "Master switch for all blur.", "bool"),
-        item("decoration:blur:size", "Size", "Blur radius.", "int",
+      group("Frosted glass", [
+        item("decoration:blur:enabled", "Frosted glass", "Blur whatever is behind see-through windows and panels, like frosted glass.", "bool"),
+        item("decoration:blur:size", "How blurry", "How strongly things behind the glass are blurred.", "int",
              { min: 1, max: 20, needs: "decoration:blur:enabled" }),
-        item("decoration:blur:passes", "Passes", "More passes is smoother and slower. 3 is a good ceiling.", "int",
+        item("decoration:blur:passes", "Blur smoothness", "Higher is smoother but works your graphics harder. 3 is plenty.", "int",
              { min: 1, max: 5, needs: "decoration:blur:enabled" }),
-        item("decoration:blur:noise", "Noise", "Grain mixed into the blur to hide banding.", "float",
+        item("decoration:blur:noise", "Grain", "A little speckle mixed into the blur so smooth colour changes don't look stepped.", "float",
              { min: 0.0, max: 0.2, step: 0.005, decimals: 3, needs: "decoration:blur:enabled" }),
-        item("decoration:blur:contrast", "Contrast", "Contrast of the blurred image.", "float",
+        item("decoration:blur:contrast", "Contrast behind the glass", "How strong the difference between light and dark is behind the glass.", "float",
              { min: 0.0, max: 2.0, step: 0.01, decimals: 2, needs: "decoration:blur:enabled" }),
-        item("decoration:blur:brightness", "Brightness", "Brightness of the blurred image.", "float",
+        item("decoration:blur:brightness", "Brightness behind the glass", "How bright things look behind the glass.", "float",
              { min: 0.0, max: 2.0, step: 0.01, decimals: 2, needs: "decoration:blur:enabled" }),
-        item("decoration:blur:vibrancy", "Vibrancy", "Saturation boost for the blurred image.", "float",
+        item("decoration:blur:vibrancy", "Colour boost", "Makes the colours behind the glass more vivid.", "float",
              { min: 0.0, max: 1.0, step: 0.01, decimals: 2, needs: "decoration:blur:enabled" }),
-        item("decoration:blur:vibrancy_darkness", "Vibrancy darkness", "How much vibrancy applies to dark areas.", "float",
+        item("decoration:blur:vibrancy_darkness", "Colour boost in the dark parts", "How much the colour boost also reaches the dark parts.", "float",
              { min: 0.0, max: 1.0, step: 0.01, decimals: 2, needs: "decoration:blur:enabled" }),
-        item("decoration:blur:xray", "X-ray", "Blur the wallpaper instead of the windows underneath.", "bool",
+        item("decoration:blur:xray", "Only blur the wallpaper", "Behind a see-through window, show your blurred wallpaper rather than the windows underneath.", "bool",
              { needs: "decoration:blur:enabled" }),
-        item("decoration:blur:special", "Special workspace", "Blur behind special workspaces.", "bool",
+        item("decoration:blur:special", "Blur behind the scratchpad", "Frost the screen behind the scratchpad, the hidden desktop you can pop up.", "bool",
              { needs: "decoration:blur:enabled" }),
-        item("decoration:blur:popups", "Popups", "Blur behind menus and tooltips.", "bool",
+        item("decoration:blur:popups", "Blur behind menus", "Frost what is behind right-click menus and the little hints that appear under the pointer.", "bool",
              { needs: "decoration:blur:enabled" })
       ]),
       group("Shadow", [
-        item("decoration:shadow:enabled", "Shadow", "Master switch for window shadows.", "bool"),
-        item("decoration:shadow:range", "Range", "How far the shadow reaches.", "int",
+        item("decoration:shadow:enabled", "Shadows", "Draw a soft shadow under each window.", "bool"),
+        item("decoration:shadow:range", "Shadow size", "How far the shadow spreads out from the window.", "int",
              { min: 0, max: 50, unit: "px", needs: "decoration:shadow:enabled" }),
-        item("decoration:shadow:render_power", "Falloff", "How sharply the shadow fades out.", "int",
+        item("decoration:shadow:render_power", "Shadow softness", "How quickly the shadow fades away from the window's edge.", "int",
              { min: 1, max: 4, needs: "decoration:shadow:enabled" }),
-        item("decoration:shadow:scale", "Scale", "Size of the shadow relative to the window.", "float",
+        item("decoration:shadow:scale", "Shadow scale", "How big the shadow is compared with the window.", "float",
              { min: 0.0, max: 1.0, step: 0.01, decimals: 2, needs: "decoration:shadow:enabled" }),
-        item("decoration:shadow:sharp", "Sharp", "Hard-edged shadow with no gradient.", "bool",
+        item("decoration:shadow:sharp", "Hard shadow", "A crisp-edged shadow instead of a soft one.", "bool",
              { needs: "decoration:shadow:enabled" })
       ]),
       group("Glow", [
-        item("decoration:glow:enabled", "Glow", "Halo around the focused window. Its color is a separate Hyprland option.", "bool"),
-        item("decoration:glow:range", "Range", "How far the glow reaches.", "int",
+        item("decoration:glow:enabled", "Glow", "A soft halo of light around the window you are using.", "bool"),
+        item("decoration:glow:range", "Glow size", "How far the glow spreads.", "int",
              { min: 0, max: 50, unit: "px", needs: "decoration:glow:enabled" }),
-        item("decoration:glow:render_power", "Falloff", "How sharply the glow fades out.", "int",
+        item("decoration:glow:render_power", "Glow softness", "How quickly the glow fades away.", "int",
              { min: 1, max: 4, needs: "decoration:glow:enabled" })
       ])
     ]
@@ -208,26 +208,26 @@ var SECTIONS = [
   {
     id: "groups",
     icon: "󰓪",
-    title: "Groups",
-    blurb: "The tab bar on grouped windows. Its colors come from your theme.",
+    title: "Grouped windows",
+    blurb: "The row of tabs on windows stacked together in one spot. Its colours come from your theme.",
     groups: [
-      group("Group bar", [
-        item("group:groupbar:enabled", "Group bar", "Show the tab strip on grouped windows.", "bool"),
-        item("group:groupbar:height", "Height", "Height of the tab strip.", "int",
+      group("Tabs on grouped windows", [
+        item("group:groupbar:enabled", "Tabs on grouped windows", "Several windows can be stacked into one spot as a group; this shows a row of tabs to switch between them.", "bool"),
+        item("group:groupbar:height", "Tab height", "How tall the row of tabs is.", "int",
              { min: 0, max: 40, unit: "px", needs: "group:groupbar:enabled" }),
-        item("group:groupbar:font_size", "Font size", "Size of the tab titles.", "int",
+        item("group:groupbar:font_size", "Tab text size", "How big the window names in the tabs are.", "int",
              { min: 6, max: 24, unit: "px", needs: "group:groupbar:enabled" }),
-        item("group:groupbar:render_titles", "Show titles", "Draw window titles in the tabs.", "bool",
+        item("group:groupbar:render_titles", "Show window names", "Write each window's name in its tab.", "bool",
              { needs: "group:groupbar:enabled" }),
-        item("group:groupbar:indicator_height", "Indicator height", "Thickness of the active-tab indicator.", "int",
+        item("group:groupbar:indicator_height", "Marker under the open tab", "How thick the line under the tab you are on is.", "int",
              { min: 0, max: 12, unit: "px", needs: "group:groupbar:enabled" }),
-        item("group:groupbar:rounding", "Rounding", "Corner radius of the tabs.", "int",
+        item("group:groupbar:rounding", "Tab corners", "How round the corners of the tabs are.", "int",
              { min: 0, max: 20, unit: "px", needs: "group:groupbar:enabled" }),
-        item("group:groupbar:gradients", "Gradients", "Fade the tab backgrounds.", "bool",
+        item("group:groupbar:gradients", "Shaded tabs", "Give the tabs a colour fade instead of a flat colour.", "bool",
              { needs: "group:groupbar:enabled" }),
-        item("group:groupbar:stacked", "Stacked", "Lay the tabs out vertically.", "bool",
+        item("group:groupbar:stacked", "Tabs in a column", "List the tabs one above the other instead of side by side.", "bool",
              { needs: "group:groupbar:enabled" }),
-        item("group:groupbar:disable_when_only", "Hide when alone", "Hide the strip when the group has one window.", "bool",
+        item("group:groupbar:disable_when_only", "Hide tabs for a single window", "Don't show the tabs when a group has only one window in it.", "bool",
              { needs: "group:groupbar:enabled" })
       ])
     ]
@@ -235,9 +235,9 @@ var SECTIONS = [
 ]
 
 // Shown at the top of the Animations section, above the per-leaf editor.
-var ANIMATION_MASTER = group("Master", [
-  item("animations:enabled", "Animations", "Master switch for every animation.", "bool"),
-  item("animations:workspace_wraparound", "Wrap workspaces", "Slide the short way between your lowest and highest open workspace. Hyprland only counts workspaces that exist, so with just two open every switch between them wraps and slides the wrong way.", "bool",
+var ANIMATION_MASTER = group("Main window and stack", [
+  item("animations:enabled", "Animations", "Turn every window and desktop animation on or off.", "bool"),
+  item("animations:workspace_wraparound", "Wrap round the desktops", "Going past your last desktop brings you round to the first. Only desktops that are open count, so with just two open every switch wraps round.", "bool",
        { needs: "animations:enabled" })
 ])
 

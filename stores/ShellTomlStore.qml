@@ -102,7 +102,7 @@ Item {
     onSaved: root.shellSelfWrite = false
     onSaveFailed: {
       root.shellSelfWrite = false
-      app.errorText = "Could not write ~/.config/omarchy/shell.toml"
+      app.errorText = "Could not save your bar and menu style (~/.config/omarchy/shell.toml)"
     }
     onFileChanged: { if (root.shellSelfWrite) return; reload() }
   }

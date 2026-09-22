@@ -97,10 +97,10 @@ Item {
             font.family: section.app.fontFamily
             font.pixelSize: Style.font.caption
             text: section.app.confirmShuffleMove
-              ? "Remove OmaShuffle and let Lacquer run the shuffle? Your rotation, schedule and history "
-                + "come across exactly. OmaShuffle's own state file is left in place as a backup."
-              : "OmaShuffle is still running your shuffle, so these settings are read-only here. "
-                + "Move it to Lacquer to edit them — nothing about how it behaves changes."
+              ? "Remove the OmaShuffle add-on and let Lacquer do the shuffling? Your themes, times and history "
+                + "come across exactly, and a copy of OmaShuffle's settings is kept."
+              : "The OmaShuffle add-on is still doing your shuffling, so these settings can only be looked at here. "
+                + "Move it to Lacquer to change them — it keeps working exactly the same."
           }
 
           LqButton {
@@ -157,9 +157,9 @@ Item {
 
         Repeater {
           model: [
-            { key: "boot", label: "New theme on every boot", desc: "Draws the next theme from the rotation each time the laptop starts. Dormant while Day & Night is on." },
-            { key: "daynight", label: "Day & Night", desc: "Switches theme at sunrise and sunset (or your own slots), drawing light or dark themes from the rotation." },
-            { key: "notify", label: "Notifications", desc: "Say which theme was picked. Day & Night switches are always quiet." }
+            { key: "boot", label: "New theme every start-up", desc: "Picks the next theme from your list each time the computer starts. Paused while Day & Night is on." },
+            { key: "daynight", label: "Day & Night", desc: "A light theme by day and a dark one at night, switching at sunrise and sunset or at times you choose." },
+            { key: "notify", label: "Notifications", desc: "Show a message saying which theme was picked. Day & Night changes never show one." }
           ]
 
           Item {
@@ -201,7 +201,7 @@ Item {
         Row {
           spacing: Style.spacing.lg
           LqButton { design: app.design; text: "Shuffle now"; iconText: "󰒝"; bordered: true; foreground: section.app.foreground; accent: section.app.accent; fontFamily: section.app.fontFamily; onClicked: section.engine.shuffleNow() }
-          LqButton { design: app.design; text: "Reshuffle deck"; bordered: true; foreground: section.app.foreground; accent: section.app.accent; fontFamily: section.app.fontFamily; onClicked: section.engine.reshuffleDeck() }
+          LqButton { design: app.design; text: "Mix up the order"; bordered: true; foreground: section.app.foreground; accent: section.app.accent; fontFamily: section.app.fontFamily; onClicked: section.engine.reshuffleDeck() }
         }
 
         PanelSeparator { foreground: section.app.foreground; width: parent.width }
@@ -215,7 +215,7 @@ Item {
           LqLabel {
             design: app.design
             id: rotationHeader
-            text: "Rotation"
+            text: "Themes in the shuffle"
             foreground: section.app.foreground
             fontFamily: section.app.fontFamily
           }
@@ -306,7 +306,7 @@ Item {
               design: app.design
               style: "chips"
               anchors.verticalCenter: parent.verticalCenter
-              options: [{ value: "auto", label: "From weather" }, { value: "manual", label: "Manual" }]
+              options: [{ value: "auto", label: "From the weather" }, { value: "manual", label: "Type it in" }]
               value: section.st ? section.st.schedule.locationMode : "auto"
               foreground: section.app.foreground
               accent: section.app.accent
@@ -320,7 +320,7 @@ Item {
               visible: section.st && section.st.schedule.locationMode === "auto"
               text: section.ready && isFinite(section.engine.detectedLat)
                 ? (section.engine.detectedLocationLabel || "Detected") + "  (" + section.engine.detectedLat.toFixed(2) + ", " + section.engine.detectedLon.toFixed(2) + ")"
-                : "No weather location set in Omarchy"
+                : "No location set for the weather in Omarchy"
               color: Qt.darker(section.app.foreground, 1.5)
               font.family: section.app.fontFamily
               font.pixelSize: Style.font.caption
@@ -465,7 +465,7 @@ Item {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
                     iconText: "󰅖"
-                    tooltipText: "Remove this slot"
+                    tooltipText: "Remove this time"
                     foreground: section.app.foreground
                     visible: section.st && section.st.schedule.slots.length > 1
                     onClicked: section.engine.removeSlot(slotCard.modelData.id)
@@ -477,7 +477,7 @@ Item {
 
           LqButton {
             design: app.design
-            text: "Add slot"
+            text: "Add a time"
             iconText: "󰐕"
             bordered: true
             visible: section.st && section.st.schedule.slots.length < 6

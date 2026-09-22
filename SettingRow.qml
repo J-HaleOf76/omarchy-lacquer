@@ -138,6 +138,7 @@ Item {
     }
 
     Text {
+      visible: root.open
       text: root.spec.key
       color: Qt.darker(root.foreground, 1.9)
       font.family: root.fontFamily

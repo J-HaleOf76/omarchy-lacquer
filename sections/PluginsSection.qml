@@ -133,7 +133,7 @@ Item {
       Text {
         width: parent.width
         visible: pluginColumn.configurable.length === 0
-        text: "No installed plugin declares settings in its manifest."
+        text: "None of your add-ons have settings of their own."
         color: Qt.darker(app.foreground, 1.55)
         font.family: app.fontFamily
         font.pixelSize: Style.font.caption

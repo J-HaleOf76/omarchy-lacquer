@@ -208,7 +208,7 @@ Item {
     stderr: StdioCollector { id: writeErr; waitForEnd: true }
     onExited: function(code) {
       if (code !== 0)
-        root.app.errorText = String(writeErr.text || "").trim() || "Could not write ~/.config/hypr/monitors.lua"
+        root.app.errorText = String(writeErr.text || "").trim() || "Could not save your screen settings (~/.config/hypr/monitors.lua)"
       root.rescan()
     }
   }

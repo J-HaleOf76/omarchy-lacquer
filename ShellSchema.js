@@ -51,12 +51,12 @@ function surface(section, title, extras) {
     color(section, "background", "Background", ""),
     alpha(section, "background-alpha", "Background opacity", ""),
     color(section, "text", "Text", ""),
-    color(section, "border", "Border", "A solid color, or a token like hyprland.active-border."),
+    color(section, "border", "Border", "A colour, or the name hyprland.active-border to use your windows' border colour."),
     alpha(section, "border-alpha", "Border opacity", "")
   ]
   // omamenu's Menu Look transparency, when above 0 %, replaces this opacity.
   if (section === "menu")
-    items[1].description = "Menu look's transparency replaces this while it is above 0 %."
+    items[1].description = "App menu look's see-through setting replaces this while it is above 0 %."
   for (var i = 0; i < (extras || []).length; i++) items.push(extras[i])
   return group(title, items)
 }
@@ -65,166 +65,166 @@ var TABS = [
   {
     id: "text",
     title: "Text",
-    blurb: "Font sizes across the whole shell. Base size is the root every other token scales from.",
+    blurb: "How big text is in the top bar, menus and pop-ups. Base text size is what all the others grow from.",
     groups: [
       group("Size", [
-        num("font", "base-size", "Base size", "The root size. `omarchy display text size` writes this too.", 8, 24, 1, "px", 12)
+        num("font", "base-size", "Base text size", "The size everything else grows from. Text size in Fonts & text size changes this too.", 8, 24, 1, "px", 12)
       ]),
-      group("Per-token pins", [
-        num("font", "caption", "Caption", "Smallest label text.", 6, 30, 1, "px", 10),
-        num("font", "body-small", "Body small", "", 6, 30, 1, "px", 11),
-        num("font", "body", "Body", "", 6, 30, 1, "px", 12),
-        num("font", "subtitle", "Subtitle", "", 6, 34, 1, "px", 13),
-        num("font", "title", "Title", "", 6, 34, 1, "px", 14),
-        num("font", "heading", "Heading", "", 8, 40, 1, "px", 16),
-        num("font", "display", "Display", "", 10, 60, 1, "px", 24),
-        num("font", "display-large", "Display large", "", 10, 72, 1, "px", 28),
-        num("font", "icon-small", "Icon small", "", 6, 30, 1, "px", 11),
-        num("font", "icon", "Icon", "", 6, 34, 1, "px", 14),
-        num("font", "icon-large", "Icon large", "", 8, 40, 1, "px", 18)
+      group("Individual sizes", [
+        num("font", "caption", "Smallest labels", "The tiniest text, like hints and small labels.", 6, 30, 1, "px", 10),
+        num("font", "body-small", "Small text", "", 6, 30, 1, "px", 11),
+        num("font", "body", "Normal text", "", 6, 30, 1, "px", 12),
+        num("font", "subtitle", "Subheadings", "", 6, 34, 1, "px", 13),
+        num("font", "title", "Titles", "", 6, 34, 1, "px", 14),
+        num("font", "heading", "Headings", "", 8, 40, 1, "px", 16),
+        num("font", "display", "Large text", "", 10, 60, 1, "px", 24),
+        num("font", "display-large", "Largest text", "", 10, 72, 1, "px", 28),
+        num("font", "icon-small", "Small icons", "", 6, 30, 1, "px", 11),
+        num("font", "icon", "Icons", "", 6, 34, 1, "px", 14),
+        num("font", "icon-large", "Large icons", "", 8, 40, 1, "px", 18)
       ])
     ]
   },
   {
     id: "spacing",
     title: "Spacing",
-    blurb: "How tight or airy every panel, row and control is. Scale multiplies every token at once.",
+    blurb: "How roomy or tight the top bar, menus and panels feel. Overall spacing changes it all at once.",
     groups: [
-      group("Scale", [
-        num("spacing", "scale", "Scale", "Multiplies every spacing token.", 0.5, 2.0, 0.05, "x", 1.0),
-        bool("spacing", "scale-with-font", "Scale with font", "Grow spacing when the base font size grows.", true)
+      group("Overall", [
+        num("spacing", "scale", "Overall spacing", "Makes all the spacing below bigger or smaller together.", 0.5, 2.0, 0.05, "x", 1.0),
+        bool("spacing", "scale-with-font", "Grow with the text", "Give things more room when the base text size grows.", true)
       ]),
-      group("Tokens", [
-        num("spacing", "xxs", "xxs", "", 0, 20, 1, "px", 2),
-        num("spacing", "xs", "xs", "", 0, 20, 1, "px", 3),
-        num("spacing", "sm", "sm", "", 0, 24, 1, "px", 4),
-        num("spacing", "md", "md", "", 0, 28, 1, "px", 6),
-        num("spacing", "lg", "lg", "", 0, 32, 1, "px", 8),
-        num("spacing", "xl", "xl", "", 0, 36, 1, "px", 10),
-        num("spacing", "xxl", "xxl", "", 0, 40, 1, "px", 12),
-        num("spacing", "xxxl", "xxxl", "", 0, 48, 1, "px", 14),
-        num("spacing", "huge", "huge", "", 0, 64, 1, "px", 18)
+      group("Standard gaps", [
+        num("spacing", "xxs", "Tiniest gap", "One of the standard gap sizes everything else is built from.", 0, 20, 1, "px", 2),
+        num("spacing", "xs", "Very small gap", "", 0, 20, 1, "px", 3),
+        num("spacing", "sm", "Small gap", "", 0, 24, 1, "px", 4),
+        num("spacing", "md", "Medium gap", "", 0, 28, 1, "px", 6),
+        num("spacing", "lg", "Large gap", "", 0, 32, 1, "px", 8),
+        num("spacing", "xl", "Larger gap", "", 0, 36, 1, "px", 10),
+        num("spacing", "xxl", "Very large gap", "", 0, 40, 1, "px", 12),
+        num("spacing", "xxxl", "Huge gap", "", 0, 48, 1, "px", 14),
+        num("spacing", "huge", "Biggest gap", "", 0, 64, 1, "px", 18)
       ]),
-      group("Controls and rows", [
-        num("spacing", "control-gap", "Control gap", "", 0, 32, 1, "px", 8),
-        num("spacing", "control-padding-x", "Control padding X", "", 0, 40, 1, "px", 10),
-        num("spacing", "control-padding-y", "Control padding Y", "", 0, 32, 1, "px", 6),
-        num("spacing", "input-padding-y", "Input padding Y", "", 0, 32, 1, "px", 7),
-        num("spacing", "control-height", "Control height", "", 16, 60, 1, "px", 28),
-        num("spacing", "popup-row-height", "Popup row height", "", 16, 60, 1, "px", 28),
-        num("spacing", "row-gap", "Row gap", "", 0, 32, 1, "px", 8),
-        num("spacing", "row-padding-x", "Row padding X", "", 0, 40, 1, "px", 12),
-        num("spacing", "label-gap", "Label gap", "", 0, 24, 1, "px", 4)
+      group("Buttons and rows", [
+        num("spacing", "control-gap", "Space between buttons", "", 0, 32, 1, "px", 8),
+        num("spacing", "control-padding-x", "Space inside buttons, left and right", "", 0, 40, 1, "px", 10),
+        num("spacing", "control-padding-y", "Space inside buttons, top and bottom", "", 0, 32, 1, "px", 6),
+        num("spacing", "input-padding-y", "Space inside text boxes", "", 0, 32, 1, "px", 7),
+        num("spacing", "control-height", "Button height", "", 16, 60, 1, "px", 28),
+        num("spacing", "popup-row-height", "Menu row height", "", 16, 60, 1, "px", 28),
+        num("spacing", "row-gap", "Space between rows", "", 0, 32, 1, "px", 8),
+        num("spacing", "row-padding-x", "Space at the ends of rows", "", 0, 40, 1, "px", 12),
+        num("spacing", "label-gap", "Space beside labels", "", 0, 24, 1, "px", 4)
       ]),
-      group("Panels and popups", [
-        num("spacing", "panel-gap", "Panel gap", "", 0, 48, 1, "px", 14),
-        num("spacing", "panel-padding", "Panel padding", "", 0, 60, 1, "px", 18),
-        num("spacing", "popup-padding", "Popup padding", "", 0, 48, 1, "px", 14),
-        num("spacing", "dropdown-width", "Dropdown width", "", 120, 480, 5, "px", 240),
-        num("spacing", "searchable-dropdown-width", "Searchable width", "", 120, 480, 5, "px", 260),
-        num("spacing", "number-field-width", "Number field width", "", 60, 320, 5, "px", 120),
-        num("spacing", "searchable-popup-min-height", "Searchable min height", "", 100, 600, 10, "px", 220)
+      group("Panels and pop-ups", [
+        num("spacing", "panel-gap", "Space between panel parts", "", 0, 48, 1, "px", 14),
+        num("spacing", "panel-padding", "Space inside panels", "", 0, 60, 1, "px", 18),
+        num("spacing", "popup-padding", "Space inside pop-ups", "", 0, 48, 1, "px", 14),
+        num("spacing", "dropdown-width", "Drop-down list width", "", 120, 480, 5, "px", 240),
+        num("spacing", "searchable-dropdown-width", "Search list width", "", 120, 480, 5, "px", 260),
+        num("spacing", "number-field-width", "Number box width", "", 60, 320, 5, "px", 120),
+        num("spacing", "searchable-popup-min-height", "Search list height", "", 100, 600, 10, "px", 220)
       ])
     ]
   },
   {
     id: "controls",
-    title: "Controls",
-    blurb: "The chrome every button, switch, slider and field shares, in each of its states.",
+    title: "Buttons",
+    blurb: "How buttons, switches, sliders and boxes look: resting, under the pointer, chosen and so on.",
     groups: [
-      group("Normal", [
-        color("controls", "normal-color", "Color", ""),
-        alpha("controls", "normal-fill-alpha", "Fill opacity", "", 0.04),
-        color("controls", "normal-border", "Border", ""),
-        num("controls", "normal-border-width", "Border width", "", 0, 6, 1, "px", 1),
-        alpha("controls", "normal-border-alpha", "Border opacity", "", 0.4)
+      group("Resting", [
+        color("controls", "normal-color", "Colour", ""),
+        alpha("controls", "normal-fill-alpha", "Fill strength", "", 0.04),
+        color("controls", "normal-border", "Border colour", ""),
+        num("controls", "normal-border-width", "Border thickness", "", 0, 6, 1, "px", 1),
+        alpha("controls", "normal-border-alpha", "Border strength", "", 0.4)
       ]),
-      group("Hover", [
-        color("controls", "hover-cursor-color", "Color", ""),
-        alpha("controls", "hover-cursor-fill-alpha", "Fill opacity", "", 0.08),
-        color("controls", "hover-cursor-border", "Border", ""),
-        num("controls", "hover-cursor-border-width", "Border width", "", 0, 6, 1, "px", 1),
-        alpha("controls", "hover-cursor-border-alpha", "Border opacity", "", 0.25)
+      group("Under the pointer", [
+        color("controls", "hover-cursor-color", "Colour", ""),
+        alpha("controls", "hover-cursor-fill-alpha", "Fill strength", "", 0.08),
+        color("controls", "hover-cursor-border", "Border colour", ""),
+        num("controls", "hover-cursor-border-width", "Border thickness", "", 0, 6, 1, "px", 1),
+        alpha("controls", "hover-cursor-border-alpha", "Border strength", "", 0.25)
       ]),
-      group("Focus", [
-        color("controls", "focus-color", "Color", ""),
-        alpha("controls", "focus-fill-alpha", "Fill opacity", "", 0.08),
-        color("controls", "focus-border", "Border", ""),
-        num("controls", "focus-border-width", "Border width", "", 0, 6, 1, "px", 1),
-        alpha("controls", "focus-border-alpha", "Border opacity", "", 0.25)
+      group("Picked with the keyboard", [
+        color("controls", "focus-color", "Colour", ""),
+        alpha("controls", "focus-fill-alpha", "Fill strength", "", 0.08),
+        color("controls", "focus-border", "Border colour", ""),
+        num("controls", "focus-border-width", "Border thickness", "", 0, 6, 1, "px", 1),
+        alpha("controls", "focus-border-alpha", "Border strength", "", 0.25)
       ]),
-      group("Selected", [
-        color("controls", "selected-color", "Color", ""),
-        alpha("controls", "selected-fill-alpha", "Fill opacity", "", 0.18),
-        color("controls", "selected-border", "Border", ""),
-        num("controls", "selected-border-width", "Border width", "", 0, 6, 1, "px", 0),
-        alpha("controls", "selected-border-alpha", "Border opacity", "", 1.0)
+      group("Chosen", [
+        color("controls", "selected-color", "Colour", ""),
+        alpha("controls", "selected-fill-alpha", "Fill strength", "", 0.18),
+        color("controls", "selected-border", "Border colour", ""),
+        num("controls", "selected-border-width", "Border thickness", "", 0, 6, 1, "px", 0),
+        alpha("controls", "selected-border-alpha", "Border strength", "", 1.0)
       ]),
-      group("Other states", [
-        alpha("controls", "pressed-fill-alpha", "Pressed fill opacity", "", 0.22),
-        alpha("controls", "selection-fill-alpha", "Text selection opacity", "", 0.35)
+      group("Other moments", [
+        alpha("controls", "pressed-fill-alpha", "While pressed", "How strongly a button fills in while you press it.", 0.22),
+        alpha("controls", "selection-fill-alpha", "Selected text highlight", "How strong the highlight behind selected text is.", 0.35)
       ])
     ]
   },
   {
     id: "surfaces",
-    title: "Surfaces",
-    blurb: "The bar and every overlay. Colors here pin themselves against your theme.",
+    title: "Bar & pop-ups",
+    blurb: "Colours and sizes of the top bar and everything that pops up. A colour set here stays put when you change theme.",
     groups: [
-      group("Bar", [
-        color("bar", "background", "Background", ""),
-        alpha("bar", "background-alpha", "Background opacity", ""),
-        color("bar", "text", "Text", ""),
-        color("bar", "active", "Active", "Colour of the active/urgent state."),
-        num("bar", "size-horizontal", "Height", "Height of a top or bottom bar.", 16, 72, 1, "px", 26),
-        num("bar", "size-vertical", "Width", "Width of a left or right bar.", 16, 96, 1, "px", 28),
-        bool("bar", "scale-with-font", "Scale with font", "Grow the bar when the base font size grows.", true)
+      group("Top bar", [
+        color("bar", "background", "Background colour", ""),
+        alpha("bar", "background-alpha", "Background strength", ""),
+        color("bar", "text", "Text colour", ""),
+        color("bar", "active", "Highlight colour", "The colour used for something that wants your attention."),
+        num("bar", "size-horizontal", "Height", "How tall the bar is when it sits along the top or bottom.", 16, 72, 1, "px", 26),
+        num("bar", "size-vertical", "Width", "How wide the bar is when it sits down one side.", 16, 96, 1, "px", 28),
+        bool("bar", "scale-with-font", "Grow with the text", "Make the bar bigger when the base text size grows.", true)
       ]),
-      surface("menu", "Menu", [
-        color("menu", "scrim", "Scrim", "The full-screen dim behind the card."),
-        alpha("menu", "scrim-alpha", "Scrim opacity", ""),
-        color("menu", "selected-background", "Selected row", ""),
-        alpha("menu", "selected-background-alpha", "Selected row opacity", ""),
-        color("menu", "selected-text", "Selected text", "")
+      surface("menu", "App menu", [
+        color("menu", "scrim", "Shade behind it", "The darkening over the rest of the screen while it is open."),
+        alpha("menu", "scrim-alpha", "Shade strength", ""),
+        color("menu", "selected-background", "Highlighted row", ""),
+        alpha("menu", "selected-background-alpha", "Highlighted row strength", ""),
+        color("menu", "selected-text", "Highlighted text", "")
       ]),
-      surface("launcher", "Launcher", [
-        color("launcher", "scrim", "Scrim", ""),
-        alpha("launcher", "scrim-alpha", "Scrim opacity", ""),
-        color("launcher", "selected-background", "Selected row", ""),
-        alpha("launcher", "selected-background-alpha", "Selected row opacity", ""),
-        color("launcher", "selected-text", "Selected text", "")
+      surface("launcher", "App launcher", [
+        color("launcher", "scrim", "Shade behind it", ""),
+        alpha("launcher", "scrim-alpha", "Shade strength", ""),
+        color("launcher", "selected-background", "Highlighted row", ""),
+        alpha("launcher", "selected-background-alpha", "Highlighted row strength", ""),
+        color("launcher", "selected-text", "Highlighted text", "")
       ]),
-      surface("popups", "Popups", [
-        num("popups", "border-width", "Border width", "", 0, 8, 1, "px")
+      surface("popups", "Pop-ups", [
+        num("popups", "border-width", "Border thickness", "", 0, 8, 1, "px")
       ]),
-      surface("tooltip", "Tooltips", []),
+      surface("tooltip", "Hints under the pointer", []),
       surface("notifications", "Notifications", [
-        num("notifications", "border-width", "Border width", "", 0, 8, 1, "px"),
-        color("notifications", "countdown", "Countdown", "")
+        num("notifications", "border-width", "Border thickness", "", 0, 8, 1, "px"),
+        color("notifications", "countdown", "Countdown bar", "The little bar that shows how long a notification will stay.")
       ]),
       surface("polkit", "Password prompt", [
-        color("polkit", "text-error", "Error text", ""),
-        color("polkit", "border-error", "Error border", ""),
-        color("polkit", "scrim", "Scrim", ""),
-        alpha("polkit", "scrim-alpha", "Scrim opacity", ""),
-        color("polkit", "accent", "Accent", "")
+        color("polkit", "text-error", "Wrong password text", ""),
+        color("polkit", "border-error", "Wrong password border", ""),
+        color("polkit", "scrim", "Shade behind it", ""),
+        alpha("polkit", "scrim-alpha", "Shade strength", ""),
+        color("polkit", "accent", "Main colour", "")
       ]),
       surface("lock", "Lock screen", [
-        color("lock", "placeholder", "Placeholder", ""),
-        color("lock", "text-error", "Error text", ""),
-        color("lock", "border-active", "Typing border", ""),
-        color("lock", "border-error", "Error border", ""),
-        color("lock", "selection", "Selection", ""),
-        alpha("lock", "selection-alpha", "Selection opacity", "")
+        color("lock", "placeholder", "Hint in the password box", ""),
+        color("lock", "text-error", "Wrong password text", ""),
+        color("lock", "border-active", "Border while typing", ""),
+        color("lock", "border-error", "Wrong password border", ""),
+        color("lock", "selection", "Highlighted text", ""),
+        alpha("lock", "selection-alpha", "Selected text strength", "")
       ]),
-      group("Image picker", [
-        color("image-picker", "scrim", "Scrim", ""),
-        alpha("image-picker", "scrim-alpha", "Scrim opacity", ""),
-        color("image-picker", "text", "Text", ""),
-        color("image-picker", "selected-border", "Selected border", ""),
-        alpha("image-picker", "selected-border-alpha", "Selected border opacity", ""),
-        color("image-picker", "unselected-border", "Unselected border", ""),
-        alpha("image-picker", "unselected-border-alpha", "Unselected border opacity", "")
+      group("Picture picker", [
+        color("image-picker", "scrim", "Shade behind it", ""),
+        alpha("image-picker", "scrim-alpha", "Shade strength", ""),
+        color("image-picker", "text", "Text colour", ""),
+        color("image-picker", "selected-border", "Chosen picture's border", ""),
+        alpha("image-picker", "selected-border-alpha", "Chosen picture's border strength", ""),
+        color("image-picker", "unselected-border", "Other pictures' border", ""),
+        alpha("image-picker", "unselected-border-alpha", "Other pictures' border strength", "")
       ])
     ]
   }

@@ -68,13 +68,13 @@ Item {
   function stepAngle(delta) {
     var next = root.clone(root.spec)
     next.angle = ((Math.round(next.angle / 15) * 15) + delta * 15 + 360) % 360
-    root.write(next, "Gradient angle " + next.angle + "°")
+    root.write(next, "Fade direction " + next.angle + "°")
   }
 
   function stepAmount(delta) {
     var next = root.clone(root.spec)
     next.amount = Math.max(0.05, Math.min(0.95, Math.round((next.amount + delta * 0.05) * 100) / 100))
-    root.write(next, "Gradient blend " + Math.round(next.amount * 100) + " %")
+    root.write(next, "Fade " + Math.round(next.amount * 100) + " %")
   }
 
   function toggle(key, on) {
