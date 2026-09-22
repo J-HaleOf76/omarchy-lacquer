@@ -10,6 +10,7 @@ import "AnimSchema.js" as AnimSchema
 import "StyleLua.js" as StyleLua
 import "ShellSchema.js" as ShellSchema
 import "TomlEdit.js" as TomlEdit
+import "ui"
 import "stores"
 import "sections"
 
@@ -335,7 +336,20 @@ Item {
 
   property color scrim: Color.menu.scrim
 
-  property string fontFamily: Style.font.menuFamily
+  // Words in Lacquer's sans, numbers and keys in the theme's mono.
+  property string monoFamily: Style.font.menuFamily
+  property string fontFamily: designObj.sans
+
+  Design { id: designObj; app: root }
+  readonly property var design: designObj
+
+  // Lacquer's corners follow the windows'.
+  readonly property real windowRounding: {
+    var item = LookSchema.itemFor("decoration:rounding")
+    var v = item ? Number(hypr.valueFor(item)) : 8
+    return isFinite(v) ? v : 8
+  }
+  readonly property int uiDuration: motionStore.uiDuration
 
   // `group` is the rail heading a section sits under; `pane` is which view
   // renders it. Keyboard Tab order is simply this order.
@@ -1321,79 +1335,27 @@ Item {
           Layout.fillHeight: true
           spacing: Style.spacing.panelGap
 
-          // Home and the five main tabs. Short enough that it never scrolls.
+          // Home and the five main tabs, with a blob of accent that oozes
+          // between them.
           Item {
             id: rail
-            Layout.preferredWidth: Style.space(128)
+            Layout.preferredWidth: Style.space(132)
             Layout.fillHeight: true
+            function placeMarker() {}
 
-            function placeMarker() {
-              for (var i = 0; i < railRepeater.count; i++) {
-                var item = railRepeater.itemAt(i)
-                if (!item || !item.active) continue
-                var targetY = railColumn.y + item.y + item.height * 0.2
-                var targetH = item.height * 0.6
-                if (!root.motion || railMarker.height === 0) {
-                  markerMove.stop()
-                  railMarker.y = targetY
-                  railMarker.height = targetH
-                  return
-                }
-                markerMove.targetY = targetY
-                markerMove.targetH = targetH
-                markerMove.restart()
-                return
+            LqTabs {
+              width: parent.width
+              design: root.design
+              style: "rail"
+              fontSize: 14
+              options: {
+                var out = []
+                for (var i = 0; i < root.railEntries.length; i++)
+                  out.push({ value: root.railEntries[i].title, label: root.railEntries[i].title, icon: root.railEntries[i].icon })
+                return out
               }
-            }
-            function ensureVisible() {}
-
-            onHeightChanged: if (height > 0) placeMarker()
-
-            Rectangle {
-              id: railMarker
-              z: 2
-              x: 0
-              width: Math.max(2, Style.space(3))
-              height: 0
-              radius: width / 2
-              color: root.accent
-
-              ParallelAnimation {
-                id: markerMove
-                property real targetY: 0
-                property real targetH: 0
-                NumberAnimation { target: railMarker; property: "y"; to: markerMove.targetY; duration: 420; easing.type: Easing.OutQuint }
-                SequentialAnimation {
-                  NumberAnimation { target: railMarker; property: "height"; to: markerMove.targetH * 2.2; duration: 140; easing.type: Easing.OutQuad }
-                  NumberAnimation { target: railMarker; property: "height"; to: markerMove.targetH; duration: 360; easing.type: Easing.OutBack; easing.overshoot: 2.2 }
-                }
-              }
-            }
-
-            Column {
-              id: railColumn
-              width: rail.width
-              spacing: Style.spacing.xs
-
-              Repeater {
-                id: railRepeater
-                model: root.railEntries
-
-                Button {
-                  id: railButton
-                  required property var modelData
-                  readonly property bool active: modelData.kind === "home" ? root.isHome : root.currentMain === modelData.title
-                  width: railColumn.width
-                  text: modelData.title
-                  iconText: modelData.icon
-                  leftAlign: true
-                  selected: active
-                  foreground: root.foreground
-                  accent: root.accent
-                  fontFamily: root.fontFamily
-                  onClicked: root.goToMain(modelData.title)
-                }
-              }
+              value: root.isHome ? "Home" : root.currentMain
+              onChanged: function(v) { root.goToMain(v) }
             }
           }
 
@@ -1433,16 +1395,16 @@ Item {
               Layout.preferredHeight: Math.max(subTabRow.implicitHeight, sectionReset.implicitHeight)
               visible: !root.isHome
 
-              ButtonGroup {
+              LqTabs {
                 id: subTabRow
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
+                width: Math.min(implicitWidth, parent.width - Style.space(48))
+                design: root.design
+                style: "pills"
+                fontSize: 14
                 options: root.subTabs
                 value: root.currentSub
-                foreground: root.foreground
-                accent: root.accent
-                fontFamily: root.fontFamily
-                focusable: false
                 onChanged: function(v) { root.goToSub(v) }
               }
 
@@ -1459,28 +1421,31 @@ Item {
             }
 
             // The pages of this sub tab, when it holds more than one.
-            ButtonGroup {
+            LqTabs {
               Layout.fillWidth: true
+              Layout.preferredHeight: implicitHeight
               visible: root.deepTabs.length > 0
+              design: root.design
+              style: "underline"
+              fontSize: 13.5
               options: {
                 var out = []
                 for (var i = 0; i < root.deepTabs.length; i++) out.push({ value: root.deepTabs[i].id, label: root.deepTabs[i].title })
                 return out
               }
               value: root.section.id
-              foreground: root.foreground
-              accent: root.accent
-              fontFamily: root.fontFamily
-              fontSize: Style.font.caption
-              focusable: false
               onChanged: function(v) { root.goToIndex(root.indexOfSection(v)) }
             }
 
             // Sub-tabs, so 35 animation leaves or 134 shell tokens do not
             // become one scroll.
-            ButtonGroup {
+            LqTabs {
               Layout.fillWidth: true
+              Layout.preferredHeight: implicitHeight
               visible: root.isAnimations || root.isShell
+              design: root.design
+              style: "underline"
+              fontSize: 13
               options: {
                 var out = []
                 if (root.isShell) {
@@ -1491,11 +1456,7 @@ Item {
                 return out
               }
               value: root.isShell ? ShellSchema.TABS[root.shellTab].title
-                                  : root.animTabs[root.animTab].title
-              foreground: root.foreground
-              accent: root.accent
-              fontFamily: root.fontFamily
-              focusable: false
+                                  : (root.animTabs[root.animTab] ? root.animTabs[root.animTab].title : "")
               onChanged: function(v) {
                 if (root.isShell) {
                   for (var t = 0; t < ShellSchema.TABS.length; t++)

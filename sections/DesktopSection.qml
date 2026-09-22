@@ -57,6 +57,7 @@ Item {
       "A downloaded .ttf or .otf, or a .zip or .tar.gz of them. They go to ~/.local/share/fonts/ and appear in the lists below once the font cache is rebuilt."),
     {
       id: "text-size", kind: "stepper", title: "Text size",
+      num: section.store.textPx, min: 9, max: 20, stepSize: 1,
       note: "One knob for the shell, GTK apps and terminals, the same as `omarchy display text size`."
         + (section.d.text.terminalPt ? " Terminals are at " + section.d.text.terminalPt + " pt now; "
            + section.store.textPx + " px sets them to " + Math.floor(section.store.textPx * 9 / 12 + 0.5) + " pt." : ""),
@@ -77,6 +78,7 @@ Item {
     },
     {
       id: "ui-size", kind: "stepper", title: "Interface font size",
+      num: section.store.uiSize, min: 8, max: 20, stepSize: 1,
       note: "The GTK interface font, before text size scales it.",
       value: section.store.uiSize, unit: "pt",
       step: function(delta) { section.store.setUiFont("", section.store.uiSize + delta) },
@@ -134,7 +136,7 @@ Item {
     if (!c.present) {
       if (c.confirming) {
         return [{
-          id: "install-confirm", kind: "chips", title: "Install Lacquer Shell?",
+          id: "install-confirm", kind: "chips", title: "Install Lacquer Shell?", noteAlways: true,
           note: "This runs Omarchy's own installer in a terminal you can watch: "
             + "`omarchy plugin add " + c.repo + " --enable`. It adds a second plugin that draws the frame; "
             + "everything in it stays off until you turn it on, and you can remove it with "
@@ -144,14 +146,14 @@ Item {
         }]
       }
       return [{
-        id: "install", kind: "chips", title: "Needs the companion",
+        id: "install", kind: "chips", title: "Needs the companion", noteAlways: true,
         note: "Rounded screen corners, corner brackets, a frame around the display, a vignette, scanlines and grain are drawn by a second, optional plugin \u2014 Lacquer Shell \u2014 because something has to stay on screen to draw them. Lacquer works fine without it.",
         options: [{ value: "install", label: "Tell me more / install" }],
         pick: function(v) { c.askInstall() }
       }]
     }
     if (!c.frame) return [{
-      id: "no-answer", kind: "chips", title: "Companion installed",
+      id: "no-answer", kind: "chips", title: "Companion installed", noteAlways: true,
       note: "Lacquer Shell is installed but has not answered yet. If this stays, restart the shell with `omarchy restart shell`.",
       options: []
     }]
@@ -161,7 +163,7 @@ Item {
         id: "frame-on", kind: "chips", title: "Screen frame",
         note: "Drawn above everything, and it takes no clicks: the desktop underneath behaves exactly as before.",
         current: f.enabled ? "on" : "off",
-        options: section.onOff(),
+        options: section.onOffWords(),
         pick: function(v) { c.set("enabled", v === "on", v === "on" ? "Screen frame on" : "Screen frame off") }
       },
       {
@@ -173,11 +175,13 @@ Item {
       },
       {
         id: "frame-corner-size", kind: "stepper", title: f.style === "brackets" ? "Bracket length" : "Corner radius",
+        num: Math.round(f.corners), min: 0, max: 200, stepSize: 4,
         value: Math.round(f.corners), unit: "px",
         step: function(d) { c.step("corners", d, 0, 200, 4, f.style === "brackets" ? "Bracket" : "Corner", " px") }
       },
       {
         id: "frame-width", kind: "stepper", title: "Frame width",
+        num: Math.round(f.frame), min: 0, max: 40, stepSize: 1,
         note: "A line just inside the screen's edge, in the theme's accent colour.",
         value: Math.round(f.frame), unit: "px",
         step: function(d) { c.step("frame", d, 0, 40, 1, "Frame", " px") }
@@ -186,22 +190,25 @@ Item {
         id: "frame-fullscreen", kind: "chips", title: "Out of the way full screen",
         note: "A film or a game playing full screen is not drawn on: the frame goes while it lasts and comes back after.",
         current: f.hideFullscreen === false ? "off" : "on",
-        options: section.onOff(),
+        options: section.onOffWords(),
         pick: function(v) { c.set("hideFullscreen", v === "on", v === "on" ? "Hidden while full screen" : "Always drawn") }
       },
       {
         id: "frame-vignette", kind: "stepper", title: "Vignette",
+        num: f.vignette, min: 0, max: 1, stepSize: 0.05, format: function(v) { return Math.round(v * 100) + " %" },
         note: "Darkens towards the edges.",
         value: Math.round(f.vignette * 100) + " %", unit: "",
         step: function(d) { c.step("vignette", d, 0, 1, 0.05, "Vignette", "%") }
       },
       {
         id: "frame-scanlines", kind: "stepper", title: "Scanlines",
+        num: f.scanlines, min: 0, max: 1, stepSize: 0.05, format: function(v) { return Math.round(v * 100) + " %" },
         value: Math.round(f.scanlines * 100) + " %", unit: "",
         step: function(d) { c.step("scanlines", d, 0, 1, 0.05, "Scanlines", "%") }
       },
       {
         id: "frame-grain", kind: "stepper", title: "Grain",
+        num: f.grain, min: 0, max: 1, stepSize: 0.05, format: function(v) { return Math.round(v * 100) + " %" },
         note: "A still speckle over the screen. Drawn once, so it costs nothing to leave on.",
         value: Math.round(f.grain * 100) + " %", unit: "",
         step: function(d) { c.step("grain", d, 0, 1, 0.05, "Grain", "%") }
@@ -305,7 +312,7 @@ Item {
     })
     out.push({
       id: "centered", kind: "chips", title: "Centred",
-      current: rule && rule.center ? "on" : "off", options: section.onOff(),
+      current: rule && rule.center ? "on" : "off", options: section.onOffWords(),
       pick: function(v) { store.set("center", v === "on", v === "on" ? "Opens centred" : "Opens where the layout puts it") }
     })
     out.push({
@@ -392,7 +399,7 @@ Item {
     var out = []
     if (section.mon.asking) {
       out.push({
-        id: "keep", kind: "chips", title: "Keep this?",
+        id: "keep", kind: "chips", title: "Keep this?", noteAlways: true,
         note: "Trying " + section.mon.pending.label + ". Without a Keep it goes back in "
           + section.mon.countdown + " second" + (section.mon.countdown === 1 ? "" : "s")
           + ", so a screen that went black comes back on its own.",
@@ -482,6 +489,7 @@ Item {
     },
     {
       id: "text-size", kind: "stepper", title: "Text size",
+      num: section.store.textPx, min: 9, max: 20, stepSize: 1,
       note: "The same knob as Fonts & text: the shell, GTK apps and terminals.",
       value: section.store.textPx, unit: "px",
       step: function(d) { section.store.stepTextSize(d) },
@@ -582,6 +590,7 @@ Item {
     },
     {
       id: "gradient-amount", kind: "stepper", title: section.app.borders.spec.mode === "hue" ? "Hue turn" : "Blend",
+      num: section.app.borders.spec.amount, min: 0.05, max: 0.95, stepSize: 0.05, format: function(v) { return section.app.borders.spec.mode === "hue" ? Math.round(v * 360) + "\u00b0" : Math.round(v * 100) + " %" },
       note: section.app.borders.spec.mode === "hue"
         ? "How far around the colour wheel the second stop sits."
         : "How far the second stop moves from the theme's colour.",
@@ -593,6 +602,7 @@ Item {
     },
     {
       id: "gradient-angle", kind: "stepper", title: "Gradient angle",
+      num: Math.round(section.app.borders.spec.angle / 15) * 15, min: 0, max: 345, stepSize: 15, format: function(v) { return Math.round(v) + "\u00b0" },
       note: "Which way the gradient runs across the border.",
       value: section.app.borders.spec.angle + "\u00b0", unit: "",
       step: function(d) { section.app.borders.stepAngle(d) }
@@ -601,21 +611,21 @@ Item {
       id: "gradient-spin", kind: "chips", title: "Spin the gradient",
       note: "Hyprland turns the angle on its own, so the border keeps moving. It repaints the border continuously, which costs a little GPU.",
       current: section.app.borders.spinning ? "on" : "off",
-      options: section.onOff(),
+      options: section.onOffWords(),
       pick: function(v) { section.app.borders.setSpin(v === "on") }
     },
     {
       id: "gradient-where", kind: "chips", title: "Unfocused windows too",
       note: "Give the unfocused border the same treatment, derived from its own colour.",
       current: section.app.borders.spec.inactive ? "on" : "off",
-      options: section.onOff(),
+      options: section.onOffWords(),
       pick: function(v) { section.app.borders.toggle("inactive", v === "on") }
     },
     {
       id: "gradient-groups", kind: "chips", title: "Grouped windows too",
       note: "The tab bar on grouped windows follows the same gradient.",
       current: section.app.borders.spec.groups ? "on" : "off",
-      options: section.onOff(),
+      options: section.onOffWords(),
       pick: function(v) { section.app.borders.toggle("groups", v === "on") }
     },
     {
@@ -648,6 +658,7 @@ Item {
     },
     {
       id: "speed", kind: "stepper", title: "Speed",
+      num: section.app.feel.speed, min: 0.5, max: 2, stepSize: 0.1, format: function(v) { return v.toFixed(1) + "\u00d7" },
       note: "Multiplies the whole feel: 2\u00d7 is twice as quick, 0.5\u00d7 half as quick. Everything keeps its shape.",
       value: section.app.feel.speed.toFixed(1) + "\u00d7", unit: "",
       step: function(d) { section.app.feel.stepSpeed(d) }
@@ -682,7 +693,7 @@ Item {
              : " The bar on screen is Omarchy's own right now, so none of this shows: enable Lacquer Shell's bar in "
                + "`omarchy plugin list`, or check that it loaded (it needs Omarchy 4.0.4 or newer)."),
         current: m.enabled ? "on" : "off",
-        options: section.onOff(),
+        options: section.onOffWords(),
         pick: function(v) { c.setMotion("enabled", v === "on", v === "on" ? "Bar motion on" : "Bar motion off") }
       },
       {
@@ -775,6 +786,7 @@ Item {
     },
     {
       id: "warmth", kind: "stepper", title: "Evening warmth",
+      num: section.night.warmth, min: 2500, max: 6000, stepSize: 250,
       note: "Lower is warmer. Omarchy's nightlight toggle uses 4000 K.",
       value: section.night.warmth, unit: "K",
       step: function(d) { section.night.stepWarmth(d) }
@@ -862,6 +874,7 @@ Item {
     },
     {
       id: "unlock-ms", kind: "stepper", title: "Unlock length",
+      num: section.screens.unlockMs, min: 0, max: 2000, stepSize: 100,
       value: section.screens.unlockMs, unit: "ms",
       step: function(d) { section.screens.stepUnlockMs(d) }
     },
@@ -956,22 +969,26 @@ Item {
     },
     {
       id: "scale", kind: "stepper", title: "Size",
+      num: section.ml.scale, min: 0.8, max: 1.5, stepSize: 0.05, format: function(v) { return v.toFixed(2) + "\u00d7" },
       value: section.ml.scale.toFixed(2), unit: "×",
       step: function(d) { section.menuLook.step("scale", d) }
     },
     {
       id: "corners", kind: "stepper", title: "Corner radius",
+      num: section.ml.cornerRadius, min: -1, max: 24, stepSize: 1, format: function(v) { return v < 0 ? "theme" : Math.round(v) + " px" },
       value: section.ml.cornerRadius < 0 ? "theme" : section.ml.cornerRadius, unit: section.ml.cornerRadius < 0 ? "" : "px",
       step: function(d) { section.menuLook.step("cornerRadius", d) }
     },
     {
       id: "border", kind: "stepper", title: "Border width",
+      num: section.ml.borderWidth, min: -1, max: 6, stepSize: 1, format: function(v) { return v < 0 ? "theme" : Math.round(v) + " px" },
       note: "Shell style's [menu] border-width wins over this when it is set.",
       value: section.ml.borderWidth < 0 ? "theme" : section.ml.borderWidth, unit: section.ml.borderWidth < 0 ? "" : "px",
       step: function(d) { section.menuLook.step("borderWidth", d) }
     },
     {
       id: "transparency", kind: "stepper", title: "Transparency",
+      num: section.ml.transparency, min: 0, max: 90, stepSize: 5, format: function(v) { return Math.round(v) + " %" },
       note: "Above 0 %, this replaces Shell style's [menu] background-alpha.",
       value: section.ml.transparency, unit: "%",
       step: function(d) { section.menuLook.step("transparency", d) }
@@ -986,7 +1003,10 @@ Item {
   readonly property var ai: section.apps.info
   readonly property var tv: section.apps.term
 
+  // For settings written as true/false in someone else's config (btop, starship).
   function onOff(v) { return [{ value: "true", label: "On" }, { value: "false", label: "Off" }] }
+  // For Lacquer's own switches, which compare against "on".
+  function onOffWords() { return [{ value: "on", label: "On" }, { value: "off", label: "Off" }] }
 
   // The next preset above (delta > 0) or below the current value, which may
   // itself be off the list after a hand edit.
@@ -1056,7 +1076,7 @@ Item {
       // would replace it with nothing but its own block.
       var unreadable = tool.readable === false
       out.push({
-        id: "tool-" + tool.id, kind: "chips", title: tool.name,
+        id: "tool-" + tool.id, kind: "chips", title: tool.name, noteAlways: unreadable,
         note: tool.what + (unreadable
           ? " " + (tool.blockedBy || tool.path) + " cannot be read as text, so Lacquer leaves it alone."
           : tool.installed ? " Written into " + tool.path + "." : " Not installed here."),
@@ -1075,13 +1095,13 @@ Item {
     {
       id: "btop-bg", kind: "chips", title: "btop background",
       note: section.ai.btop.running ? "btop is running and reloads each change at once." : "Its colours always follow the theme.",
-      current: section.ai.btop.theme_background,
+      current: String(section.ai.btop.theme_background).toLowerCase(),
       options: [{ value: "true", label: "Theme colour" }, { value: "false", label: "Transparent" }],
       pick: function(v) { section.apps.set("btop", "theme_background", v, "btop background") }
     },
     {
       id: "btop-corners", kind: "chips", title: "btop rounded corners",
-      current: section.ai.btop.rounded_corners, options: section.onOff(),
+      current: String(section.ai.btop.rounded_corners).toLowerCase(), options: section.onOff(),
       pick: function(v) { section.apps.set("btop", "rounded_corners", v, "btop corners") }
     },
     {
@@ -1100,14 +1120,16 @@ Item {
     },
     {
       id: "btop-vim", kind: "chips", title: "btop vim keys",
-      current: section.ai.btop.vim_keys, options: section.onOff(),
+      current: String(section.ai.btop.vim_keys).toLowerCase(), options: section.onOff(),
       pick: function(v) { section.apps.set("btop", "vim_keys", v, "btop vim keys") }
     }
   ]).concat(!section.ai.starship ? [] : [
     {
       id: "star-newline", kind: "chips", title: "Blank line before the prompt",
       note: "Starship, the shell prompt. New prompts pick changes up straight away.",
-      current: section.ai.starship.add_newline, options: section.onOff(),
+      current: section.ai.starship.add_newline === undefined || section.ai.starship.add_newline === ""
+        ? "true" : String(section.ai.starship.add_newline).toLowerCase(),  // starship's own default
+      options: section.onOff(),
       pick: function(v) { section.apps.set("starship", "add_newline", v, "Prompt spacing") }
     },
     {

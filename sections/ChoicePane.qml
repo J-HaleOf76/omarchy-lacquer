@@ -1,6 +1,7 @@
 import QtQuick
 import qs.Commons
 import qs.Ui
+import "../ui"
 
 // A scrollable column of choice groups, shared by the Desktop sections.
 //
@@ -15,7 +16,23 @@ Item {
   id: pane
 
   required property var app
+  readonly property var design: app.design
   property var groups: []
+
+  // A pair of on/off choices is really a switch.
+  function isSwitch(g) {
+    if (!g || g.kind !== "chips" || !g.options || g.options.length !== 2) return false
+    var a = String(g.options[0].value), b = String(g.options[1].value)
+    return (a === "on" && b === "off") || (a === "off" && b === "on") || (a === "true" && b === "false") || (a === "false" && b === "true")
+  }
+  function switchOn(g) { return g.current === "on" || g.current === "true" }
+  function flip(g) {
+    var want = pane.switchOn(g) ? (g.options[0].value === "on" || g.options[1].value === "on" ? "off" : "false")
+                                : (g.options[0].value === "on" || g.options[1].value === "on" ? "on" : "true")
+    if (g.pick) g.pick(want)
+  }
+  // A stepper whose page says its range becomes a slider.
+  function isSlider(g) { return g && g.kind === "stepper" && g.min !== undefined && g.max !== undefined && g.num !== undefined }
   // The groups binding can be briefly undefined while the section builds.
   readonly property var list: Array.isArray(groups) ? groups : []
 
@@ -126,7 +143,7 @@ Item {
     Column {
       id: column
       width: flick.width - Style.spacing.xxl
-      spacing: Style.spacing.xl
+      spacing: 10
 
       Repeater {
         id: groupRepeater
@@ -135,15 +152,27 @@ Item {
         // list's scroll position) each time.
         model: pane.list.length
 
-        Column {
+        LqCard {
           id: groupItem
           required property int index
           readonly property var modelData: pane.list[index] || ({})
           readonly property bool groupHasCursor: index === pane.cursorGroup
           readonly property var shown: pane.optionsOf(modelData)
+          // The note opens when the card is hovered for a moment, or when the
+          // keyboard is on it; otherwise the page is just titles and controls.
+          property bool lingering: false
+          readonly property bool open: groupHasCursor || lingering || modelData.noteAlways === true
 
+          design: pane.design
+          active: groupHasCursor
           width: column.width
-          spacing: Style.spacing.md
+          padding: 16
+
+          HoverHandler {
+            id: cardHover
+            onHoveredChanged: hovered ? lingerTimer.restart() : (lingerTimer.stop(), groupItem.lingering = false)
+          }
+          Timer { id: lingerTimer; interval: 380; onTriggered: groupItem.lingering = true }
 
           property real appear: 1
           opacity: appear
@@ -162,17 +191,44 @@ Item {
             NumberAnimation { target: groupItem; property: "appear"; to: 1; duration: 340; easing.type: Easing.OutCubic }
           }
 
+          Column {
+          id: groupBody
+          width: parent.width
+          spacing: 12
+
           Item {
             width: parent.width
-            height: Math.max(titleText.implicitHeight, pinChip.visible ? pinChip.implicitHeight : 0)
+            height: Math.max(titleText.implicitHeight, pinChip.visible ? pinChip.implicitHeight : 0,
+                             titleSwitch.visible ? titleSwitch.height : 0)
 
-            PanelSectionHeader {
-              id: titleText
+            Row {
               anchors.left: parent.left
               anchors.verticalCenter: parent.verticalCenter
-              text: groupItem.modelData.title
-              foreground: groupItem.groupHasCursor ? pane.app.accent : pane.app.foreground
-              fontFamily: pane.app.fontFamily
+              spacing: 8
+              Text {
+                id: titleText
+                anchors.verticalCenter: parent.verticalCenter
+                text: groupItem.modelData.title || ""
+                color: groupItem.groupHasCursor ? pane.design.accent : pane.design.foreground
+                font.family: pane.design.sans
+                font.pixelSize: 15
+                font.weight: Font.DemiBold
+                Behavior on color { ColorAnimation { duration: 180 } }
+              }
+            }
+
+            LqSwitch {
+              id: titleSwitch
+              visible: pane.isSwitch(groupItem.modelData)
+              anchors.right: parent.right
+              anchors.verticalCenter: parent.verticalCenter
+              design: pane.design
+              checked: visible && pane.switchOn(groupItem.modelData)
+              hasCursor: groupItem.groupHasCursor
+              onToggled: {
+                pane.cursorGroup = groupItem.index
+                pane.flip(groupItem.modelData)
+              }
             }
 
             Row {
@@ -180,102 +236,138 @@ Item {
               visible: groupItem.modelData.pinned === true
               anchors.right: parent.right
               anchors.verticalCenter: parent.verticalCenter
-              spacing: Style.spacing.md
+              spacing: 10
               Text {
                 anchors.verticalCenter: parent.verticalCenter
                 text: groupItem.modelData.pinnedText || "pinned — overrides theme"
-                color: pane.app.accent
-                font.family: pane.app.fontFamily
-                font.pixelSize: Style.font.caption
+                color: pane.design.accent
+                font.family: pane.design.sans
+                font.pixelSize: 13
               }
-              Button {
+              LqButton {
+                design: pane.design
+                compact: true
                 text: groupItem.modelData.unpinLabel || "Follow theme"
-                bordered: true
-                foreground: pane.app.foreground
-                accent: pane.app.accent
-                fontFamily: pane.app.fontFamily
-                fontSize: Style.font.caption
                 onClicked: if (groupItem.modelData.unpin) groupItem.modelData.unpin()
               }
             }
           }
 
-          Text {
-            visible: !!groupItem.modelData.note
+          Item {
             width: parent.width
-            wrapMode: Text.WordWrap
-            text: groupItem.modelData.note || ""
-            color: Qt.darker(pane.app.foreground, 1.55)
-            font.family: pane.app.fontFamily
-            font.pixelSize: Style.font.caption
+            height: groupItem.open && !!groupItem.modelData.note ? noteText.implicitHeight : 0
+            visible: height > 0.5
+            clip: true
+            Behavior on height { enabled: pane.design.motion; SpringAnimation { spring: 3.2; damping: 0.22; mass: pane.design.mass } }
+            Text {
+              id: noteText
+              width: parent.width
+              wrapMode: Text.WordWrap
+              text: groupItem.modelData.note || ""
+              color: pane.design.muted
+              font.family: pane.design.sans
+              font.pixelSize: 13
+              lineHeight: 1.15
+              opacity: groupItem.open ? 1 : 0
+              Behavior on opacity { NumberAnimation { duration: 220 } }
+            }
           }
 
           // ------------------------------------------------ chips
-          Flow {
-            visible: groupItem.modelData.kind === "chips"
-            width: parent.width
-            spacing: Style.spacing.xs
-            Repeater {
-              model: groupItem.modelData.kind === "chips" ? groupItem.shown : []
-              Button {
-                required property var modelData
-                required property int index
-                text: modelData.label
-                bordered: true
-                selected: modelData.value === groupItem.modelData.current
-                hasCursor: groupItem.groupHasCursor && index === pane.cursorOption
-                foreground: pane.app.foreground
-                accent: pane.app.accent
-                fontFamily: groupItem.modelData.id === "mono" ? modelData.value : pane.app.fontFamily
-                onClicked: {
-                  pane.cursorGroup = groupItem.index
-                  pane.cursorOption = index
-                  if (groupItem.modelData.pick) groupItem.modelData.pick(modelData.value)
-                }
+          LqTabs {
+            visible: groupItem.modelData.kind === "chips" && !pane.isSwitch(groupItem.modelData)
+            width: Math.min(implicitWidth, parent.width)
+            design: pane.design
+            style: "chips"
+            fontSize: 13.5
+            options: {
+              if (!visible) return []
+              var out = []
+              for (var i = 0; i < groupItem.shown.length; i++) {
+                var o = groupItem.shown[i]
+                out.push({ value: String(o.value), label: o.label, family: groupItem.modelData.id === "mono" ? o.value : "" })
+              }
+              return out
+            }
+            value: groupItem.modelData.current === undefined ? "" : String(groupItem.modelData.current)
+            cursorIndex: groupItem.groupHasCursor ? pane.cursorOption : -1
+            onChanged: function(v) {
+              pane.cursorGroup = groupItem.index
+              for (var i = 0; i < groupItem.shown.length; i++) {
+                if (String(groupItem.shown[i].value) !== v) continue
+                pane.cursorOption = i
+                if (groupItem.modelData.pick) groupItem.modelData.pick(groupItem.shown[i].value)
+                return
               }
             }
           }
 
           // ------------------------------------------------ stepper
+          LqSlider {
+            visible: pane.isSlider(groupItem.modelData)
+            width: Math.min(parent.width, 460)
+            design: pane.design
+            value: visible ? Number(groupItem.modelData.num) : 0
+            from: visible ? Number(groupItem.modelData.min) : 0
+            to: visible ? Number(groupItem.modelData.max) : 1
+            stepSize: groupItem.modelData.stepSize || 1
+            hasCursor: groupItem.groupHasCursor
+            format: function(v) {
+              var g = groupItem.modelData
+              if (g.format) return g.format(v)
+              return (Math.round(v * 100) / 100) + (g.unit ? " " + g.unit : "")
+            }
+            onCommitted: function(v) {
+              var g = groupItem.modelData
+              pane.cursorGroup = groupItem.index
+              var steps = Math.round((v - Number(g.num)) / (g.stepSize || 1))
+              if (steps !== 0 && g.step) g.step(steps)
+            }
+            onStepped: function(d) { pane.cursorGroup = groupItem.index; if (groupItem.modelData.step) groupItem.modelData.step(d) }
+          }
+
           Row {
-            visible: groupItem.modelData.kind === "stepper"
-            spacing: Style.spacing.md
-            Button {
+            visible: groupItem.modelData.kind === "stepper" && !pane.isSlider(groupItem.modelData)
+            spacing: 10
+            LqButton {
+              design: pane.design
               text: "−"
-              bordered: true
               hasCursor: groupItem.groupHasCursor
-              foreground: pane.app.foreground
-              accent: pane.app.accent
-              fontFamily: pane.app.fontFamily
               onClicked: { pane.cursorGroup = groupItem.index; if (groupItem.modelData.step) groupItem.modelData.step(-1) }
             }
             Text {
               anchors.verticalCenter: parent.verticalCenter
-              width: Style.space(70)
+              width: Style.space(76)
               horizontalAlignment: Text.AlignHCenter
               text: String(groupItem.modelData.value === undefined ? "" : groupItem.modelData.value) + " " + (groupItem.modelData.unit || "")
-              color: pane.app.foreground
-              font.family: pane.app.fontFamily
-              font.pixelSize: Style.font.body
-              font.bold: true
+              color: pane.design.foreground
+              font.family: pane.design.mono
+              font.pixelSize: 14
+              font.weight: Font.DemiBold
             }
-            Button {
+            LqButton {
+              design: pane.design
               text: "+"
-              bordered: true
               hasCursor: groupItem.groupHasCursor
-              foreground: pane.app.foreground
-              accent: pane.app.accent
-              fontFamily: pane.app.fontFamily
               onClicked: { pane.cursorGroup = groupItem.index; if (groupItem.modelData.step) groupItem.modelData.step(1) }
             }
-            Button {
+            LqButton {
               visible: !!groupItem.modelData.reset
+              design: pane.design
+              compact: true
               text: groupItem.modelData.resetLabel || "Reset"
-              foreground: pane.app.foreground
-              accent: pane.app.accent
-              fontFamily: pane.app.fontFamily
+              anchors.verticalCenter: parent.verticalCenter
               onClicked: groupItem.modelData.reset()
             }
+          }
+
+          // The reset beside a slider.
+          LqButton {
+            visible: pane.isSlider(groupItem.modelData) && !!groupItem.modelData.reset
+            design: pane.design
+            compact: true
+            text: groupItem.modelData.resetLabel || "Reset"
+            onClicked: groupItem.modelData.reset()
           }
 
           // ------------------------------------------------ icon themes
@@ -373,15 +465,12 @@ Item {
             spacing: Style.spacing.xs
             Repeater {
               model: groupItem.modelData.kind === "art" ? groupItem.shown : []
-              Button {
+              LqButton {
                 required property var modelData
                 required property int index
+                design: pane.design
                 text: modelData.label
-                bordered: true
                 hasCursor: groupItem.groupHasCursor && index === pane.cursorOption
-                foreground: pane.app.foreground
-                accent: pane.app.accent
-                fontFamily: pane.app.fontFamily
                 onClicked: {
                   pane.cursorGroup = groupItem.index
                   pane.cursorOption = index
@@ -543,6 +632,7 @@ Item {
                 }
               }
             }
+          }
           }
         }
       }
