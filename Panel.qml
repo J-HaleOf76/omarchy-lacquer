@@ -1399,6 +1399,8 @@ Item {
             function placeMarker() {}
 
             LqTabs {
+              id: railTabs
+              z: 2
               width: parent.width
               design: root.design
               style: "rail"
@@ -1411,7 +1413,70 @@ Item {
                 return out
               }
               value: root.isHome ? "Home" : root.currentMain
+              dripEnabled: false
+              onSelectedIndexChanged: Qt.callLater(rail.dropFromSelection)
               onChanged: function(v) { root.goToMain(v) }
+            }
+
+            // A drop falls from the selected tab, slips behind the theme card
+            // and lands in the puddle at the bottom, which ripples.
+            function dropFromSelection() {
+              if (!root.design.motion || !root.opened) return
+              var r = railTabs.selectedCell()
+              if (!r) return
+              fallingDrop.x = r.x + r.width / 2 - fallingDrop.width / 2
+              fallingDrop.y = r.y + r.height - 4
+              fallingDrop.opacity = 0.7
+              fall.to = puddle.y + puddle.height * 0.45 - fallingDrop.height
+              fall.duration = Math.round(Math.sqrt(Math.max(1, fall.to - fallingDrop.y)) * 34)
+              falling.restart()
+            }
+
+            Rectangle {
+              id: fallingDrop
+              z: 1
+              width: 7
+              height: 9
+              radius: 3.5
+              color: root.design.accent
+              opacity: 0
+            }
+            SequentialAnimation {
+              id: falling
+              PauseAnimation { duration: 160 }
+              NumberAnimation { id: fall; target: fallingDrop; property: "y"; easing.type: Easing.InQuad }
+              ScriptAction { script: { fallingDrop.opacity = 0; puddle.splash(fallingDrop.x + fallingDrop.width / 2) } }
+            }
+
+            ThemeGlance {
+              id: glance
+              z: 2
+              anchors.left: parent.left
+              anchors.right: parent.right
+              anchors.bottom: puddle.top
+              anchors.bottomMargin: 10
+              // Hidden when the window is too short for it to sit under the tabs.
+              visible: y > railTabs.height + 16
+              design: root.design
+              theme: root.theme.themeFor(root.theme.current) || ({})
+              note: {
+                var e = root.shuffle
+                if (!e || !e.stateLoaded || !e.st) return ""
+                if (e.st.schedule && e.st.schedule.enabled) return "Changes by itself at sunrise and sunset"
+                if (e.st.enabled) return "A new theme at the next start-up"
+                return ""
+              }
+              onClicked: root.showSectionById("theme")
+            }
+
+            GooPuddle {
+              id: puddle
+              z: 2
+              anchors.left: parent.left
+              anchors.right: parent.right
+              anchors.bottom: parent.bottom
+              anchors.bottomMargin: 14
+              design: root.design
             }
           }
 

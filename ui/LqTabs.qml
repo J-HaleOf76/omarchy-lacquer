@@ -23,6 +23,11 @@ Item {
   // The panel's slow clock, while someone is using Lacquer: the selection
   // swells and settles with it.
   property real breath: 0
+  // The rail's own small drip; off when something else catches the drop.
+  property bool dripEnabled: true
+
+  // Where the selected option sits, in this item's coordinates.
+  function selectedCell() { return goo.cells[selectedIndex] || null }
 
   // Accepted from Omarchy's ButtonGroup; the kit draws its own colours and type.
   property color foreground: "white"
@@ -75,7 +80,7 @@ Item {
   }
   onWidthChanged: Qt.callLater(placeCells)
   onOptionsChanged: Qt.callLater(placeCells)
-  onSelectedIndexChanged: if (isRail && design.motion) dripTimer.restart()
+  onSelectedIndexChanged: if (isRail && design.motion && dripEnabled) dripTimer.restart()
 
   GooTrack {
     id: goo
@@ -98,7 +103,7 @@ Item {
   GooBlob {
     id: drip
     z: 1
-    visible: tabs.isRail && tabs.design.motion
+    visible: tabs.isRail && tabs.design.motion && tabs.dripEnabled
     color: tabs.design.accent
     radius: 6
     mass: tabs.design.mass * 1.1
