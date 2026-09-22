@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import qs.Commons
 import qs.Ui
+import "../ui"
 
 // A theme generated from a wallpaper by aether, and aether's saved blueprints.
 Item {
@@ -28,7 +29,7 @@ Item {
       width: flick.width - Style.spacing.xxl
       spacing: Style.spacing.lg
 
-      PanelSectionHeader { text: "From a wallpaper"; foreground: section.app.foreground; fontFamily: section.app.fontFamily }
+      LqLabel { design: app.design; text: "From a wallpaper"; foreground: section.app.foreground; fontFamily: section.app.fontFamily }
 
       Row {
         width: parent.width
@@ -92,7 +93,9 @@ Item {
             font.pixelSize: Style.font.caption
           }
 
-          ButtonGroup {
+          LqTabs {
+            design: app.design
+            style: "chips"
             options: [{ value: "dark", label: "Dark" }, { value: "light", label: "Light" }]
             value: section.store.light ? "light" : "dark"
             foreground: section.app.foreground
@@ -131,7 +134,7 @@ Item {
         }
       }
 
-      PanelSectionHeader { text: "This theme's wallpapers"; foreground: section.app.foreground; fontFamily: section.app.fontFamily }
+      LqLabel { design: app.design; text: "This theme's wallpapers"; foreground: section.app.foreground; fontFamily: section.app.fontFamily }
 
       ListView {
         id: walls
@@ -173,7 +176,8 @@ Item {
 
       Row {
         spacing: Style.spacing.md
-        Button {
+        LqButton {
+          design: app.design
           text: "All wallpapers…"
           iconText: "󰸉"
           tooltipText: "Every installed theme's wallpapers  ·  w"
@@ -183,7 +187,8 @@ Item {
           fontFamily: section.app.fontFamily
           onClicked: section.store.pick("wallpapers")
         }
-        Button {
+        LqButton {
+          design: app.design
           text: "Other image…"
           iconText: "󰉋"
           tooltipText: "Any image on your computer  ·  f"
@@ -204,7 +209,7 @@ Item {
 
       PanelSeparator { foreground: section.app.foreground; width: parent.width }
 
-      PanelSectionHeader { text: "Also theme"; foreground: section.app.foreground; fontFamily: section.app.fontFamily }
+      LqLabel { design: app.design; text: "Also theme"; foreground: section.app.foreground; fontFamily: section.app.fontFamily }
 
       Row {
         spacing: Style.spacing.xxl
@@ -213,7 +218,8 @@ Item {
           Row {
             required property var modelData
             spacing: Style.spacing.md
-            ToggleSwitch {
+            LqSwitch {
+              design: app.design
               anchors.verticalCenter: parent.verticalCenter
               foreground: section.app.foreground
               accent: section.app.accent
@@ -260,7 +266,8 @@ Item {
                 : "Builds an Omarchy theme from this palette and applies it."
           }
 
-          Button {
+          LqButton {
+            design: app.design
             id: generateButton
             anchors.verticalCenter: parent.verticalCenter
             text: section.app.confirmGenerate ? "Yes, generate" : "Generate & apply"
@@ -277,7 +284,8 @@ Item {
             }
           }
 
-          Button {
+          LqButton {
+            design: app.design
             id: generateCancel
             visible: section.app.confirmGenerate
             anchors.verticalCenter: parent.verticalCenter
@@ -296,8 +304,9 @@ Item {
       Item {
         width: parent.width
         height: bpHeader.implicitHeight
-        PanelSectionHeader { id: bpHeader; text: "Saved blueprints"; foreground: section.app.foreground; fontFamily: section.app.fontFamily }
-        Button {
+        LqLabel { design: app.design; id: bpHeader; text: "Saved blueprints"; foreground: section.app.foreground; fontFamily: section.app.fontFamily }
+        LqButton {
+          design: app.design
           anchors.right: parent.right
           anchors.verticalCenter: bpHeader.verticalCenter
           text: "Open aether"
@@ -325,7 +334,8 @@ Item {
         spacing: Style.spacing.xs
         Repeater {
           model: section.store.blueprints
-          Button {
+          LqButton {
+            design: app.design
             required property var modelData
             readonly property string bpName: typeof modelData === "string" ? modelData : String(modelData.name || "")
             text: section.store.applyingBlueprint === bpName ? bpName + "  …" : bpName

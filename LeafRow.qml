@@ -1,6 +1,7 @@
 import QtQuick
 import qs.Commons
 import qs.Ui
+import "ui"
 import "AnimSchema.js" as AnimSchema
 
 // One animation leaf: name and description left, its four Hyprland fields
@@ -21,6 +22,12 @@ Item {
   property bool animated: true
 
   required property var leafSpec
+  // Lacquer's design kit, from the panel.
+  property var design: null
+  // The description opens on the row the keyboard is on, or one the
+  // pointer has rested on for a moment.
+  property bool lingering: false
+  readonly property bool open: hasCursor || lingering
   property var value: null
   property bool inherited: false
   property bool modified: false
@@ -72,17 +79,22 @@ Item {
 
   Rectangle {
     anchors.fill: parent
-    anchors.leftMargin: -Style.spacing.md
-    anchors.rightMargin: -Style.spacing.md
-    radius: Style.cornerRadius
-    color: root.hasCursor ? Style.hoverFillFor(root.foreground, root.accent) : "transparent"
-    Behavior on color { enabled: root.animated; ColorAnimation { duration: 100 } }
+    anchors.leftMargin: -8
+    anchors.rightMargin: -8
+    anchors.topMargin: 3
+    anchors.bottomMargin: 3
+    radius: root.design ? root.design.controlRadius : Style.cornerRadius
+    color: root.hasCursor && root.design ? root.design.hover : "transparent"
+    Behavior on color { enabled: root.animated; ColorAnimation { duration: 140 } }
   }
+
+  Timer { id: lingerTimer; interval: 380; onTriggered: root.lingering = true }
 
   MouseArea {
     anchors.fill: parent
     acceptedButtons: Qt.NoButton
     hoverEnabled: true
+    onContainsMouseChanged: containsMouse ? lingerTimer.restart() : (lingerTimer.stop(), root.lingering = false)
     // Only real pointer motion moves the cursor. A row sliding under a mouse
     // that is just resting on the panel — which happens every time the list
     // changes, and the panel opens centred — must not steal keyboard focus.
@@ -111,10 +123,10 @@ Item {
 
         Text {
           text: root.leafSpec.label
-          color: root.foreground
+          color: root.hasCursor ? root.accent : root.foreground
           font.family: root.fontFamily
-          font.pixelSize: Style.font.subtitle
-          font.bold: true
+          font.pixelSize: 15
+          font.weight: Font.DemiBold
         }
 
         // Filled pip = this leaf differs from Omarchy's default.
@@ -131,14 +143,15 @@ Item {
 
       Text {
         text: root.leafSpec.name
+        visible: root.open
         color: Qt.darker(root.foreground, 1.9)
-        font.family: root.fontFamily
+        font.family: root.design ? root.design.mono : root.fontFamily
         font.pixelSize: Style.font.caption
       }
 
       Text {
         text: root.leafSpec.description
-        visible: text !== ""
+        visible: text !== "" && root.open
         color: Qt.darker(root.foreground, 1.55)
         font.family: root.fontFamily
         font.pixelSize: Style.font.caption
@@ -172,12 +185,9 @@ Item {
           anchors.verticalCenter: parent.verticalCenter
         }
 
-        Button {
+        LqButton {
+          design: root.design
           text: "Override"
-          bordered: true
-          foreground: root.foreground
-          accent: root.accent
-          fontFamily: root.fontFamily
           anchors.verticalCenter: parent.verticalCenter
           onClicked: root.takeOver()
         }
@@ -190,14 +200,13 @@ Item {
         width: controls.width
         height: visible ? Math.max(toggle.height, speedSlider.height, undoButton.height) : 0
 
-        ToggleSwitch {
+        LqSwitch {
+          design: root.design
           id: toggle
           anchors.left: parent.left
           anchors.verticalCenter: parent.verticalCenter
           checked: root.enabled_
           hasCursor: root.hasCursor
-          foreground: root.foreground
-          accent: root.accent
           onToggled: root.committed(root.withField("enabled", !root.enabled_))
         }
 
@@ -228,7 +237,12 @@ Item {
           opacity: root.enabled_ ? 1 : 0.35
         }
 
-        PanelSlider {
+        LqSlider {
+          design: root.design
+
+          showLabel: false
+
+          hasCursor: root.hasCursor
           id: speedSlider
           anchors.left: toggle.right
           anchors.leftMargin: Style.spacing.lg
@@ -237,14 +251,12 @@ Item {
           anchors.verticalCenter: parent.verticalCenter
           enabled: root.enabled_
           opacity: root.enabled_ ? 1 : 0.35
-          minimum: AnimSchema.SPEED_MIN
-          maximum: Math.max(AnimSchema.SPEED_MAX, root.safeSpeed())
-          step: 0.01
+          from: AnimSchema.SPEED_MIN
+          to: Math.max(AnimSchema.SPEED_MAX, root.safeSpeed())
+          stepSize: 0.01
           value: root.safeSpeed()
-          fillColor: root.modified ? root.accent : root.foreground
-          knobColor: root.modified ? root.accent : root.foreground
           onMoved: function(v) { root.edited(root.withField("speed", v)) }
-          onReleased: function(v) { root.committed(root.withField("speed", v)) }
+          onCommitted: function(v) { root.committed(root.withField("speed", v)) }
         }
       }
 

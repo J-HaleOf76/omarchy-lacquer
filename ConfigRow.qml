@@ -1,6 +1,7 @@
 import QtQuick
 import qs.Commons
 import qs.Ui
+import "ui"
 
 // One editable look-and-feel option: name and description left, control right,
 // so a slider, a switch and a segmented picker all scan as the same kind of
@@ -19,6 +20,12 @@ Item {
   property bool animated: true
 
   required property var item
+  // Lacquer's design kit, from the panel.
+  property var design: null
+  // The description opens on the row the keyboard is on, or one the pointer
+  // has rested on for a moment.
+  property bool lingering: false
+  readonly property bool open: hasCursor || lingering
   property var value: 0
   property bool modified: false
   property bool available: true
@@ -67,17 +74,22 @@ Item {
 
   Rectangle {
     anchors.fill: parent
-    anchors.leftMargin: -Style.spacing.md
-    anchors.rightMargin: -Style.spacing.md
-    radius: Style.cornerRadius
-    color: root.hasCursor ? Style.hoverFillFor(root.foreground, root.accent) : "transparent"
-    Behavior on color { enabled: root.animated; ColorAnimation { duration: 100 } }
+    anchors.topMargin: 3
+    anchors.bottomMargin: 3
+    anchors.leftMargin: -8
+    anchors.rightMargin: -8
+    radius: root.design ? root.design.controlRadius : Style.cornerRadius
+    color: root.hasCursor && root.design ? root.design.hover : "transparent"
+    Behavior on color { enabled: root.animated; ColorAnimation { duration: 140 } }
   }
+
+  Timer { id: lingerTimer; interval: 380; onTriggered: root.lingering = true }
 
   MouseArea {
     anchors.fill: parent
     acceptedButtons: Qt.NoButton
     hoverEnabled: true
+    onContainsMouseChanged: containsMouse ? lingerTimer.restart() : (lingerTimer.stop(), root.lingering = false)
     // Only real pointer motion moves the cursor. A row sliding under a mouse
     // that is just resting on the panel — which happens every time the list
     // changes, and the panel opens centred — must not steal keyboard focus.
@@ -99,10 +111,11 @@ Item {
 
       Text {
         text: root.item.label
-        color: root.foreground
+        color: root.hasCursor ? root.accent : root.foreground
         font.family: root.fontFamily
-        font.pixelSize: Style.font.subtitle
-        font.bold: true
+        font.pixelSize: 15
+        font.weight: Font.DemiBold
+        Behavior on color { enabled: root.animated; ColorAnimation { duration: 160 } }
       }
 
       // Filled pip = this key differs from Omarchy's default.
@@ -119,10 +132,10 @@ Item {
 
     Text {
       text: root.item.description
-      visible: text !== ""
-      color: Qt.darker(root.foreground, 1.55)
+      visible: text !== "" && root.open
+      color: root.design ? root.design.muted : Qt.darker(root.foreground, 1.55)
       font.family: root.fontFamily
-      font.pixelSize: Style.font.caption
+      font.pixelSize: 13
       width: parent.width
       wrapMode: Text.WordWrap
     }
@@ -159,45 +172,46 @@ Item {
       visible: root.isSlider
       text: root.formatted()
       color: root.modified ? root.accent : root.foreground
-      font.family: root.fontFamily
-      font.pixelSize: Style.font.body
+      font.family: root.design ? root.design.mono : root.fontFamily
+      font.pixelSize: 14
+      font.weight: Font.DemiBold
       horizontalAlignment: Text.AlignRight
       width: Style.space(58)
       anchors.verticalCenter: parent.verticalCenter
     }
 
-    ToggleSwitch {
+    LqSwitch {
       visible: root.isBool
+      design: root.design
       checked: root.value === true
       hasCursor: root.hasCursor
-      foreground: root.foreground
-      accent: root.accent
       anchors.verticalCenter: parent.verticalCenter
       onToggled: root.committed(!root.value)
     }
 
-    PanelSlider {
+    LqSlider {
       visible: root.isSlider
+      design: root.design
+      showLabel: false
       width: Math.max(Style.space(90), control.width - undoButton.width - Style.space(58) - Style.spacing.lg * 2)
-      minimum: root.sliderMin
-      maximum: root.sliderMax
-      step: root.item.step === undefined ? 1 : root.item.step
-      integer: root.item.type === "int"
+      from: root.sliderMin
+      to: root.sliderMax
+      stepSize: root.item.step === undefined ? 1 : root.item.step
       value: root.numValue
-      fillColor: root.modified ? root.accent : root.foreground
-      knobColor: root.modified ? root.accent : root.foreground
+      hasCursor: root.hasCursor
       anchors.verticalCenter: parent.verticalCenter
-      onMoved: function(v) { root.edited(v) }
-      onReleased: function(v) { root.committed(v) }
+      onMoved: function(v) { root.edited(root.item.type === "int" ? Math.round(v) : v) }
+      onCommitted: function(v) { root.committed(root.item.type === "int" ? Math.round(v) : v) }
     }
 
-    ButtonGroup {
+    LqTabs {
       visible: root.isEnum
+      design: root.design
+      style: "chips"
+      fontSize: 13
+      width: Math.min(implicitWidth, control.width - undoButton.width - Style.spacing.lg)
       options: root.item.options || []
       value: String(root.value)
-      foreground: root.foreground
-      accent: root.accent
-      focusable: false
       anchors.verticalCenter: parent.verticalCenter
       onChanged: function(v) { root.committed(v) }
     }

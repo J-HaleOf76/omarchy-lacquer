@@ -19,6 +19,12 @@ Item {
   // A keyboard cursor, drawn as a ring, for panels that drive one.
   property int cursorIndex: -1
 
+  // Accepted from Omarchy's ButtonGroup; the kit draws its own colours and type.
+  property color foreground: "white"
+  property color accent: "white"
+  property string fontFamily: ""
+  property bool focusable: false
+
   signal changed(string value)
 
   readonly property bool isRail: style === "rail"

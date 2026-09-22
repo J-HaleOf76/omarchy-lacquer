@@ -29,13 +29,60 @@ Item {
     boundsBehavior: Flickable.StopAtBounds
     currentIndex: app.cursorIndex
     spacing: 0
+    leftMargin: 16
+    rightMargin: 16
 
     delegate: Loader {
       id: rowLoader
       required property var modelData
       required property int index
 
-      width: rowList.width - Style.spacing.xxl
+      // The list's own margins leave room for each group's card to reach
+      // past the rows on both sides.
+      width: rowList.width - rowList.leftMargin - rowList.rightMargin - Style.spacing.md
+
+      // Each group of rows reads as one glossy card: every row draws its own
+      // slice of it, the first with the top corners and the sheen, the last
+      // with the bottom corners, and a hairline between the rest.
+      readonly property bool isRow: modelData.kind !== "header"
+      readonly property var prevEntry: index > 0 ? app.rows[index - 1] : null
+      readonly property var nextEntry: index < app.rows.length - 1 ? app.rows[index + 1] : null
+      readonly property bool firstInCard: isRow && (!prevEntry || prevEntry.kind === "header")
+      readonly property bool lastInCard: isRow && (!nextEntry || nextEntry.kind === "header")
+
+      Rectangle {
+        z: -1
+        visible: rowLoader.isRow
+        x: -14
+        width: parent.width + 28
+        height: parent.height
+        color: app.design.raised
+        topLeftRadius: rowLoader.firstInCard ? app.design.cardRadius : 0
+        topRightRadius: rowLoader.firstInCard ? app.design.cardRadius : 0
+        bottomLeftRadius: rowLoader.lastInCard ? app.design.cardRadius : 0
+        bottomRightRadius: rowLoader.lastInCard ? app.design.cardRadius : 0
+
+        Rectangle {
+          visible: rowLoader.firstInCard
+          anchors.left: parent.left
+          anchors.right: parent.right
+          anchors.top: parent.top
+          height: Math.min(parent.height, 44)
+          topLeftRadius: parent.topLeftRadius
+          topRightRadius: parent.topRightRadius
+          gradient: Gradient {
+            GradientStop { position: 0; color: app.design.sheen }
+            GradientStop { position: 1; color: "transparent" }
+          }
+        }
+        Rectangle {
+          visible: !rowLoader.firstInCard
+          x: 16
+          width: parent.width - 32
+          height: 1
+          color: app.design.hairline
+        }
+      }
 
       // Rows of a page just switched to cascade in; rows scrolled into view
       // later appear as they always did.
@@ -59,16 +106,19 @@ Item {
       Component {
         id: headerRow
         Item {
-          implicitHeight: headerText.implicitHeight + Style.spacing.xxl
-          PanelSectionHeader {
+          implicitHeight: headerText.implicitHeight + (index === 0 ? 6 : 26)
+          Text {
             id: headerText
             anchors.left: parent.left
-            anchors.right: parent.right
+            anchors.leftMargin: -10
             anchors.bottom: parent.bottom
-            anchors.bottomMargin: Style.spacing.xs
-            text: modelData.title
-            foreground: app.foreground
-            fontFamily: app.fontFamily
+            anchors.bottomMargin: 7
+            text: String(modelData.title || "").toUpperCase()
+            color: app.design.muted
+            font.family: app.fontFamily
+            font.pixelSize: 11
+            font.weight: Font.DemiBold
+            font.letterSpacing: 1.1
           }
         }
       }
@@ -76,6 +126,7 @@ Item {
       Component {
         id: configRow
         ConfigRow {
+          design: app.design
           item: modelData.item
           value: app.hypr.valueFor(modelData.item)
           modified: app.hypr.isModified(modelData.item.key)
@@ -96,6 +147,7 @@ Item {
       Component {
         id: shellRow
         ShellRow {
+          design: app.design
           item: modelData.item
           value: app.toml.shellValue(modelData.item)
           themeValue: app.toml.shellDefault(modelData.item)
@@ -117,6 +169,7 @@ Item {
       Component {
         id: leafRow
         LeafRow {
+          design: app.design
           leafSpec: modelData.leaf
           value: app.hypr.leafValue(modelData.leaf.name)
           inherited: app.hypr.leafInherited(modelData.leaf.name)

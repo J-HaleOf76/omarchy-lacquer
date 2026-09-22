@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Quickshell
 import qs.Commons
 import qs.Ui
+import "../ui"
 import ".."
 import "../LookSchema.js" as LookSchema
 import "../AnimSchema.js" as AnimSchema
@@ -40,7 +41,8 @@ Item {
         Repeater {
           model: app.hypr.curveNames
 
-          Button {
+          LqButton {
+            design: app.design
             required property var modelData
             text: String(modelData) + (app.hypr.curveModified(String(modelData)) ? "  ·" : "")
             selected: app.curveName === String(modelData)

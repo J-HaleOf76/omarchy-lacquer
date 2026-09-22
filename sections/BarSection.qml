@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Quickshell
 import qs.Commons
 import qs.Ui
+import "../ui"
 import ".."
 import "../LookSchema.js" as LookSchema
 import "../AnimSchema.js" as AnimSchema
@@ -30,7 +31,8 @@ Item {
       width: barPane.width - Style.spacing.xxl
       spacing: Style.spacing.lg
 
-      PanelSectionHeader {
+      LqLabel {
+        design: app.design
         text: "Placement"
         foreground: app.foreground
         fontFamily: app.fontFamily
@@ -49,7 +51,9 @@ Item {
           anchors.verticalCenter: parent.verticalCenter
         }
 
-        ButtonGroup {
+        LqTabs {
+          design: app.design
+          style: "chips"
           anchors.verticalCenter: parent.verticalCenter
           options: [
             { value: "top", label: "Top" },
@@ -80,7 +84,8 @@ Item {
           anchors.verticalCenter: parent.verticalCenter
         }
 
-        ToggleSwitch {
+        LqSwitch {
+          design: app.design
           anchors.verticalCenter: parent.verticalCenter
           checked: app.sjson.barConfig.bar ? app.sjson.barConfig.bar.transparent === true : false
           foreground: app.foreground
@@ -100,7 +105,8 @@ Item {
 
       PanelSeparator { foreground: app.foreground; width: parent.width }
 
-      PanelSectionHeader {
+      LqLabel {
+        design: app.design
         text: "Layout"
         foreground: app.foreground
         fontFamily: app.fontFamily
@@ -127,7 +133,8 @@ Item {
             width: (barColumn.width - Style.spacing.lg * 2) / 3
             spacing: Style.spacing.xs
 
-            PanelSectionHeader {
+            LqLabel {
+              design: app.design
               text: modelData
               foreground: app.foreground
               fontFamily: app.fontFamily
@@ -231,7 +238,8 @@ Item {
 
       PanelSeparator { foreground: app.foreground; width: parent.width }
 
-      PanelSectionHeader {
+      LqLabel {
+        design: app.design
         text: "Not on the bar"
         foreground: app.foreground
         fontFamily: app.fontFamily
@@ -253,7 +261,8 @@ Item {
             return out
           }
 
-          Button {
+          LqButton {
+            design: app.design
             required property var modelData
             text: "+  " + modelData.displayName
             bordered: true

@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import qs.Commons
 import qs.Ui
+import "../ui"
 
 // The theme shuffle: which themes rotate, whether a new one is drawn on every
 // boot, and the Day & Night slots that follow local sunrise and sunset.
@@ -102,7 +103,8 @@ Item {
                 + "Move it to Lacquer to edit them — nothing about how it behaves changes."
           }
 
-          Button {
+          LqButton {
+            design: app.design
             id: moveButton
             anchors.verticalCenter: parent.verticalCenter
             text: section.app.confirmShuffleMove ? "Yes, move it" : "Move to Lacquer"
@@ -116,7 +118,8 @@ Item {
             }
           }
 
-          Button {
+          LqButton {
+            design: app.design
             id: cancelButton
             visible: section.app.confirmShuffleMove
             anchors.verticalCenter: parent.verticalCenter
@@ -150,7 +153,7 @@ Item {
 
         // ---------------------------------------------------------- modes
 
-        PanelSectionHeader { text: "Mode"; foreground: section.app.foreground; fontFamily: section.app.fontFamily }
+        LqLabel { design: app.design; text: "Mode"; foreground: section.app.foreground; fontFamily: section.app.fontFamily }
 
         Repeater {
           model: [
@@ -175,7 +178,8 @@ Item {
               Text { width: parent.width; wrapMode: Text.WordWrap; text: modelData.desc; color: Qt.darker(section.app.foreground, 1.55); font.family: section.app.fontFamily; font.pixelSize: Style.font.caption }
             }
 
-            ToggleSwitch {
+            LqSwitch {
+              design: app.design
               id: modeSwitch
               anchors.right: parent.right
               anchors.verticalCenter: parent.verticalCenter
@@ -196,8 +200,8 @@ Item {
 
         Row {
           spacing: Style.spacing.lg
-          Button { text: "Shuffle now"; iconText: "󰒝"; bordered: true; foreground: section.app.foreground; accent: section.app.accent; fontFamily: section.app.fontFamily; onClicked: section.engine.shuffleNow() }
-          Button { text: "Reshuffle deck"; bordered: true; foreground: section.app.foreground; accent: section.app.accent; fontFamily: section.app.fontFamily; onClicked: section.engine.reshuffleDeck() }
+          LqButton { design: app.design; text: "Shuffle now"; iconText: "󰒝"; bordered: true; foreground: section.app.foreground; accent: section.app.accent; fontFamily: section.app.fontFamily; onClicked: section.engine.shuffleNow() }
+          LqButton { design: app.design; text: "Reshuffle deck"; bordered: true; foreground: section.app.foreground; accent: section.app.accent; fontFamily: section.app.fontFamily; onClicked: section.engine.reshuffleDeck() }
         }
 
         PanelSeparator { foreground: section.app.foreground; width: parent.width }
@@ -208,7 +212,8 @@ Item {
           width: parent.width
           height: rotationHeader.implicitHeight
 
-          PanelSectionHeader {
+          LqLabel {
+            design: app.design
             id: rotationHeader
             text: "Rotation"
             foreground: section.app.foreground
@@ -233,7 +238,8 @@ Item {
               { label: "All", act: "all" }, { label: "None", act: "none" },
               { label: "All dark", act: "dark" }, { label: "All light", act: "light" }
             ]
-            Button {
+            LqButton {
+              design: app.design
               required property var modelData
               text: modelData.label
               bordered: true
@@ -256,10 +262,12 @@ Item {
           Repeater {
             model: section.ready ? section.engine.themes : []
 
-            Button {
+            LqButton {
+              design: app.design
               required property var modelData
               readonly property bool picked: !!(section.st && section.st.pool.indexOf(modelData.slug) !== -1)
-              text: (picked ? "✓  " : "") + modelData.display
+              soft: true
+              text: modelData.display
               iconText: modelData.mode === "light" ? "󰖨" : "󰖔"
               selected: picked
               bordered: true
@@ -280,7 +288,7 @@ Item {
           spacing: Style.spacing.lg
           visible: section.st !== null && section.st.schedule.enabled
 
-          PanelSectionHeader { text: "Day & Night"; foreground: section.app.foreground; fontFamily: section.app.fontFamily }
+          LqLabel { design: app.design; text: "Day & Night"; foreground: section.app.foreground; fontFamily: section.app.fontFamily }
 
           Row {
             spacing: Style.spacing.lg
@@ -294,7 +302,9 @@ Item {
               width: Style.space(90)
             }
 
-            ButtonGroup {
+            LqTabs {
+              design: app.design
+              style: "chips"
               anchors.verticalCenter: parent.verticalCenter
               options: [{ value: "auto", label: "From weather" }, { value: "manual", label: "Manual" }]
               value: section.st ? section.st.schedule.locationMode : "auto"
@@ -376,7 +386,9 @@ Item {
                     }
                   }
 
-                  ButtonGroup {
+                  LqTabs {
+                    design: app.design
+                    style: "chips"
                     anchors.verticalCenter: parent.verticalCenter
                     options: [{ value: "light", label: "Light" }, { value: "dark", label: "Dark" }]
                     value: slotCard.modelData.mode
@@ -387,7 +399,9 @@ Item {
                     onChanged: function(v) { section.engine.updateSlot(slotCard.modelData.id, { mode: v }) }
                   }
 
-                  ButtonGroup {
+                  LqTabs {
+                    design: app.design
+                    style: "chips"
                     anchors.verticalCenter: parent.verticalCenter
                     options: [{ value: "sunrise", label: "Sunrise" }, { value: "sunset", label: "Sunset" }]
                     value: slotCard.modelData.anchor
@@ -428,7 +442,8 @@ Item {
                     font.pixelSize: Style.font.caption
                   }
 
-                  PanelSlider {
+                  LqSlider {
+                    design: app.design
                     id: offsetSlider
                     anchors.left: offsetLabel.right
                     anchors.leftMargin: Style.spacing.lg
@@ -460,7 +475,8 @@ Item {
             }
           }
 
-          Button {
+          LqButton {
+            design: app.design
             text: "Add slot"
             iconText: "󰐕"
             bordered: true
@@ -476,7 +492,7 @@ Item {
 
         // ---------------------------------------------------------- history
 
-        PanelSectionHeader { text: "Recent"; foreground: section.app.foreground; fontFamily: section.app.fontFamily }
+        LqLabel { design: app.design; text: "Recent"; foreground: section.app.foreground; fontFamily: section.app.fontFamily }
 
         Text {
           width: parent.width

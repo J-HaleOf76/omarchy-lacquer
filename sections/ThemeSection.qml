@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import qs.Commons
 import qs.Ui
+import "../ui"
 
 // Every installed Omarchy theme as a card, and the active theme's wallpapers.
 //
@@ -85,7 +86,9 @@ Item {
         }
       }
 
-      ButtonGroup {
+      LqTabs {
+        design: app.design
+        style: "chips"
         id: filterGroup
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
@@ -247,7 +250,8 @@ Item {
       Layout.fillWidth: true
       Layout.preferredHeight: wallHeader.implicitHeight
 
-      PanelSectionHeader {
+      LqLabel {
+        design: app.design
         id: wallHeader
         anchors.left: parent.left
         text: "Wallpaper — " + (section.store.current ? section.store.displayOf(section.store.current) : "")

@@ -1,6 +1,7 @@
 import QtQuick
 import qs.Commons
 import qs.Ui
+import "ui"
 
 // One ~/.config/omarchy/shell.toml option.
 //
@@ -20,6 +21,12 @@ Item {
   property bool animated: true
 
   required property var item
+  // Lacquer's design kit, from the panel.
+  property var design: null
+  // The description opens on the row the keyboard is on, or one the
+  // pointer has rested on for a moment.
+  property bool lingering: false
+  readonly property bool open: hasCursor || lingering
   property var value: undefined
   property var themeValue: undefined
   property bool modified: false
@@ -69,17 +76,22 @@ Item {
 
   Rectangle {
     anchors.fill: parent
-    anchors.leftMargin: -Style.spacing.md
-    anchors.rightMargin: -Style.spacing.md
-    radius: Style.cornerRadius
-    color: root.hasCursor ? Style.hoverFillFor(root.foreground, root.accent) : "transparent"
-    Behavior on color { enabled: root.animated; ColorAnimation { duration: 100 } }
+    anchors.leftMargin: -8
+    anchors.rightMargin: -8
+    anchors.topMargin: 3
+    anchors.bottomMargin: 3
+    radius: root.design ? root.design.controlRadius : Style.cornerRadius
+    color: root.hasCursor && root.design ? root.design.hover : "transparent"
+    Behavior on color { enabled: root.animated; ColorAnimation { duration: 140 } }
   }
+
+  Timer { id: lingerTimer; interval: 380; onTriggered: root.lingering = true }
 
   MouseArea {
     anchors.fill: parent
     acceptedButtons: Qt.NoButton
     hoverEnabled: true
+    onContainsMouseChanged: containsMouse ? lingerTimer.restart() : (lingerTimer.stop(), root.lingering = false)
     // Only real pointer motion moves the cursor. A row sliding under a mouse
     // that is just resting on the panel — which happens every time the list
     // changes, and the panel opens centred — must not steal keyboard focus.
@@ -101,10 +113,10 @@ Item {
 
       Text {
         text: root.item.label
-        color: root.foreground
+        color: root.hasCursor ? root.accent : root.foreground
         font.family: root.fontFamily
-        font.pixelSize: Style.font.subtitle
-        font.bold: true
+        font.pixelSize: 15
+        font.weight: Font.DemiBold
       }
 
       Rectangle {
@@ -140,7 +152,7 @@ Item {
 
     Text {
       text: root.item.description
-      visible: text !== ""
+      visible: text !== "" && root.open
       color: Qt.darker(root.foreground, 1.55)
       font.family: root.fontFamily
       font.pixelSize: Style.font.caption
@@ -186,29 +198,30 @@ Item {
       anchors.verticalCenter: parent.verticalCenter
     }
 
-    ToggleSwitch {
+    LqSwitch {
+      design: root.design
       visible: root.isBool
       checked: root.boolValue
       hasCursor: root.hasCursor
-      foreground: root.foreground
-      accent: root.accent
       anchors.verticalCenter: parent.verticalCenter
       onToggled: root.committed(!root.boolValue)
     }
 
-    PanelSlider {
+    LqSlider {
+      design: root.design
+
+      showLabel: false
+
+      hasCursor: root.hasCursor
       visible: root.isNum
       width: Math.max(Style.space(90), control.width - undoButton.width - Style.space(58) - Style.spacing.lg * 2)
-      minimum: Math.min(root.item.min, root.numValue)
-      maximum: Math.max(root.item.max, root.numValue)
-      step: root.item.step === undefined ? 1 : root.item.step
-      integer: (root.item.step === undefined ? 1 : root.item.step) >= 1
+      from: Math.min(root.item.min, root.numValue)
+      to: Math.max(root.item.max, root.numValue)
+      stepSize: root.item.step === undefined ? 1 : root.item.step
       value: root.numValue
-      fillColor: root.modified ? root.accent : root.foreground
-      knobColor: root.modified ? root.accent : root.foreground
       anchors.verticalCenter: parent.verticalCenter
       onMoved: function(v) { root.edited(v) }
-      onReleased: function(v) { root.committed(v) }
+      onCommitted: function(v) { root.committed(v) }
     }
 
     TextField {

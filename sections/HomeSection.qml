@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Shapes
 import qs.Commons
 import qs.Ui
+import "../ui"
 import "../LookSchema.js" as LookSchema
 import "../AnimSchema.js" as AnimSchema
 import "../ShellSchema.js" as ShellSchema
@@ -735,19 +736,21 @@ Item {
               font.pixelSize: Style.font.caption
             }
 
-            Button {
+            LqButton {
+              design: app.design
               anchors.verticalCenter: parent.verticalCenter
               visible: home.app.overrideCount > 0
               text: home.app.confirmResetAll ? "Reset everything?" : "Reset all"
               bordered: true
-              selected: home.app.confirmResetAll
+              danger: home.app.confirmResetAll
               foreground: home.app.confirmResetAll ? Color.urgent : home.app.foreground
               accent: home.app.accent
               fontFamily: home.app.fontFamily
               onClicked: home.app.pressResetAll()
             }
 
-            Button {
+            LqButton {
+              design: app.design
               anchors.verticalCenter: parent.verticalCenter
               text: home.app.motion ? "Animated" : "Still"
               iconText: "󱐋"

@@ -1282,7 +1282,8 @@ Item {
               anchors.verticalCenter: parent.verticalCenter
             }
 
-            Button {
+            LqButton {
+              design: root.design
               id: importButton
               visible: hypr.legacyBlocks.length > 0 && !root.confirmRemove
               text: "Import settings"
@@ -1295,7 +1296,8 @@ Item {
               onClicked: hypr.importLegacy()
             }
 
-            Button {
+            LqButton {
+              design: root.design
               id: removeButton
               visible: root.legacyPresent.length > 0
               text: root.confirmRemove ? "Yes, uninstall" : "Uninstall Omaland"
@@ -1310,7 +1312,8 @@ Item {
               }
             }
 
-            Button {
+            LqButton {
+              design: root.design
               id: keepButton
               text: root.confirmRemove ? "Cancel" : "Not now"
               bordered: true

@@ -9,6 +9,10 @@ Item {
   property bool checked: false
   property bool hasCursor: false
 
+  // Accepted from Omarchy's ToggleSwitch; the kit draws its own colours.
+  property color foreground: "white"
+  property color accent: "white"
+
   signal toggled()
 
   implicitWidth: 44

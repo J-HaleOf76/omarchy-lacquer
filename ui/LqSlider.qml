@@ -11,17 +11,33 @@ Item {
 
   required property var design
   property real value: 0
-  property real from: 0
-  property real to: 1
-  property real stepSize: 1
+  // Omarchy's PanelSlider names, so a use of it can switch by name.
+  property real minimum: 0
+  property real maximum: 1
+  property real step: 1
+  property bool integer: false
+  property color fillColor: "white"
+  property color knobColor: "white"
+  property real from: minimum
+  property real to: maximum
+  property real stepSize: step
   // What the label says for a given number; the page supplies units.
   property var format: function(v) { return String(Math.round(v)) }
   property bool hasCursor: false
 
   signal committed(real value)
   signal stepped(int delta)
+  // While dragging, for pages that preview live.
+  signal moved(real value)
+  // PanelSlider's name for committed.
+  signal released(real value)
+
+  property bool showLabel: true
 
   property bool dragging: false
+  // Where a drag began: with a live preview, `value` already follows the
+  // pointer, so a release is compared with this instead.
+  property real startValue: 0
   property real dragValue: value
   readonly property real shown: dragging ? dragValue : value
   readonly property real range: Math.max(0.000001, to - from)
@@ -30,8 +46,8 @@ Item {
   implicitWidth: 320
   implicitHeight: 30
 
-  readonly property real labelWidth: 78
-  readonly property real trackWidth: width - labelWidth - 14
+  readonly property real labelWidth: showLabel ? 78 : 0
+  readonly property real trackWidth: width - labelWidth - (showLabel ? 14 : 0)
   readonly property real knobSize: 16
 
   function snap(v) {
@@ -94,12 +110,16 @@ Item {
       hoverEnabled: true
       cursorShape: Qt.PointingHandCursor
       preventStealing: true
-      onPressed: function(m) { slider.dragging = true; slider.dragValue = slider.valueAt(m.x) }
-      onPositionChanged: function(m) { if (slider.dragging) slider.dragValue = slider.valueAt(m.x) }
+      onPressed: function(m) { slider.startValue = slider.value; slider.dragging = true; slider.dragValue = slider.valueAt(m.x); slider.moved(slider.dragValue) }
+      onPositionChanged: function(m) {
+        if (!slider.dragging) return
+        var v = slider.valueAt(m.x)
+        if (v !== slider.dragValue) { slider.dragValue = v; slider.moved(v) }
+      }
       onReleased: {
         var v = slider.dragValue
         slider.dragging = false
-        if (Math.abs(v - slider.value) > 0.0000001) slider.committed(v)
+        if (Math.abs(v - slider.startValue) > 0.0000001) { slider.committed(v); slider.released(v) }
       }
       onCanceled: slider.dragging = false
       onWheel: function(w) { slider.stepped(w.angleDelta.y > 0 ? 1 : -1) }
@@ -107,6 +127,7 @@ Item {
   }
 
   Text {
+    visible: slider.showLabel
     anchors.right: parent.right
     anchors.verticalCenter: parent.verticalCenter
     width: slider.labelWidth

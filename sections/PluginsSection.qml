@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Quickshell
 import qs.Commons
 import qs.Ui
+import "../ui"
 import ".."
 import "../LookSchema.js" as LookSchema
 import "../AnimSchema.js" as AnimSchema
@@ -45,7 +46,8 @@ Item {
         Repeater {
           model: pluginColumn.configurable
 
-          Button {
+          LqButton {
+            design: app.design
             required property var modelData
             text: modelData.displayName + (app.sjson.pluginTouched(modelData) ? "  ·" : "")
             selected: app.selectedPlugin === modelData.id
@@ -104,6 +106,7 @@ Item {
           model: pluginColumn.current ? (pluginColumn.current.schema || []) : []
 
           SettingRow {
+            design: app.design
             required property var modelData
             width: pluginColumn.width
             spec: modelData
