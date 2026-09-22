@@ -580,8 +580,8 @@ Item {
             width: parent.width
             elide: Text.ElideRight
             text: home.moveMs > 0
-              ? "Live · " + (home.moveLeaf.bezier || "default") + " · " + home.moveMs + " ms"
-              : "Live · animations off"
+              ? "A live picture of your windows, moving the way yours do"
+              : "A live picture of your windows (animations are off)"
             color: Qt.darker(home.app.foreground, 1.6)
             font.family: home.app.fontFamily
             font.pixelSize: Style.font.caption
@@ -651,7 +651,7 @@ Item {
             model: [
               { icon: home.iconOf("theme"), id: "theme", text: (home.themeInfo.mode ? home.themeInfo.mode + " theme · " : "") + home.app.theme.themes.length + " to choose from" },
               { icon: home.iconOf("shuffle"), id: "shuffle", text: "Shuffle: " + home.summaryFor("shuffle") },
-              { icon: home.iconOf("nightlight"), id: "nightlight", text: "Nightlight: " + home.summaryFor("nightlight") },
+              { icon: home.iconOf("nightlight"), id: "nightlight", text: "Night light: " + home.summaryFor("nightlight") },
               { icon: home.iconOf("fonts"), id: "fonts", text: home.summaryFor("fonts") }
             ]
             Row {
