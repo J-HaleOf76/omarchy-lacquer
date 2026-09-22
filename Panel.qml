@@ -303,10 +303,10 @@ Item {
   property real breath: 0
   property real breathT: 0
   Timer {
-    interval: 66
+    interval: 100
     repeat: true
     running: root.opened && root.lively && root.motion
-    onTriggered: { root.breathT += 0.066; root.breath = Math.sin(root.breathT * 1.55) }
+    onTriggered: { root.breathT += 0.1; root.breath = Math.sin(root.breathT * 1.55) }
   }
 
   readonly property string footerMessage: root.errorText !== "" ? root.errorText
@@ -1104,8 +1104,19 @@ Item {
 
       MouseArea { anchors.fill: parent; onClicked: {} }
 
-      // Anything the pointer does over the panel counts as someone using it.
-      HoverHandler { onPointChanged: root.poke() }
+      // The pointer moving over the panel counts as someone using it. Only real
+      // movement: Qt re-sends hover to a pointer that is resting still whenever
+      // the scene under it repaints, and counting those would let the breathing
+      // keep itself awake forever.
+      HoverHandler {
+        property point last: Qt.point(-1, -1)
+        onPointChanged: {
+          var p = point.scenePosition
+          if (Math.abs(p.x - last.x) < 0.5 && Math.abs(p.y - last.y) < 0.5) return
+          last = p
+          root.poke()
+        }
+      }
 
       // The slow goo behind everything. Inset so it stays inside the card's
       // rounded corners.
