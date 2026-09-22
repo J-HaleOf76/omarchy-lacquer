@@ -235,6 +235,11 @@ Item {
 
   onSectionIndexChanged: {
     if (root.sections[root.sectionIndex]) root.currentSectionId = root.sections[root.sectionIndex].id
+    var here = root.sections[root.sectionIndex]
+    if (here && here.group) {
+      var m = root.lastInMain; m[here.group] = here.id; root.lastInMain = m
+      var sb = root.lastInSub; sb[here.group + "/" + here.sub] = here.id; root.lastInSub = sb
+    }
     var dir = root.sectionIndex > root.lastSectionIndex ? 1 : -1
     root.lastSectionIndex = root.sectionIndex
     root.playTransition("y", dir)
@@ -280,6 +285,45 @@ Item {
   property bool confirmRemove: false
 
   property bool confirmResetAll: false
+  // "?" in the header, or the ? key: the keyboard shortcuts for this page.
+  property bool showHints: false
+
+  readonly property string footerMessage: root.errorText !== "" ? root.errorText
+    : root.statusText !== "" ? root.statusText
+    : root.backupStamp !== "" ? "Backed up looknfeel.lua, shell.toml and shell.json as *.lacquer-backup-" + root.backupStamp
+    : ""
+
+  readonly property string keyHints: {
+    if (root.isHome) return homeSection.query !== ""
+      ? "↑↓ choose · Enter open · Backspace edit · Esc clear"
+      : "type to search · ←→ group · ↑↓ section · Enter open · Tab next section · Esc close"
+    if (root.isGenerate) return (root.confirmGenerate ? "g again to generate and apply · Esc cancel" : "w pick wallpaper · f any image · l light/dark · g generate (asks first) · o open aether · Esc close")
+    if (root.isShuffle) return "the shuffle keeps running with Lacquer closed · Tab section · Esc close"
+    // Only the pages that pin a value or carry a default mention Del.
+    if (root.isDesktop && ["fonts", "gtk", "cursor", "sizes"].indexOf(root.section.id) < 0)
+      return "↑↓ group · ←→ choose or step · Enter pick · Tab section · Esc close"
+    if (root.section.id === "nightlight") return "↑↓ group · ←→ choose or step · Enter pick · Tab section · Esc close"
+    if (root.isDesktop) return "↑↓ group · ←→ choose or step a size · Enter pick · Del follow theme / default · Tab section · Esc close"
+    if (root.isTheme) return "←→↑↓ hjkl choose · Enter apply · click a wallpaper to set it · Tab section · Esc close"
+    if (root.isBar) return "◀ ▶ section · ▲ ▼ order · ✕ off the bar · Tab section · Esc close"
+    if (root.isPlugins) return "[ ] pick a plugin, then edit its settings with the mouse · Tab section · Esc close"
+    var hint = root.isCurves
+      ? "drag a handle · P play · Tab section"
+      : "↑↓ kj row · ←→ hl adjust · Space toggle · Backspace reset · Tab section"
+        + ((root.isShell || root.isAnimations) ? " · [ ] sub-tab" : "")
+    return hint + " · Ctrl+Z undo · Esc close   —   colors stay with your theme"
+  }
+
+  // Reset all asks once, then acts on a second press within a few seconds.
+  function pressResetAll() {
+    if (root.confirmResetAll) {
+      root.confirmResetAll = false
+      root.resetAll()
+    } else {
+      root.confirmResetAll = true
+      resetAllTimeout.restart()
+    }
+  }
   property bool confirmShuffleMove: false
   property bool confirmGenerate: false
 
@@ -355,21 +399,105 @@ Item {
                blurb: "How one app's windows behave and look: floating, size, workspace, opacity and effects." })
     out.push({ id: "plugins", group: "Apps", pane: "plugins", icon: "󰏖", title: "Plugins",
                blurb: "Settings for every installed plugin, from its own manifest." })
+    // Where each page lives: main tab (group), then sub tab (sub). A sub tab
+    // holding more than one page shows them as a third row. Keyboard Tab
+    // walks this order, so it is also the order the pages are listed in.
+    var placed = [out[0]]
+    var used = { home: true }
+    for (var p = 0; p < root.pagePlaces.length; p++) {
+      var place = root.pagePlaces[p]
+      for (var q = 0; q < out.length; q++) {
+        if (out[q].id !== place[0]) continue
+        out[q].group = place[1]
+        out[q].sub = place[2]
+        placed.push(out[q])
+        used[out[q].id] = true
+      }
+    }
+    // Anything not placed above still gets a home rather than vanishing.
+    for (var r = 0; r < out.length; r++)
+      if (!used[out[r].id]) { out[r].group = "Apps"; out[r].sub = out[r].title; placed.push(out[r]) }
+    return placed
+  }
+
+  // [page id, main tab, sub tab], in the order they are shown.
+  readonly property var pagePlaces: [
+    ["theme", "Theme", "Themes"], ["shuffle", "Theme", "Shuffle"], ["generate", "Theme", "Generate"],
+    ["fonts", "Desktop", "Text"], ["sizes", "Desktop", "Text"],
+    ["gtk", "Desktop", "Look"], ["cursor", "Desktop", "Look"],
+    ["displays", "Desktop", "Screens"], ["nightlight", "Desktop", "Screens"],
+    ["lock", "Desktop", "Lock"], ["screensaver", "Desktop", "Lock"],
+    ["borders", "Windows", "Shape"], ["decoration", "Windows", "Shape"],
+    ["effects", "Windows", "Effects"], ["frame", "Windows", "Effects"],
+    ["windows", "Windows", "Layout"], ["groups", "Windows", "Layout"],
+    ["motion", "Windows", "Motion"], ["animations", "Windows", "Motion"], ["curves", "Windows", "Motion"],
+    ["shell", "Shell", "Style"], ["bar", "Shell", "Bar"], ["menulook", "Shell", "Menu"],
+    ["terminals", "Apps", "Terminals"], ["btop", "Apps", "Terminals"],
+    ["launcher", "Apps", "Launcher"], ["apprules", "Apps", "Launcher"],
+    ["plugins", "Apps", "Plugins"]
+  ]
+
+  readonly property var mainTabs: [
+    { title: "Theme", icon: "" },
+    { title: "Desktop", icon: "󰍹" },
+    { title: "Windows", icon: "󱆏" },
+    { title: "Shell", icon: "󰒓" },
+    { title: "Apps", icon: "󰀻" }
+  ]
+
+  // The rail: Home, then the main tabs.
+  readonly property var railEntries: {
+    var out = [{ kind: "home", title: "Home", icon: "󰋜" }]
+    for (var i = 0; i < mainTabs.length; i++) out.push({ kind: "main", title: mainTabs[i].title, icon: mainTabs[i].icon })
     return out
   }
 
-  // The rail interleaves group headings with sections.
-  readonly property var railEntries: {
+  readonly property string currentMain: section.group || ""
+  readonly property string currentSub: section.sub || ""
+
+  // The sub tabs of the main tab on screen, in order.
+  readonly property var subTabs: {
     var out = []
-    var last = ""
-    for (var i = 0; i < sections.length; i++) {
-      if (sections[i].group !== last && sections[i].group !== "") {
-        out.push({ kind: "group", title: sections[i].group })
-        last = sections[i].group
-      }
-      out.push({ kind: "section", index: i })
-    }
+    for (var i = 0; i < sections.length; i++)
+      if (sections[i].group === currentMain && currentMain !== "" && out.indexOf(sections[i].sub) < 0) out.push(sections[i].sub)
     return out
+  }
+
+  // The pages of the sub tab on screen, when there is more than one.
+  readonly property var deepTabs: {
+    var out = []
+    for (var i = 0; i < sections.length; i++)
+      if (sections[i].group === currentMain && sections[i].sub === currentSub && currentMain !== "") out.push(sections[i])
+    return out.length > 1 ? out : []
+  }
+
+  // The page last open in each main tab and sub tab, so going back to one
+  // returns where you were rather than to its first page.
+  property var lastInMain: ({})
+  property var lastInSub: ({})
+
+  function indexOfSection(id) {
+    for (var i = 0; i < sections.length; i++) if (sections[i].id === id) return i
+    return -1
+  }
+
+  function goToIndex(i) {
+    if (i >= 0 && i !== root.sectionIndex) root.moveSection(i - root.sectionIndex)
+  }
+
+  function goToMain(title) {
+    if (title === "Home") { root.goToIndex(0); return }
+    var remembered = root.indexOfSection(root.lastInMain[title] || "")
+    if (remembered >= 0 && sections[remembered].group === title) { root.goToIndex(remembered); return }
+    for (var i = 0; i < sections.length; i++) if (sections[i].group === title) { root.goToIndex(i); return }
+  }
+
+  function goToSub(sub) {
+    var key = currentMain + "/" + sub
+    var remembered = root.indexOfSection(root.lastInSub[key] || "")
+    if (remembered >= 0 && sections[remembered].sub === sub && sections[remembered].group === currentMain) { root.goToIndex(remembered); return }
+    for (var i = 0; i < sections.length; i++)
+      if (sections[i].group === currentMain && sections[i].sub === sub) { root.goToIndex(i); return }
   }
 
   readonly property var section: sections[Math.max(0, Math.min(sections.length - 1, sectionIndex))]
@@ -732,7 +860,6 @@ Item {
 
   function moveSection(delta) {
     pointerGateObj.reset()
-    Qt.callLater(function() { rail.ensureVisible(root.sectionIndex) })
     var count = root.sections.length
     root.sectionIndex = (root.sectionIndex + delta + count) % count
     toml.clearDraft()
@@ -957,6 +1084,8 @@ Item {
             return
           }
 
+          if (event.text === "?") { root.showHints = !root.showHints; event.accepted = true; return }
+
           if (root.isHome) {
             if (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab) {
               // fall through to section switching below
@@ -1054,104 +1183,39 @@ Item {
           Layout.fillWidth: true
           Layout.preferredHeight: Math.max(titleBlock.implicitHeight, headerActions.implicitHeight)
 
-          Column {
+          Text {
             id: titleBlock
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
-            spacing: Style.spacing.xxs
-
-            Text {
-              text: "Lacquer"
-              color: root.foreground
-              font.family: root.fontFamily
-              font.pixelSize: Style.font.heading
-              font.bold: true
-            }
-
-            Text {
-              text: root.isTheme ? "omarchy theme set"
-                : root.isShuffle ? "~/.local/state/omarchy/io.github.deunnis.lacquer/shuffle.json"
-                : root.isGenerate ? "aether"
-                : root.isHome ? "every look-and-feel setting, in one place"
-                : root.section.id === "fonts" ? "omarchy font · omarchy display text size · gsettings"
-                : root.section.id === "gtk" ? "gsettings · pins.json · hooks/theme-set.d"
-                : root.section.id === "cursor" ? "hyprctl setcursor · gsettings · hypr/autostart.lua"
-                : root.section.id === "nightlight" ? "hypr/hyprsunset.conf · hypr/autostart.lua"
-                : root.section.id === "lock" ? "shell.json idle · omarchy plymouth · omarchy-shell lock"
-                : root.section.id === "menulook" ? "omarchy-shell omamenu · io.github.omamenu/style.json"
-                : root.section.id === "terminals" ? "foot.ini · alacritty.toml · kitty.conf · ghostty/config"
-                : root.section.id === "btop" ? "btop/btop.conf · starship.toml"
-                : root.section.id === "screensaver" ? "shell.json idle · omarchy/branding"
-                : root.isShell ? "~/.config/omarchy/shell.toml"
-                : (root.isBar || root.isPlugins) ? "~/.config/omarchy/shell.json"
-                : "~/.config/hypr/looknfeel.lua"
-              color: Qt.darker(root.foreground, 1.6)
-              font.family: root.fontFamily
-              font.pixelSize: Style.font.caption
-            }
+            text: "Lacquer"
+            color: root.foreground
+            font.family: root.fontFamily
+            font.pixelSize: Style.font.heading
+            font.bold: true
           }
 
           Row {
             id: headerActions
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            spacing: Style.spacing.lg
+            spacing: Style.spacing.md
 
-            Text {
-              text: root.overrideCount === 0
-                ? "Following Omarchy defaults"
-                : root.overrideCount + (root.overrideCount === 1 ? " override" : " overrides")
-              color: root.overrideCount === 0 ? Qt.darker(root.foreground, 1.6) : root.accent
-              font.family: root.fontFamily
-              font.pixelSize: Style.font.caption
-              anchors.verticalCenter: parent.verticalCenter
-            }
-
-            Button {
-              text: root.motion ? "Motion" : "Still"
-              iconText: "󱐋"
-              tooltipText: (root.motion ? "App animations are on" : "App animations are off") + "  ·  Ctrl+M"
-              bordered: true
-              selected: root.motion
-              foreground: root.foreground
-              accent: root.accent
-              fontFamily: root.fontFamily
-              anchors.verticalCenter: parent.verticalCenter
-              onClicked: root.setMotion(!root.motion)
-            }
-
-            Button {
-              text: "Undo"
+            PanelActionButton {
               iconText: "󰕌"
               enabled: root.undoStack.length > 0
-              opacity: enabled ? 1 : 0.4
-              bordered: true
+              opacity: enabled ? 1 : 0.35
+              tooltipText: "Undo  ·  Ctrl+Z"
               foreground: root.foreground
-              accent: root.accent
-              fontFamily: root.fontFamily
               anchors.verticalCenter: parent.verticalCenter
               onClicked: root.undo()
             }
 
-            Button {
-              text: root.confirmResetAll ? "Reset everything?" : "Reset all"
-              enabled: root.overrideCount > 0
-              opacity: enabled ? 1 : 0.4
-              bordered: true
-              selected: root.confirmResetAll
-              foreground: root.confirmResetAll ? Color.urgent : root.foreground
-              accent: root.accent
-              fontFamily: root.fontFamily
+            PanelActionButton {
+              iconText: "?"
+              tooltipText: root.keyHints
+              foreground: root.showHints ? root.accent : root.foreground
               anchors.verticalCenter: parent.verticalCenter
-              onClicked: {
-                if (root.confirmResetAll) {
-                  root.confirmResetAll = false
-                  root.resetAll()
-                } else {
-                  root.confirmResetAll = true
-                  resetAllTimeout.restart()
-                }
-              }
+              onClicked: root.showHints = !root.showHints
             }
 
             PanelActionButton {
@@ -1257,23 +1321,17 @@ Item {
           Layout.fillHeight: true
           spacing: Style.spacing.panelGap
 
-          // Grouped and scrollable: the section list outgrows the card height.
-          Flickable {
+          // Home and the five main tabs. Short enough that it never scrolls.
+          Item {
             id: rail
-            Layout.preferredWidth: Style.space(170)
+            Layout.preferredWidth: Style.space(128)
             Layout.fillHeight: true
-            clip: true
-            contentWidth: width
-            contentHeight: railColumn.implicitHeight
-            boundsBehavior: Flickable.StopAtBounds
 
-            // A short accent bar that slides to the selected entry and
-            // stretches on the way, like a drop of ink.
             function placeMarker() {
               for (var i = 0; i < railRepeater.count; i++) {
                 var item = railRepeater.itemAt(i)
-                if (!item || item.sectionIndex !== root.sectionIndex) continue
-                var targetY = item.y + item.height * 0.2
+                if (!item || !item.active) continue
+                var targetY = railColumn.y + item.y + item.height * 0.2
                 var targetH = item.height * 0.6
                 if (!root.motion || railMarker.height === 0) {
                   markerMove.stop()
@@ -1287,6 +1345,9 @@ Item {
                 return
               }
             }
+            function ensureVisible() {}
+
+            onHeightChanged: if (height > 0) placeMarker()
 
             Rectangle {
               id: railMarker
@@ -1309,27 +1370,6 @@ Item {
               }
             }
 
-            Connections {
-              target: railColumn
-              function onImplicitHeightChanged() { Qt.callLater(rail.placeMarker) }
-            }
-
-            // A panel that was just created has no height yet; scrolling
-            // then would push the selected entry off the top.
-            onHeightChanged: if (height > 0) { ensureVisible(root.sectionIndex); placeMarker() }
-
-            function ensureVisible(sectionIndex) {
-              if (rail.height <= 0) return
-              for (var i = 0; i < railRepeater.count; i++) {
-                var item = railRepeater.itemAt(i)
-                if (!item || item.sectionIndex !== sectionIndex) continue
-                if (item.y < rail.contentY) rail.contentY = item.y
-                else if (item.y + item.height > rail.contentY + rail.height)
-                  rail.contentY = item.y + item.height - rail.height
-                return
-              }
-            }
-
             Column {
               id: railColumn
               width: rail.width
@@ -1339,40 +1379,19 @@ Item {
                 id: railRepeater
                 model: root.railEntries
 
-                Item {
-                  id: railEntry
+                Button {
+                  id: railButton
                   required property var modelData
-                  readonly property int sectionIndex: modelData.kind === "section" ? modelData.index : -1
+                  readonly property bool active: modelData.kind === "home" ? root.isHome : root.currentMain === modelData.title
                   width: railColumn.width
-                  height: modelData.kind === "group" ? groupLabel.implicitHeight + Style.spacing.md
-                                                     : railButton.implicitHeight
-
-                  PanelSectionHeader {
-                    id: groupLabel
-                    visible: railEntry.modelData.kind === "group"
-                    anchors.left: parent.left
-                    anchors.leftMargin: Style.spacing.sm
-                    anchors.bottom: parent.bottom
-                    text: railEntry.modelData.kind === "group" ? railEntry.modelData.title : ""
-                    foreground: root.foreground
-                    fontFamily: root.fontFamily
-                  }
-
-                  Button {
-                    id: railButton
-                    visible: railEntry.modelData.kind === "section"
-                    width: parent.width
-                    text: visible ? root.sections[railEntry.sectionIndex].title : ""
-                    iconText: visible ? root.sections[railEntry.sectionIndex].icon : ""
-                    leftAlign: true
-                    selected: root.sectionIndex === railEntry.sectionIndex
-                    foreground: root.foreground
-                    accent: root.accent
-                    fontFamily: root.fontFamily
-                    onClicked: {
-                      if (railEntry.sectionIndex !== root.sectionIndex) root.moveSection(railEntry.sectionIndex - root.sectionIndex)
-                    }
-                  }
+                  text: modelData.title
+                  iconText: modelData.icon
+                  leftAlign: true
+                  selected: active
+                  foreground: root.foreground
+                  accent: root.accent
+                  fontFamily: root.fontFamily
+                  onClicked: root.goToMain(modelData.title)
                 }
               }
             }
@@ -1408,22 +1427,23 @@ Item {
               onStopped: { pageShift.x = 0; pageShift.y = 0; pageContent.opacity = 1; pageScale.xScale = 1; pageScale.yScale = 1 }
             }
 
+            // The sub tabs of this main tab, and on the right the page reset.
             Item {
               Layout.fillWidth: true
-              Layout.preferredHeight: sectionBlurb.implicitHeight + Style.spacing.md
+              Layout.preferredHeight: Math.max(subTabRow.implicitHeight, sectionReset.implicitHeight)
               visible: !root.isHome
 
-              Text {
-                id: sectionBlurb
+              ButtonGroup {
+                id: subTabRow
                 anchors.left: parent.left
-                anchors.right: sectionReset.left
-                anchors.rightMargin: Style.spacing.lg
                 anchors.verticalCenter: parent.verticalCenter
-                text: root.isShell ? ShellSchema.TABS[root.shellTab].blurb : root.section.blurb
-                color: Qt.darker(root.foreground, 1.55)
-                font.family: root.fontFamily
-                font.pixelSize: Style.font.caption
-                wrapMode: Text.WordWrap
+                options: root.subTabs
+                value: root.currentSub
+                foreground: root.foreground
+                accent: root.accent
+                fontFamily: root.fontFamily
+                focusable: false
+                onChanged: function(v) { root.goToSub(v) }
               }
 
               PanelActionButton {
@@ -1436,6 +1456,24 @@ Item {
                 visible: root.sectionModified && root.section.pane !== "bar" && root.section.pane !== "plugins" && root.section.pane !== "theme" && root.section.pane !== "shuffle" && root.section.pane !== "generate" && root.section.pane !== "desktop"
                 onClicked: root.resetSection()
               }
+            }
+
+            // The pages of this sub tab, when it holds more than one.
+            ButtonGroup {
+              Layout.fillWidth: true
+              visible: root.deepTabs.length > 0
+              options: {
+                var out = []
+                for (var i = 0; i < root.deepTabs.length; i++) out.push({ value: root.deepTabs[i].id, label: root.deepTabs[i].title })
+                return out
+              }
+              value: root.section.id
+              foreground: root.foreground
+              accent: root.accent
+              fontFamily: root.fontFamily
+              fontSize: Style.font.caption
+              focusable: false
+              onChanged: function(v) { root.goToIndex(root.indexOfSection(v)) }
             }
 
             // Sub-tabs, so 35 animation leaves or 134 shell tokens do not
@@ -1549,44 +1587,23 @@ Item {
           }
         }
 
-        PanelSeparator { foreground: root.foreground; Layout.fillWidth: true }
+        PanelSeparator { foreground: root.foreground; Layout.fillWidth: true; visible: footerRow.visible }
 
         // ------------------------------------------------------ footer
+        // Only there when something needs saying, or the keys were asked for.
 
         Item {
+          id: footerRow
           Layout.fillWidth: true
-          Layout.preferredHeight: footerText.implicitHeight + Style.spacing.md
+          Layout.preferredHeight: visible ? footerText.implicitHeight + Style.spacing.md : 0
+          visible: footerText.text !== ""
 
           Text {
             id: footerText
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            text: {
-              if (root.errorText !== "") return root.errorText
-              if (root.statusText !== "") return root.statusText
-              if (root.backupStamp !== "")
-                return "Backed up looknfeel.lua, shell.toml and shell.json as *.lacquer-backup-"
-                  + root.backupStamp
-              if (root.isHome) return homeSection.query !== ""
-                ? "↑↓ choose · Enter open · Backspace edit · Esc clear"
-                : "type to search · ←→ group · ↑↓ section · Enter open · Tab next section · Esc close"
-              if (root.isGenerate) return (root.confirmGenerate ? "g again to generate and apply · Esc cancel" : "w pick wallpaper · f any image · l light/dark · g generate (asks first) · o open aether · Esc close")
-              if (root.isShuffle) return "the shuffle keeps running with Lacquer closed · Tab section · Esc close"
-              // Only the pages that pin a value or carry a default mention Del.
-              if (root.isDesktop && ["fonts", "gtk", "cursor", "sizes"].indexOf(root.section.id) < 0)
-                return "↑↓ group · ←→ choose or step · Enter pick · Tab section · Esc close"
-              if (root.section.id === "nightlight") return "↑↓ group · ←→ choose or step · Enter pick · Tab section · Esc close"
-              if (root.isDesktop) return "↑↓ group · ←→ choose or step a size · Enter pick · Del follow theme / default · Tab section · Esc close"
-              if (root.isTheme) return "←→↑↓ hjkl choose · Enter apply · click a wallpaper to set it · Tab section · Esc close"
-              if (root.isBar) return "◀ ▶ section · ▲ ▼ order · ✕ off the bar · Tab section · Esc close"
-              if (root.isPlugins) return "[ ] pick a plugin, then edit its settings with the mouse · Tab section · Esc close"
-              var hint = root.isCurves
-                ? "drag a handle · P play · Tab section"
-                : "↑↓ kj row · ←→ hl adjust · Space toggle · Backspace reset · Tab section"
-                  + ((root.isShell || root.isAnimations) ? " · [ ] sub-tab" : "")
-              return hint + " · Ctrl+Z undo · Esc close   —   colors stay with your theme"
-            }
+            text: root.footerMessage !== "" ? root.footerMessage : (root.showHints ? root.keyHints : "")
             color: root.errorText !== "" ? Color.urgent : Qt.darker(root.foreground, 1.6)
             font.family: root.fontFamily
             font.pixelSize: Style.font.caption

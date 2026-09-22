@@ -719,6 +719,47 @@ Item {
               }
             }
           }
+
+          // What used to crowd the header: how much is changed, the reset for
+          // all of it, and whether Lacquer itself animates.
+          Row {
+            spacing: Style.spacing.md
+            topPadding: Style.spacing.sm
+
+            Text {
+              anchors.verticalCenter: parent.verticalCenter
+              text: home.app.overrideCount === 0 ? "Following Omarchy's defaults"
+                : home.app.overrideCount + (home.app.overrideCount === 1 ? " setting changed" : " settings changed")
+              color: home.app.overrideCount === 0 ? Qt.darker(home.app.foreground, 1.6) : home.accent
+              font.family: home.app.fontFamily
+              font.pixelSize: Style.font.caption
+            }
+
+            Button {
+              anchors.verticalCenter: parent.verticalCenter
+              visible: home.app.overrideCount > 0
+              text: home.app.confirmResetAll ? "Reset everything?" : "Reset all"
+              bordered: true
+              selected: home.app.confirmResetAll
+              foreground: home.app.confirmResetAll ? Color.urgent : home.app.foreground
+              accent: home.app.accent
+              fontFamily: home.app.fontFamily
+              onClicked: home.app.pressResetAll()
+            }
+
+            Button {
+              anchors.verticalCenter: parent.verticalCenter
+              text: home.app.motion ? "Animated" : "Still"
+              iconText: "󱐋"
+              tooltipText: "Lacquer's own animations  ·  Ctrl+M"
+              bordered: true
+              selected: home.app.motion
+              foreground: home.app.foreground
+              accent: home.app.accent
+              fontFamily: home.app.fontFamily
+              onClicked: home.app.setMotion(!home.app.motion)
+            }
+          }
         }
       }
 
