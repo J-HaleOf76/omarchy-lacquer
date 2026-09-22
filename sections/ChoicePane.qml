@@ -172,7 +172,7 @@ Item {
             id: cardHover
             onHoveredChanged: hovered ? lingerTimer.restart() : (lingerTimer.stop(), groupItem.lingering = false)
           }
-          Timer { id: lingerTimer; interval: 380; onTriggered: groupItem.lingering = true }
+          Timer { id: lingerTimer; interval: 120; onTriggered: groupItem.lingering = true }
 
           // Cards settle in one after another, sinking slowly into place.
           property real appear: 1
@@ -260,7 +260,7 @@ Item {
             height: groupItem.open && !!groupItem.modelData.note ? noteText.implicitHeight + (groupItem.modelData.tech ? 18 : 0) : 0
             visible: height > 0.5
             clip: true
-            Behavior on height { enabled: pane.design.motion; SpringAnimation { spring: 3.2; damping: 0.22; mass: pane.design.mass } }
+            Behavior on height { enabled: pane.design.motion; NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
             Text {
               id: noteText
               width: parent.width
@@ -271,7 +271,7 @@ Item {
               font.pixelSize: 13
               lineHeight: 1.15
               opacity: groupItem.open ? 1 : 0
-              Behavior on opacity { NumberAnimation { duration: 220 } }
+              Behavior on opacity { NumberAnimation { duration: 120 } }
             }
             // The real name, in small print, for anyone following a guide.
             Text {

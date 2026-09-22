@@ -88,7 +88,7 @@ Item {
     Behavior on color { enabled: root.animated; ColorAnimation { duration: 140 } }
   }
 
-  Timer { id: lingerTimer; interval: 380; onTriggered: root.lingering = true }
+  Timer { id: lingerTimer; interval: 120; onTriggered: root.lingering = true }
 
   MouseArea {
     anchors.fill: parent
