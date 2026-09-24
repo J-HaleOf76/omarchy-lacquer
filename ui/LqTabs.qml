@@ -47,6 +47,9 @@ Item {
   function optionLabel(o) { return (o && typeof o === "object" && o.label !== undefined) ? String(o.label) : String(o) }
   function optionIcon(o) { return (o && typeof o === "object" && o.icon) ? String(o.icon) : "" }
   function optionFamily(o) { return (o && typeof o === "object" && o.family) ? String(o.family) : design.serif }
+  // An entry can carry more weight than the rest, and have a rule under it.
+  function optionBig(o) { return !!(o && typeof o === "object" && o.big) }
+  function optionRule(o) { return !!(o && typeof o === "object" && o.rule) }
 
   readonly property int selectedIndex: {
     for (var i = 0; i < options.length; i++) if (optionValue(options[i]) === value) return i
@@ -146,8 +149,21 @@ Item {
       required property int index
       readonly property bool selected: index === tabs.selectedIndex
       readonly property bool hot: mouse.containsMouse || index === tabs.cursorIndex
+      readonly property bool big: tabs.optionBig(modelData)
+      readonly property bool ruled: tabs.optionRule(modelData)
       width: tabs.isRail ? flow.width : content.implicitWidth + tabs.padX * 2
-      height: content.implicitHeight + tabs.padY * 2
+      height: content.implicitHeight + tabs.padY * 2 + (big ? 6 : 0) + (ruled ? 14 : 0)
+
+      // The rule that sets it apart from what follows.
+      Rectangle {
+        visible: entry.ruled
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 6
+        height: 1
+        color: tabs.design.rule
+      }
       onWidthChanged: { Qt.callLater(tabs.measure); Qt.callLater(tabs.placeCells) }
       onXChanged: Qt.callLater(tabs.placeCells)
       onYChanged: Qt.callLater(tabs.placeCells)
@@ -167,7 +183,7 @@ Item {
       Row {
         id: content
         x: tabs.padX
-        anchors.verticalCenter: parent.verticalCenter
+        y: Math.round((parent.height - (entry.ruled ? 14 : 0) - height) / 2)
         spacing: 9
         Text {
           visible: text !== ""
@@ -175,15 +191,15 @@ Item {
           text: tabs.optionIcon(entry.modelData)
           color: label.color
           font.family: tabs.design.mono
-          font.pixelSize: Math.round(tabs.fontSize + 1)
+          font.pixelSize: Math.round(tabs.fontSize + (entry.big ? 4 : 1))
         }
         Text {
           id: label
           anchors.verticalCenter: parent.verticalCenter
           text: tabs.optionLabel(entry.modelData)
           font.family: tabs.optionFamily(entry.modelData)
-          font.pixelSize: Math.round(tabs.fontSize)
-          font.weight: entry.selected ? Font.DemiBold : Font.Normal
+          font.pixelSize: Math.round(tabs.fontSize + (entry.big ? 3 : 0))
+          font.weight: entry.selected || entry.big ? Font.DemiBold : Font.Normal
           color: entry.selected && !tabs.isUnderline ? tabs.design.onAccent
                : entry.selected ? tabs.design.accent
                : entry.hot ? tabs.design.foreground : tabs.design.muted

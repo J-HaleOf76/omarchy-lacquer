@@ -1419,7 +1419,11 @@ Item {
               options: {
                 var out = []
                 for (var i = 0; i < root.railEntries.length; i++)
-                  out.push({ value: root.railEntries[i].title, label: root.railEntries[i].title, icon: root.railEntries[i].icon })
+                  out.push({ value: root.railEntries[i].title, label: root.railEntries[i].title,
+                             icon: root.railEntries[i].icon,
+                             // Home sits above the rest, larger, with a rule under it.
+                             big: root.railEntries[i].kind === "home",
+                             rule: root.railEntries[i].kind === "home" })
                 return out
               }
               value: root.isHome ? "Home" : root.currentMain
