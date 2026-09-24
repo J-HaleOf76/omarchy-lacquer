@@ -1257,9 +1257,19 @@ Item {
           Layout.fillWidth: true
           Layout.preferredHeight: Math.max(titleBlock.implicitHeight, headerActions.implicitHeight)
 
+          LqMark {
+            id: titleMark
+            anchors.left: parent.left
+            anchors.verticalCenter: parent.verticalCenter
+            width: Math.round(Style.font.heading * 1.25)
+            height: width
+            design: root.design
+          }
+
           Text {
             id: titleBlock
-            anchors.left: parent.left
+            anchors.left: titleMark.right
+            anchors.leftMargin: Style.spacing.md
             anchors.verticalCenter: parent.verticalCenter
             text: "Lacquer"
             color: root.foreground

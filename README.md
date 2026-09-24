@@ -1,4 +1,4 @@
-# Omarchy Lacquer
+![Lacquer](docs/media/wordmark.png)
 
 One app for how your Omarchy desktop looks.
 
@@ -610,3 +610,8 @@ https://github.com/bobby-nicholas/omaland. See `LICENSE`.
 
 The Shuffle engine, `ShuffleDeck.js`, `SunTimes.js` and `scan-themes` come from
 **OmaShuffle** (MIT, Deunnis).
+
+The mark is the letter L of **Courier Prime Bold** by Alan Dague-Greene
+(SIL Open Font License), printed twice out of register in the theme's own two
+colours. Its outline is carried in `ui/MarkPath.js`, so no font has to be
+installed for it to draw.
