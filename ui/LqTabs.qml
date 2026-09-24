@@ -78,7 +78,7 @@ Item {
       var it = repeater.itemAt(i)
       if (!it) { out.push(null); continue }
       var p = it.mapToItem(tabs, 0, 0)
-      out.push(Qt.rect(p.x, p.y, it.width, it.height))
+      out.push(Qt.rect(p.x, p.y, it.width, it.cellHeight !== undefined ? it.cellHeight : it.height))
     }
     goo.cells = out
   }
@@ -151,16 +151,18 @@ Item {
       readonly property bool hot: mouse.containsMouse || index === tabs.cursorIndex
       readonly property bool big: tabs.optionBig(modelData)
       readonly property bool ruled: tabs.optionRule(modelData)
+      // The entry itself, and under it the band the rule sits in. The ink
+      // block covers the entry only, so block and rule line up.
+      readonly property real cellHeight: content.implicitHeight + tabs.padY * 2 + (big ? 8 : 0)
+      readonly property real ruleBand: ruled ? 15 : 0
       width: tabs.isRail ? flow.width : content.implicitWidth + tabs.padX * 2
-      height: content.implicitHeight + tabs.padY * 2 + (big ? 6 : 0) + (ruled ? 14 : 0)
+      height: cellHeight + ruleBand
 
-      // The rule that sets it apart from what follows.
       Rectangle {
         visible: entry.ruled
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 6
+        x: 0
+        y: entry.cellHeight + Math.round(entry.ruleBand / 2)
+        width: parent.width
         height: 1
         color: tabs.design.rule
       }
@@ -171,8 +173,10 @@ Item {
 
       // The keyboard cursor: a soft ring, as round as everything else.
       Rectangle {
-        anchors.fill: parent
-        anchors.margins: -2
+        x: -2
+        y: -2
+        width: parent.width + 4
+        height: entry.cellHeight + 4
         visible: index === tabs.cursorIndex
         color: "transparent"
         radius: tabs.design.controlRadius
@@ -183,7 +187,7 @@ Item {
       Row {
         id: content
         x: tabs.padX
-        y: Math.round((parent.height - (entry.ruled ? 14 : 0) - height) / 2)
+        y: Math.round((entry.cellHeight - height) / 2)
         spacing: 9
         Text {
           visible: text !== ""
