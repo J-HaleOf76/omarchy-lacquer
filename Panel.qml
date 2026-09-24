@@ -1394,7 +1394,7 @@ Item {
           // between them.
           Item {
             id: rail
-            Layout.preferredWidth: Style.space(186)
+            Layout.preferredWidth: Style.space(196)
             Layout.fillHeight: true
             function placeMarker() {}
 
@@ -1404,7 +1404,9 @@ Item {
               width: parent.width
               design: root.design
               style: "rail"
-              fontSize: 14
+              fontSize: 15
+              padX: 16
+              padY: 12
               breath: root.breath
               options: {
                 var out = []
@@ -1555,7 +1557,9 @@ Item {
                 width: Math.min(implicitWidth, parent.width - Style.space(48))
                 design: root.design
                 style: "pills"
-                fontSize: 14
+                fontSize: 17
+                padX: 21
+                padY: 12
                 breath: root.breath
                 options: root.subTabs
                 value: root.currentSub

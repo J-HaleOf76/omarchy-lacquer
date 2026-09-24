@@ -39,8 +39,9 @@ Item {
 
   readonly property bool isRail: style === "rail"
   readonly property bool isUnderline: style === "underline"
-  readonly property real padX: isRail ? 14 : isUnderline ? 6 : 14
-  readonly property real padY: isRail ? 9 : isUnderline ? 7 : 7
+  // Overridable, so a row of tabs can be made to carry more weight.
+  property real padX: isRail ? 14 : isUnderline ? 6 : 14
+  property real padY: isRail ? 9 : isUnderline ? 7 : 7
 
   function optionValue(o) { return (o && typeof o === "object") ? String(o.value) : String(o) }
   function optionLabel(o) { return (o && typeof o === "object" && o.label !== undefined) ? String(o.label) : String(o) }
@@ -64,7 +65,7 @@ Item {
     }
     naturalWidth = w + Math.max(0, n - 1) * flow.spacing
   }
-  implicitWidth: isRail ? 176 : naturalWidth
+  implicitWidth: isRail ? 186 : naturalWidth
   implicitHeight: flow.implicitHeight + (isUnderline ? 8 : 0)
 
   // Where each option sits, for the goo to be drawn around.
