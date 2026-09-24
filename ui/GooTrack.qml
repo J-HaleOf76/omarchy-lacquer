@@ -121,6 +121,35 @@ Canvas {
     curveTo(ctx, a0, t + r - k, a0 + r - k, t, a0 + r, t)
   }
 
+  // A block of ink: corners rounded off, every edge bowed out a little, and
+  // the far edge hanging a touch lower, the way ink sits on paper rather than
+  // a rectangle drawn with a ruler.
+  function inkBlock(ctx, a0, a1, t, b) {
+    var len = a1 - a0, thick = b - t
+    var r = Math.max(1, Math.min(5, len / 2.4, thick / 2.4))
+    var bowA = Math.min(1.6, len * 0.02 + 0.4)      // along the ends
+    var bowC = Math.min(1.5, thick * 0.02 + 0.4)    // along the sides
+    var midA = (a0 + a1) / 2, midC = (t + b) / 2
+    var k = r * 0.55
+    // the t side, bowed out
+    moveTo(ctx, a0 + r, t)
+    curveTo(ctx, a0 + len * 0.3, t - bowC, a1 - len * 0.3, t - bowC, a1 - r, t)
+    // corner
+    curveTo(ctx, a1 - r + k, t, a1, t + r - k, a1, t + r)
+    // the far end, bowed out
+    curveTo(ctx, a1 + bowA, t + thick * 0.35, a1 + bowA, b - thick * 0.35, a1, b - r)
+    // corner
+    curveTo(ctx, a1, b - r + k, a1 - r + k, b, a1 - r, b)
+    // the b side, hanging a little
+    curveTo(ctx, a1 - len * 0.3, b + bowC * 1.3, a0 + len * 0.3, b + bowC * 1.3, a0 + r, b)
+    // corner
+    curveTo(ctx, a0 + r - k, b, a0, b - r + k, a0, b - r)
+    // the near end, bowed out
+    curveTo(ctx, a0 - bowA, b - thick * 0.35, a0 - bowA, t + thick * 0.35, a0, t + r)
+    // corner
+    curveTo(ctx, a0, t + r - k, a0 + r - k, t, a0 + r, t)
+  }
+
   // The lines of options: cells that share a cross position form one strand.
   function lines() {
     var out = []
@@ -219,10 +248,12 @@ Canvas {
       ctx.fill()
     }
 
-    // And the selection inside it, in the accent.
+    // And the selection inside it, in the accent: a block of ink, whose edges
+    // bow out a little and whose corners are soft, the way ink sits on paper
+    // rather than a rectangle drawn with a ruler.
     ctx.fillStyle = bulgeColor
     ctx.beginPath()
-    capsule(ctx, lo, hi, tt + 1.5, bb - 1.5)
+    inkBlock(ctx, lo, hi, tt + 1.5, bb - 1.5)
     ctx.fill()
   }
 }
