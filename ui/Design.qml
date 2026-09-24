@@ -4,9 +4,9 @@ import QtQuick
 // point of the app is that everything follows it — but the surfaces, type,
 // corners and the way things move are Lacquer's.
 //
-// "Gloss": each group of settings sits on a raised card with a faint sheen
-// along its top edge, like a coat of lacquer catching the light, and the
-// selected thing is a filled pill in the theme's accent.
+// A lithograph: ink on paper. Flat areas of one ink, hairline rules instead of
+// boxes, a faint grain over the whole sheet, wide margins, and the accent as a
+// second ink for the one thing that is selected.
 QtObject {
   id: design
 
@@ -24,40 +24,60 @@ QtObject {
 
   readonly property bool dark: luminance(background) < 0.5
 
-  // Surfaces step up from the panel's own background towards the text colour.
-  readonly property color surface: mix(background, foreground, dark ? 0.045 : 0.035)
-  readonly property color raised: mix(background, foreground, dark ? 0.075 : 0.055)
-  readonly property color hover: mix(background, foreground, dark ? 0.11 : 0.08)
-  readonly property color hairline: alpha(foreground, dark ? 0.09 : 0.12)
-  readonly property color muted: mix(foreground, background, 0.42)
-  readonly property color faint: mix(foreground, background, 0.62)
-  readonly property color sheen: dark ? Qt.rgba(1, 1, 1, 0.055) : Qt.rgba(1, 1, 1, 0.65)
-  readonly property color shade: dark ? Qt.rgba(0, 0, 0, 0.28) : Qt.rgba(0.2, 0.05, 0.1, 0.08)
+  // Ink on paper. The paper is the theme's background; the first ink is its
+  // text colour, and the accent is the second ink — used only for what is
+  // selected and what you have changed, the way a two-plate print works.
+  readonly property color paper: background
+  readonly property color ink: foreground
 
-  // Text that sits on the accent: whichever of background and foreground
-  // stands further from it.
+  // Hairlines do the work boxes used to do.
+  readonly property color rule: alpha(foreground, dark ? 0.15 : 0.2)
+  readonly property color ruleStrong: alpha(foreground, dark ? 0.3 : 0.38)
+
+  // Faint washes, for the few places something must read as an area rather
+  // than a line.
+  readonly property color surface: alpha(foreground, dark ? 0.05 : 0.045)
+  readonly property color raised: alpha(foreground, dark ? 0.035 : 0.03)
+  readonly property color hover: alpha(foreground, dark ? 0.08 : 0.07)
+  readonly property color hairline: rule
+  readonly property color muted: mix(foreground, background, 0.38)
+  readonly property color faint: mix(foreground, background, 0.6)
+  readonly property color sheen: "transparent"
+  readonly property color shade: "transparent"
+
+  // Text that sits on the accent: whichever of paper and ink stands further
+  // from it.
   readonly property color onAccent: {
     var a = luminance(accent)
     return Math.abs(a - luminance(background)) > Math.abs(a - luminance(foreground)) ? background : foreground
   }
-  readonly property color accentSoft: alpha(accent, dark ? 0.2 : 0.16)
+  readonly property color accentSoft: alpha(accent, dark ? 0.22 : 0.18)
 
-  // Window rounding still nudges how round the cards are.
+  // Printed blocks, not pills: barely rounded, whatever the windows do.
   readonly property real rounding: app ? Math.max(0, Math.min(24, app.windowRounding)) : 8
-  // Goo has no corners: controls are always fully round, and cards are round
-  // enough never to read as boxes — rounder still when the windows are.
-  readonly property real cardRadius: Math.round(16 + rounding * 0.6)
-  readonly property real controlRadius: 999
-  readonly property real pillRadius: 999
+  readonly property real cardRadius: 3
+  readonly property real controlRadius: 3
+  readonly property real pillRadius: 3
 
-  // Words in a sans, numbers and keys in the theme's own mono.
-  readonly property string sans: {
-    var want = ["Adwaita Sans", "Inter", "Noto Sans", "Cantarell", "DejaVu Sans"]
+  // Headings and the names of settings are set in a printed serif; what they
+  // do is explained in a sans, and numbers and keys stay in the theme's mono.
+  readonly property string serif: {
+    var want = ["Source Serif 4", "Noto Serif", "Liberation Serif", "DejaVu Serif"]
     var have = Qt.fontFamilies()
     for (var i = 0; i < want.length; i++) if (have.indexOf(want[i]) >= 0) return want[i]
+    return "serif"
+  }
+  readonly property string sans: {
+    var wantSans = ["Adwaita Sans", "Inter", "Noto Sans", "Cantarell", "DejaVu Sans"]
+    var haveSans = Qt.fontFamilies()
+    for (var j = 0; j < wantSans.length; j++) if (haveSans.indexOf(wantSans[j]) >= 0) return wantSans[j]
     return "sans-serif"
   }
   readonly property string mono: app ? app.monoFamily : "monospace"
+
+  // The text column never runs the full width of the window: a printed page
+  // keeps a margin.
+  readonly property real columnWidth: 680
 
   // Motion. Lacquer moves like something wet: every edge of a moving blob is
   // on its own spring, so it stretches, pinches and wobbles into place. The

@@ -124,9 +124,8 @@ Item {
         Text {
           text: root.leafSpec.label
           color: root.hasCursor ? root.accent : root.foreground
-          font.family: root.fontFamily
-          font.pixelSize: 15
-          font.weight: Font.DemiBold
+          font.family: root.design ? root.design.serif : root.fontFamily
+          font.pixelSize: 16
         }
 
         // Filled pip = this leaf differs from Omarchy's default.

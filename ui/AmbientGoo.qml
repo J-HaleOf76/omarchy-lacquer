@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Effects
 
-// Slow goo behind the page, like a lava lamp: a few soft blobs in the theme's
-// colours drift, meet and merge, and pull apart again.
+// A faint wash of ink behind the page: a few soft shapes in the second ink
+// drift, meet and merge, the way ink spreads into damp paper.
 //
 // The merging is the classic trick, done on the GPU: the blobs are blurred
 // together and then cut back to a crisp edge wherever the blur is thick
@@ -17,7 +17,7 @@ Item {
   // The theme's colours, a few of which tint the blobs.
   property var palette: []
   property bool running: true
-  property real strength: design.dark ? 0.08 : 0.06
+  property real strength: design.dark ? 0.06 : 0.045
 
   property real t: 0
   Timer {
@@ -27,11 +27,8 @@ Item {
     onTriggered: ambient.t += 0.1
   }
 
-  function tint(i) {
-    var p = ambient.palette
-    if (p && p.length > 0) return p[(i * 2 + 1) % p.length]
-    return ambient.design.accent
-  }
+  // One ink, soaked into the paper: a wash rather than a lava lamp.
+  function tint(i) { return ambient.design.accent }
 
   // The blobs, as solid discs. Drawn only through the effects below.
   Item {

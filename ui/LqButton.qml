@@ -1,6 +1,7 @@
 import QtQuick
 
-// An action: a round, flat pill.
+// An action: a printed block with a hairline edge; the accent fills it in
+// when it is the chosen one.
 Item {
   id: button
 
@@ -38,10 +39,10 @@ Item {
   Rectangle {
     id: body
     anchors.fill: parent
-    radius: height / 2
-    color: button.selected ? (button.soft ? button.design.accentSoft : button.design.accent) : button.hot ? button.design.hover : button.design.raised
-    border.width: button.selected && !button.soft ? 0 : 1
-    border.color: button.danger ? "#d0485f" : (button.hasCursor || (button.soft && button.selected)) ? button.design.alpha(button.design.accent, 0.5) : button.design.hairline
+    radius: button.design.controlRadius
+    color: button.selected ? (button.soft ? button.design.accentSoft : button.design.accent) : button.hot ? button.design.hover : "transparent"
+    border.width: 1
+    border.color: button.danger ? "#d0485f" : (button.selected || button.hasCursor) ? button.design.accent : button.design.rule
     Behavior on color { ColorAnimation { duration: 160 } }
   }
 
@@ -63,7 +64,7 @@ Item {
       anchors.verticalCenter: parent.verticalCenter
       text: button.text
       color: button.selected ? (button.soft ? button.design.accent : button.design.onAccent) : button.danger ? "#d0485f" : button.design.foreground
-      font.family: button.design.sans
+      font.family: button.design.serif
       font.pixelSize: button.compact ? 13 : 14
       font.weight: Font.Medium
     }

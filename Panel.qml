@@ -1118,8 +1118,16 @@ Item {
         }
       }
 
-      // The slow goo behind everything. Inset so it stays inside the card's
-      // rounded corners.
+      // The tooth of the paper, over the whole sheet.
+      PaperGrain {
+        anchors.fill: parent
+        anchors.margins: 1
+        z: 60
+        design: root.design
+      }
+
+      // The wash of ink behind everything. Inset so it stays inside the
+      // sheet's corners.
       AmbientGoo {
         anchors.fill: parent
         anchors.margins: card.radius * 0.5

@@ -30,7 +30,7 @@ Item {
   Rectangle {
     id: desk
     anchors.fill: parent
-    radius: 12
+    radius: preview.design.cardRadius
     color: preview.design.surface
     clip: true
     Repeater {
@@ -72,7 +72,7 @@ Item {
           anchors.fill: parent
           anchors.margins: -preview.clamp(preview.value, 0, 40) * 0.2
           anchors.topMargin: 2
-          radius: 8
+          radius: preview.design.cardRadius
           color: "#000000"
           opacity: 0.28
         }
@@ -99,7 +99,7 @@ Item {
       y: 10
       width: preview.width - 44
       height: preview.height - 20
-      radius: 8
+      radius: preview.design.cardRadius
       color: preview.win
       opacity: preview.kind === "opacity" ? preview.clamp(preview.value, 0.1, 1) : preview.kind === "blur" ? 0.55 : 1
       border.width: 1
@@ -140,7 +140,7 @@ Item {
     anchors.centerIn: parent
     width: preview.width * 0.5
     height: preview.height * 0.6
-    radius: 8
+    radius: preview.design.cardRadius
     color: preview.win
     border.width: 1.5
     border.color: preview.design.accent

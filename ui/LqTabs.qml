@@ -46,7 +46,7 @@ Item {
   function optionValue(o) { return (o && typeof o === "object") ? String(o.value) : String(o) }
   function optionLabel(o) { return (o && typeof o === "object" && o.label !== undefined) ? String(o.label) : String(o) }
   function optionIcon(o) { return (o && typeof o === "object" && o.icon) ? String(o.icon) : "" }
-  function optionFamily(o) { return (o && typeof o === "object" && o.family) ? String(o.family) : design.sans }
+  function optionFamily(o) { return (o && typeof o === "object" && o.family) ? String(o.family) : design.serif }
 
   readonly property int selectedIndex: {
     for (var i = 0; i < options.length; i++) if (optionValue(options[i]) === value) return i
@@ -90,13 +90,13 @@ Item {
     mode: tabs.isUnderline ? "line" : "body"
     selected: tabs.selectedIndex
     hovered: tabs.hoveredIndex
-    bodyColor: tabs.isUnderline ? tabs.design.hairline : tabs.design.surface
+    bodyColor: tabs.isUnderline ? tabs.design.rule : tabs.design.surface
     bulgeColor: tabs.design.accent
     animated: tabs.design.motion
     mass: tabs.design.mass
     breath: tabs.breath
     swell: tabs.isRail ? 2 : 3
-    maxRadius: tabs.isRail ? 16 : 999
+    maxRadius: tabs.design.controlRadius
   }
 
   // On the rail, a small drop gathers under the selection once it arrives and
@@ -106,7 +106,7 @@ Item {
     z: 1
     visible: tabs.isRail && tabs.design.motion && tabs.dripEnabled
     color: tabs.design.accent
-    radius: 6
+    radius: 2
     mass: tabs.design.mass * 1.1
     gooiness: 0.5
     opacity: 0
@@ -159,8 +159,8 @@ Item {
         anchors.margins: -2
         visible: index === tabs.cursorIndex
         color: "transparent"
-        radius: height / 2
-        border.width: 1.5
+        radius: tabs.design.controlRadius
+        border.width: 1
         border.color: tabs.design.accent
       }
 

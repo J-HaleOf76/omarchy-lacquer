@@ -142,8 +142,10 @@ Item {
 
     Column {
       id: column
-      width: flick.width - Style.spacing.xxl
-      spacing: 10
+      // A printed page keeps a margin: the column never runs the full width.
+      width: Math.min(flick.width - Style.spacing.xxl * 2, pane.design.columnWidth)
+      x: Math.max(Style.spacing.xxl, (flick.width - width) / 2)
+      spacing: 18
 
       Repeater {
         id: groupRepeater
@@ -166,7 +168,7 @@ Item {
           design: pane.design
           active: groupHasCursor
           width: column.width
-          padding: 16
+          padding: 14
 
           HoverHandler {
             id: cardHover
@@ -211,10 +213,9 @@ Item {
                 id: titleText
                 anchors.verticalCenter: parent.verticalCenter
                 text: groupItem.modelData.title || ""
-                color: groupItem.groupHasCursor ? pane.design.accent : pane.design.foreground
-                font.family: pane.design.sans
-                font.pixelSize: 15
-                font.weight: Font.DemiBold
+                color: groupItem.groupHasCursor ? pane.design.accent : pane.design.ink
+                font.family: pane.design.serif
+                font.pixelSize: 17
                 Behavior on color { ColorAnimation { duration: 180 } }
               }
             }

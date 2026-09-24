@@ -37,38 +37,23 @@ Item {
       required property var modelData
       required property int index
 
-      // The list's own margins leave room for each group's card to reach
-      // past the rows on both sides.
-      width: rowList.width - rowList.leftMargin - rowList.rightMargin - Style.spacing.md
+      width: Math.min(rowList.width - rowList.leftMargin - rowList.rightMargin, app.design.columnWidth)
+      x: Math.max(0, (rowList.width - rowList.leftMargin - rowList.rightMargin - width) / 2)
 
-      // Each group of rows reads as one card: every row draws its own slice
-      // of it, the first with the top corners, the last
-      // with the bottom corners, and a hairline between the rest.
+      // Rows sit on the page, parted by hairlines; a group's first row has
+      // the heavier rule above it that the heading sits on.
       readonly property bool isRow: modelData.kind !== "header"
       readonly property var prevEntry: index > 0 ? app.rows[index - 1] : null
-      readonly property var nextEntry: index < app.rows.length - 1 ? app.rows[index + 1] : null
       readonly property bool firstInCard: isRow && (!prevEntry || prevEntry.kind === "header")
-      readonly property bool lastInCard: isRow && (!nextEntry || nextEntry.kind === "header")
 
       Rectangle {
         z: -1
-        visible: rowLoader.isRow
-        x: -14
-        width: parent.width + 28
-        height: parent.height
-        color: app.design.raised
-        topLeftRadius: rowLoader.firstInCard ? app.design.cardRadius : 0
-        topRightRadius: rowLoader.firstInCard ? app.design.cardRadius : 0
-        bottomLeftRadius: rowLoader.lastInCard ? app.design.cardRadius : 0
-        bottomRightRadius: rowLoader.lastInCard ? app.design.cardRadius : 0
-
-        Rectangle {
-          visible: !rowLoader.firstInCard
-          x: 16
-          width: parent.width - 32
-          height: 1
-          color: app.design.hairline
-        }
+        visible: rowLoader.isRow && !rowLoader.firstInCard
+        anchors.top: parent.top
+        x: 0
+        width: parent.width
+        height: 1
+        color: app.design.rule
       }
 
       // Rows of a page just switched to cascade in; rows scrolled into view
@@ -93,19 +78,27 @@ Item {
       Component {
         id: headerRow
         Item {
-          implicitHeight: headerText.implicitHeight + (index === 0 ? 6 : 26)
+          implicitHeight: headerText.implicitHeight + (index === 0 ? 10 : 34)
+          Rectangle {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: headerText.top
+            anchors.bottomMargin: 6
+            height: 1
+            color: app.design.ruleStrong
+            visible: index > 0
+          }
           Text {
             id: headerText
             anchors.left: parent.left
-            anchors.leftMargin: -10
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 7
             text: String(modelData.title || "").toUpperCase()
             color: app.design.muted
-            font.family: app.fontFamily
+            font.family: app.design.serif
             font.pixelSize: 11
             font.weight: Font.DemiBold
-            font.letterSpacing: 1.1
+            font.letterSpacing: 1.6
           }
         }
       }

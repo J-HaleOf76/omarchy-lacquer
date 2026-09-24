@@ -1,6 +1,7 @@
 import QtQuick
 
-// A small uppercase heading over a group of cards.
+// A small heading over a group, set in the serif in small capitals with the
+// letters spaced out, the way a printed page labels a section.
 Text {
   id: label
 
@@ -10,9 +11,9 @@ Text {
   property string fontFamily: ""
 
   color: design.muted
-  font.family: design.sans
+  font.family: design.serif
   font.pixelSize: 11
   font.weight: Font.DemiBold
-  font.letterSpacing: 1.1
+  font.letterSpacing: 1.6
   font.capitalization: Font.AllUppercase
 }

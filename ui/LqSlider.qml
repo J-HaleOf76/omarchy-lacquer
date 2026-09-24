@@ -1,9 +1,8 @@
 import QtQuick
 
-// A number you can drag, drawn as goo: the filled part and the knob are one
-// body, the knob a swelling at the end of the fill, joined by a neck. While
-// it is dragged the knob swells and the fill ripples a little behind it; let
-// go, it settles slowly.
+// A number you can drag: a hairline rule with the filled part inked in and a
+// small slug of ink to take hold of. While it is dragged the slug grows a
+// little and the ink ripples behind it; let go, it settles.
 //
 // `value` is where it is; dragging shows `shown` and emits `moved` for pages
 // that preview live, and `committed` once on release, measured from where the
@@ -86,57 +85,38 @@ Item {
     onPaint: {
       var ctx = getContext("2d")
       ctx.reset()
-      var ox = 12, cy = height / 2
+      var ox = 12, cy = Math.round(height / 2)
       var w = slider.trackWidth
-      var th = 8
-      function capsule(a0, a1, t, b) {
-        var r = (b - t) / 2, k = r * 0.5523, m = (t + b) / 2
-        ctx.moveTo(a0 + r, t); ctx.lineTo(a1 - r, t)
-        ctx.bezierCurveTo(a1 - r + k, t, a1, m - k, a1, m)
-        ctx.bezierCurveTo(a1, m + k, a1 - r + k, b, a1 - r, b)
-        ctx.lineTo(a0 + r, b)
-        ctx.bezierCurveTo(a0 + r - k, b, a0, m + k, a0, m)
-        ctx.bezierCurveTo(a0, m - k, a0 + r - k, t, a0 + r, t)
-      }
-      // The body of the track.
-      ctx.fillStyle = slider.design.surface
-      ctx.beginPath(); capsule(ox, ox + w, cy - th / 2, cy + th / 2); ctx.fill()
-
       var kx = ox + goo.kx
-      var R = slider.knobR + goo.swell * 1.5
-      // The fill, rippling along its top while it moves.
-      ctx.fillStyle = slider.design.alpha(slider.design.accent, 0.5)
-      ctx.beginPath()
-      var t = cy - th / 2, b = cy + th / 2
-      ctx.moveTo(ox + th / 2, t)
-      for (var x = ox + th / 2; x < kx; x += 4) {
-        var fade = Math.max(0, 1 - (kx - x) / 90)
-        ctx.lineTo(x, t - Math.sin(x / 5 + goo.phase) * goo.ripple * 0.8 * fade)
-      }
-      ctx.lineTo(kx, t)
-      ctx.lineTo(kx, b)
-      ctx.lineTo(ox + th / 2, b)
-      ctx.arc(ox + th / 2, cy, th / 2, Math.PI / 2, Math.PI * 1.5)
-      ctx.fill()
+      var R = slider.knobR + goo.swell * 1.2
 
-      // The knob: a swelling of the fill, with a neck running back into it,
-      // sitting a touch low as if it sags.
+      // The track: a hairline ruled across the page.
+      ctx.fillStyle = slider.design.rule
+      ctx.fillRect(ox, cy - 0.5, w, 1)
+
+      // The part that is filled in, in the second ink, rippling a little
+      // behind the slug while it is dragged.
       ctx.fillStyle = slider.design.accent
-      var ky = cy + 0.8
       ctx.beginPath()
-      ctx.moveTo(kx - R - 7, t)
-      ctx.bezierCurveTo(kx - R - 2, t, kx - R * 0.8, ky - R * 0.8, kx, ky - R)
-      ctx.bezierCurveTo(kx + R * 0.56, ky - R, kx + R, ky - R * 0.56, kx + R, ky)
-      ctx.bezierCurveTo(kx + R, ky + R * 0.56, kx + R * 0.56, ky + R, kx, ky + R)
-      ctx.bezierCurveTo(kx - R * 0.8, ky + R * 0.8, kx - R - 2, b, kx - R - 7, b)
+      ctx.moveTo(ox, cy - 1.5)
+      for (var x = ox; x < kx; x += 4) {
+        var fade = Math.max(0, 1 - (kx - x) / 90)
+        ctx.lineTo(x, cy - 1.5 - Math.sin(x / 5 + goo.phase) * goo.ripple * 0.8 * fade)
+      }
+      ctx.lineTo(kx, cy - 1.5)
+      ctx.lineTo(kx, cy + 1.5)
+      ctx.lineTo(ox, cy + 1.5)
       ctx.closePath()
       ctx.fill()
 
-      // The keyboard cursor.
+      // The slug: a small block of ink you can take hold of.
+      var hw = Math.max(3, R * 0.42), hh = R
+      ctx.fillRect(Math.round(kx - hw), Math.round(cy - hh), Math.round(hw * 2), Math.round(hh * 2))
+
       if (slider.hasCursor) {
         ctx.strokeStyle = slider.design.accent
-        ctx.lineWidth = 1.5
-        ctx.beginPath(); ctx.arc(kx, ky, R + 4, 0, Math.PI * 2); ctx.stroke()
+        ctx.lineWidth = 1
+        ctx.strokeRect(Math.round(kx - hw) - 3.5, Math.round(cy - hh) - 3.5, Math.round(hw * 2) + 7, Math.round(hh * 2) + 7)
       }
     }
 

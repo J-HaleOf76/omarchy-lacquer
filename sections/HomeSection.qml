@@ -580,8 +580,8 @@ Item {
             width: parent.width
             elide: Text.ElideRight
             text: home.moveMs > 0
-              ? "A live picture of your windows, moving the way yours do"
-              : "A live picture of your windows (animations are off)"
+              ? "A live picture of your windows"
+              : "A live picture of your windows · still"
             color: Qt.darker(home.app.foreground, 1.6)
             font.family: home.app.fontFamily
             font.pixelSize: Style.font.caption
@@ -614,7 +614,7 @@ Item {
             elide: Text.ElideRight
             text: home.themeInfo.display || "Lacquer"
             color: home.app.foreground
-            font.family: home.app.fontFamily
+            font.family: home.app.design.serif
             font.pixelSize: Style.font.display
             font.bold: true
           }
@@ -875,146 +875,131 @@ Item {
       }
 
       // ------------------------------------------------------------ groups
-      // Masonry: groups are dealt across the columns in order and each column
-      // stacks tightly, so a short card never leaves a hole beside a tall one.
-      Row {
-        id: grid
+      // The contents page: every group of settings as a ruled list, its name
+      // in small capitals above it and what each one is set to on the right.
+      Column {
+        id: contents
         visible: home.query === ""
         width: parent.width
-        readonly property int columns: width > Style.space(560) ? 3 : 2
-        spacing: Style.spacing.lg
-
-        Repeater {
-          model: grid.columns
-
-          Column {
-            id: gridColumn
-            required property int index
-            readonly property int column: index
-            width: (grid.width - grid.spacing * (grid.columns - 1)) / grid.columns
-            spacing: Style.spacing.lg
+        spacing: 26
 
         Repeater {
           model: home.groups
 
-          Rectangle {
-            id: card
+          Column {
+            id: groupBlock
             required property var modelData
             required property int index
-            visible: index % grid.columns === gridColumn.column
-            // Every column instantiates every group and shows only its own,
-            // so only the visible copy is registered for scrolling to.
-            Component.onCompleted: if (visible) home.cards[index] = card
-            onVisibleChanged: if (visible) home.cards[index] = card
-            width: gridColumn.width
-            height: cardColumn.implicitHeight + Style.spacing.lg * 2
-            radius: Math.max(4, (app.design.cardRadius * 0.75))
-            color: Qt.rgba(home.app.background.r, home.app.background.g, home.app.background.b, 0.82)
-            border.width: 1
-            border.color: Qt.rgba(home.app.foreground.r, home.app.foreground.g, home.app.foreground.b, 0.16)
-            readonly property color tint: home.palette[index % home.palette.length]
+            width: contents.width
+            spacing: 0
+            Component.onCompleted: home.cards[index] = groupBlock
 
-            // Cards rise in one after another each time Home opens.
             property real appear: 1
             opacity: appear
-            transform: Translate { y: (1 - card.appear) * Style.space(14) }
+            transform: Translate { y: (1 - groupBlock.appear) * 8 }
             Connections {
               target: home
-              function onEntranceChanged() { if (!home.app.motion) return; card.appear = 0; rise.restart() }
+              function onEntranceChanged() {
+                if (!home.app.motion) return
+                groupBlock.appear = 0
+                rise.restart()
+              }
             }
             SequentialAnimation {
               id: rise
-              PauseAnimation { duration: 60 + card.index * 70 }
-              NumberAnimation { target: card; property: "appear"; to: 1; duration: 420; easing.type: Easing.OutCubic }
+              PauseAnimation { duration: 40 + groupBlock.index * 50 }
+              NumberAnimation { target: groupBlock; property: "appear"; to: 1; duration: 320; easing.type: Easing.OutCubic }
             }
 
-            Rectangle {
-              x: Style.spacing.lg
-              y: 0
-              width: Style.space(28)
-              height: Math.max(2, Style.space(3))
-              radius: height / 2
-              color: card.tint
+            Rectangle { width: parent.width; height: 1; color: home.app.design.ruleStrong }
+
+            Text {
+              text: groupBlock.modelData.title
+              topPadding: 9
+              bottomPadding: 7
+              color: home.app.design.muted
+              font.family: home.app.design.serif
+              font.pixelSize: 11
+              font.weight: Font.DemiBold
+              font.letterSpacing: 1.6
+              font.capitalization: Font.AllUppercase
             }
 
-            Column {
-              id: cardColumn
-              x: Style.spacing.lg
-              y: Style.spacing.lg
-              width: card.width - Style.spacing.lg * 2
-              spacing: Style.spacing.xs
+            Repeater {
+              model: groupBlock.modelData.entries
 
-              Text {
-                text: card.modelData.title.toUpperCase()
-                color: Qt.darker(home.app.foreground, 1.3)
-                font.family: home.app.fontFamily
-                font.pixelSize: Style.font.caption
-                font.bold: true
-                font.letterSpacing: 1.1
-                bottomPadding: Style.spacing.xs
-              }
+              Item {
+                id: entry
+                required property var modelData
+                readonly property int flat: home.tileIndex(modelData.id)
+                readonly property bool onIt: home.query === "" && home.cursorAt === flat
+                width: groupBlock.width
+                height: Math.max(30, entryTitle.implicitHeight + 12)
 
-              Repeater {
-                model: card.modelData.entries
-                CursorSurface {
-                  id: tile
-                  required property var modelData
-                  readonly property int flat: home.tileIndex(modelData.id)
-                  width: cardColumn.width
-                  height: tileColumn.implicitHeight + Style.spacing.sm * 2
-                  radius: Math.max(3, (app.design.cardRadius * 0.75) - 2)
-                  hasCursor: home.query === "" && home.cursorAt === flat
-                  foreground: home.app.foreground
-                  accent: home.accent
+                Rectangle {
+                  anchors.fill: parent
+                  anchors.leftMargin: -8
+                  anchors.rightMargin: -8
+                  radius: home.app.design.controlRadius
+                  color: entry.onIt ? home.app.design.hover : "transparent"
+                }
 
-                  Text {
-                    id: tileIcon
-                    x: Style.spacing.sm
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: Style.space(20)
-                    text: tile.modelData.icon
-                    color: tile.hasCursor ? home.accent : card.tint
-                    font.family: home.app.fontFamily
-                    font.pixelSize: Style.font.subtitle
-                    scale: tile.hasCursor ? 1.18 : 1
-                    Behavior on scale { enabled: home.app.motion; NumberAnimation { duration: 160; easing.type: Easing.OutBack } }
-                  }
-                  Column {
-                    id: tileColumn
-                    anchors.left: tileIcon.right
-                    anchors.leftMargin: Style.spacing.xs
-                    anchors.right: parent.right
-                    anchors.rightMargin: Style.spacing.sm
-                    anchors.verticalCenter: parent.verticalCenter
-                    Text {
-                      width: parent.width
-                      elide: Text.ElideRight
-                      text: tile.modelData.title
-                      color: home.app.foreground
-                      font.family: home.app.fontFamily
-                      font.pixelSize: Style.font.body
-                    }
-                    Text {
-                      width: parent.width
-                      elide: Text.ElideRight
-                      text: home.summaryFor(tile.modelData.id)
-                      color: Qt.darker(home.app.foreground, 1.6)
-                      font.family: home.app.fontFamily
-                      font.pixelSize: Style.font.caption
-                    }
-                  }
-                  MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onPositionChanged: function(mouse) { if (home.app.pointerGate.moved(tile, mouse)) home.cursorAt = tile.flat }
-                    onClicked: home.app.showSectionById(tile.modelData.id)
-                  }
+                // The second ink, marking the line you are on.
+                Rectangle {
+                  x: -14
+                  y: 6
+                  width: 2
+                  height: parent.height - 12
+                  color: home.accent
+                  visible: entry.onIt
+                }
+
+                Text {
+                  id: entryIcon
+                  anchors.verticalCenter: parent.verticalCenter
+                  width: Style.space(22)
+                  text: entry.modelData.icon
+                  color: entry.onIt ? home.accent : home.app.design.muted
+                  font.family: home.app.fontFamily
+                  font.pixelSize: Style.font.body
+                }
+
+                Text {
+                  id: entryTitle
+                  anchors.left: entryIcon.right
+                  anchors.verticalCenter: parent.verticalCenter
+                  width: Math.round(parent.width * 0.42)
+                  elide: Text.ElideRight
+                  text: entry.modelData.title
+                  color: entry.onIt ? home.accent : home.app.design.ink
+                  font.family: home.app.design.serif
+                  font.pixelSize: 15
+                }
+
+                Text {
+                  anchors.right: parent.right
+                  anchors.left: entryTitle.right
+                  anchors.leftMargin: Style.spacing.md
+                  anchors.verticalCenter: parent.verticalCenter
+                  horizontalAlignment: Text.AlignRight
+                  elide: Text.ElideRight
+                  text: home.summaryFor(entry.modelData.id)
+                  color: home.app.design.faint
+                  font.family: home.app.design.sans
+                  font.pixelSize: 13
+                }
+
+                MouseArea {
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onPositionChanged: function(mouse) { if (home.app.pointerGate.moved(entry, mouse)) home.cursorAt = entry.flat }
+                  onClicked: home.app.showSectionById(entry.modelData.id)
                 }
               }
             }
-          }
-        }
+
+            Rectangle { width: parent.width; height: 1; color: home.app.design.rule }
           }
         }
       }

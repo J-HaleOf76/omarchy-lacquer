@@ -1,7 +1,7 @@
 import QtQuick
 
-// On or off. The knob is a drop of goo: it stretches across the track as it
-// goes and wobbles when it lands.
+// On or off: an ink block that slides across a ruled track, spreading a
+// little as it goes.
 Item {
   id: sw
 
@@ -19,15 +19,15 @@ Item {
   implicitHeight: 24
 
   readonly property real knob: height - 8
-  readonly property real trackRadius: height / 2
+  readonly property real trackRadius: design.controlRadius
 
   Rectangle {
     id: track
     anchors.fill: parent
     radius: sw.trackRadius
-    color: sw.checked ? sw.design.accent : sw.design.surface
-    border.width: sw.checked ? 0 : 1
-    border.color: sw.design.hairline
+    color: sw.checked ? sw.design.accent : "transparent"
+    border.width: 1
+    border.color: sw.checked ? sw.design.accent : sw.design.rule
     Behavior on color { ColorAnimation { duration: 220 } }
   }
 
@@ -46,7 +46,7 @@ Item {
     GooBlob {
       pad: 10
       color: sw.checked ? sw.design.onAccent : sw.design.muted
-      radius: sw.knob / 2
+      radius: sw.design.controlRadius
       // A little goo as it slides across, none at rest.
       gooiness: 0.2
       animated: sw.design.motion
