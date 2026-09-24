@@ -1409,12 +1409,15 @@ Item {
             LqTabs {
               id: railTabs
               z: 2
+              // Sits up close under the title: the panel's own gap above the
+              // body is enough space on its own.
+              y: -10
               width: parent.width
               design: root.design
               style: "rail"
               fontSize: 15
               padX: 16
-              padY: 12
+              padY: 9
               breath: root.breath
               options: {
                 var out = []

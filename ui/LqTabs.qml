@@ -153,7 +153,7 @@ Item {
       readonly property bool ruled: tabs.optionRule(modelData)
       // The entry itself, and under it the band the rule sits in. The ink
       // block covers the entry only, so block and rule line up.
-      readonly property real cellHeight: content.implicitHeight + tabs.padY * 2 + (big ? 8 : 0)
+      readonly property real cellHeight: content.implicitHeight + tabs.padY * 2 + (big ? 2 : 0)
       readonly property real ruleBand: ruled ? 15 : 0
       width: tabs.isRail ? flow.width : content.implicitWidth + tabs.padX * 2
       height: cellHeight + ruleBand
