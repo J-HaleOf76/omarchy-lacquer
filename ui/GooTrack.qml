@@ -191,14 +191,14 @@ Canvas {
     var s = 1 + breath * 0.025
 
     if (mode === "line") {
-      // A drop hanging from the strand under the selection: wide where it
-      // joins, heavy and round at the bottom.
+      // The strand thickens under the selected word and thins away at both
+      // ends — an underline with some weight in it, not a drop hanging off.
       ctx.fillStyle = bulgeColor
       ctx.beginPath()
       var base = c1 - 3
-      var w = (hi - lo) * 0.46 * s
+      var w = (hi - lo) * 0.78 * s
       var mid = (lo + hi) / 2
-      var drop = 6.5 * s
+      var drop = 3.2 * s
       moveTo(ctx, mid - w / 2 - 10, base)
       curveTo(ctx, mid - w / 2 - 3, base, mid - w / 2, base + 1, mid - w / 2, base + drop * 0.5)
       curveTo(ctx, mid - w / 2, base + drop * 1.25, mid + w / 2, base + drop * 1.25, mid + w / 2, base + drop * 0.5)

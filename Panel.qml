@@ -1783,7 +1783,8 @@ Item {
               }
             }
 
-            PanelSeparator { foreground: root.foreground; Layout.fillWidth: true }
+            // No rule under the tabs: the page tabs draw their own strand,
+            // and every group on the page carries one of its own.
 
             // ------------------------------------------------ rows
 

@@ -166,6 +166,7 @@ Item {
           readonly property bool open: groupHasCursor || lingering || modelData.noteAlways === true
 
           design: pane.design
+          ruled: index > 0
           active: groupHasCursor
           width: column.width
           padding: 14
