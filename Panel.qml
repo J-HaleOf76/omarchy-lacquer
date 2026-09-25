@@ -814,6 +814,7 @@ Item {
       curves: StyleLua.cloneCurveMap(hypr.curves),
       shell: toml.shellUserText,
       opaque: hypr.opaqueWindows,
+      desk: hypr.deskColour,
       borders: bordersStore.clone(bordersStore.spec),
       rules: rulesStore.rules.slice()
     }
@@ -824,6 +825,7 @@ Item {
     hypr.leaves = StyleLua.cloneLeafMap(state.leaves)
     hypr.curves = StyleLua.cloneCurveMap(state.curves)
     if (state.opaque !== undefined) hypr.opaqueWindows = state.opaque === true
+    if (state.desk !== undefined) hypr.deskColour = state.desk === true
     if (state.borders !== undefined) bordersStore.restoreSpec(state.borders)
     if (state.rules !== undefined) rulesStore.restoreRules(state.rules)
     if (state.shell !== undefined) toml.writeShell(state.shell)
