@@ -26,6 +26,7 @@ Item {
 
   function rescanAll() {
     if (kind === "motion" || kind === "borders") return
+    if (kind === "looks") { section.app.looks.rescan(); return }
     if (kind === "monitors") { section.app.monitors.rescan(); return }
     if (kind === "rules") { section.app.rules.rescan(); return }
     if (kind === "launcher") { section.app.launcher.rescan(); return }
@@ -92,6 +93,60 @@ Item {
       pick: function(v) { section.store.setUiFont(v, section.store.uiSize) }
     }
   ].concat(section.renderGroups)
+
+  // ------------------------------------------------------------------- looks
+  //
+  // A whole set of settings under one name. Saving takes what is on the screen
+  // now; putting one on writes the lot back, with a "Just before" kept so
+  // there is always one step back.
+
+  readonly property var lk: section.app.looks
+
+  readonly property var lookGroups: [
+    {
+      id: "look-save", kind: "text", title: "Save what you have now",
+      tech: "~/.local/state/omarchy/io.github.deunnis.lacquer/looks.json",
+      noteAlways: true,
+      note: "A look holds the theme, the whole window block — spacing, borders, corners, effects and motion — the bar and "
+          + "menu style, your fonts and text size, the pointer, and how text is drawn. It leaves out window rules, "
+          + "screens and launcher entries, which describe this machine rather than a look.",
+      placeholder: "Name it, then press Enter",
+      value: "",
+      commit: function(v) { section.lk.save(v) }
+    }
+  ].concat(section.lk.looks.length === 0 ? [] : [
+    {
+      id: "look-wear", kind: "chips", title: "Put one on",
+      note: "Everything goes back the way it was when you saved it. Whatever you had before is kept as \u201cJust before\u201d, "
+          + "so one more click undoes it.",
+      current: section.lk.current,
+      options: section.lk.looks.map(function(l) {
+        return { value: l.slug, label: l.name + (l.theme ? "  \u00b7  " + l.theme : "") }
+      }),
+      pick: function(v) { section.lk.apply(v) }
+    },
+    {
+      id: "look-remove", kind: "chips", title: "Remove one",
+      note: "Press a name twice to remove it. Nothing else changes.",
+      current: "",
+      options: section.lk.looks.map(function(l) {
+        return { value: l.slug, label: section.lk.confirmRemove === l.slug ? "Remove " + l.name + "?" : l.name }
+      }),
+      pick: function(v) {
+        if (section.lk.confirmRemove === v) section.lk.remove(v)
+        else section.lk.confirmRemove = v
+      }
+    }
+  ]).concat([
+    {
+      id: "look-file", kind: "chips", title: "Take them with you",
+      note: "Writing them out puts every saved look in ~/lacquer-looks.json, one file you can copy to another machine or "
+          + "keep with your dotfiles. Reading one in adds what is in it to the looks you already have.",
+      current: "",
+      options: [{ value: "out", label: "Write them to a file" }, { value: "in", label: "Read a file in\u2026" }],
+      pick: function(v) { if (v === "out") section.lk.exportAll(); else section.lk.pickFile() }
+    }
+  ])
 
   // ------------------------------------------------------------ how text is drawn
   //
@@ -1271,6 +1326,7 @@ Item {
       : section.kind === "motion" ? section.motionGroups
       : section.kind === "borders" ? section.borderGroups
       : section.kind === "sizes" ? section.sizeGroups
+      : section.kind === "looks" ? section.lookGroups
       : section.kind === "monitors" ? section.monitorGroups
       : section.kind === "rules" ? section.ruleGroups
       : section.kind === "launcher" ? section.launcherGroups
@@ -1286,6 +1342,7 @@ Item {
   Text {
     anchors.centerIn: parent
     visible: section.kind === "night" ? !section.ns
+      : section.kind === "looks" ? !section.app.looks.loaded
       : section.kind === "sizes" ? !section.d
       : section.kind === "monitors" ? !section.app.monitors.scanned
       : section.kind === "frame" ? !section.app.companion.probed

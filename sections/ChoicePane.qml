@@ -88,6 +88,8 @@ Item {
     if (!g) return
     // A stray Enter should never throw away a size someone dialled in.
     if (g.kind === "stepper") return
+    // A line of text is typed into, not picked from: Enter puts the caret in it.
+    if (g.kind === "text") { focusText(pane.cursorGroup); return }
     var opts = optionsOf(g)
     var o = opts[pane.cursorOption]
     if (o && g.pick) g.pick(o.value)
@@ -102,6 +104,11 @@ Item {
   function focusGroupTitle(title) {
     pane.wantTitle = String(title || "")
     return honourWanted()
+  }
+
+  function focusText(index) {
+    var item = groupRepeater.itemAt(index)
+    if (item && item.textField) item.textField.forceActiveFocus()
   }
 
   function honourWanted() {
@@ -181,6 +188,8 @@ Item {
           design: pane.design
           ruled: index > 0
           active: groupHasCursor
+          // So Enter on this group can put the caret in the field.
+          property alias textField: groupTextField
           width: column.width
           padding: 14
 
@@ -580,15 +589,21 @@ Item {
           // A line of text a group owns: the value comes from the group, and
           // Enter (or moving focus away) commits what was typed.
           TextField {
+            id: groupTextField
             visible: groupItem.modelData.kind === "text"
             width: Style.space(320)
             foreground: pane.app.foreground
             accent: pane.app.accent
             placeholderText: groupItem.modelData.placeholder || ""
             text: groupItem.modelData.value || ""
+            // A field can lose focus because the page under it is being taken
+            // down — a look being put on rebuilds every group — and the
+            // handler then runs with nothing around it left to talk to.
             onEditingFinished: {
-              if (groupItem.modelData.commit) groupItem.modelData.commit(text)
-              pane.app.focusPanel()
+              if (typeof groupItem === "undefined" || !groupItem) return
+              var g = groupItem.modelData
+              if (g && g.commit && text !== String(g.value || "")) g.commit(text)
+              if (typeof pane !== "undefined" && pane && pane.app) pane.app.focusPanel()
             }
           }
 

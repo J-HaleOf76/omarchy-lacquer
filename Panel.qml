@@ -44,6 +44,7 @@ Item {
   AetherStore { id: aetherStore; app: root }
   DesktopStore { id: desktopStore; app: root }
   FontRenderStore { id: fontRenderStore; app: root }
+  LooksStore { id: looksStore; app: root }
   NightStore { id: nightStore; app: root }
   ScreensStore { id: screensStore; app: root }
   MenuLookStore { id: menuLookStore; app: root; Component.onCompleted: rescan() }
@@ -90,6 +91,7 @@ Item {
   readonly property alias aether: aetherStore
   readonly property alias desktop: desktopStore
   readonly property alias fontRender: fontRenderStore
+  readonly property alias looks: looksStore
   readonly property alias night: nightStore
   readonly property alias screens: screensStore
   readonly property alias menuLook: menuLookStore
@@ -334,7 +336,7 @@ Item {
     if (root.isGenerate) return (root.confirmGenerate ? "g again to generate and apply · Esc cancel" : "w pick a wallpaper · f any picture · l light or dark · g make the theme (asks first) · o open the theme maker · Esc close")
     if (root.isShuffle) return "the shuffle keeps working while Lacquer is closed · Tab next page · Esc close"
     // Only the pages that pin a value or carry a default mention Del.
-    if (root.isDesktop && ["fonts", "gtk", "cursor", "sizes"].indexOf(root.section.id) < 0)
+    if (root.isDesktop && ["fonts", "gtk", "cursor", "sizes", "looks"].indexOf(root.section.id) < 0)
       return "↑↓ group · ←→ choose or step · Enter pick · Tab next page · Esc close"
     if (root.section.id === "nightlight") return "↑↓ group · ←→ choose or step · Enter pick · Tab next page · Esc close"
     if (root.isDesktop) return "↑↓ group · ←→ choose or step a size · Enter pick · Del back to normal · Tab next page · Esc close"
@@ -402,6 +404,8 @@ Item {
         blurb: "How big text is everywhere, and the fonts used for apps and the terminal." },
       { id: "gtk", group: "Desktop", pane: "desktop", kind: "gtk", icon: "󰉼", title: "Light or dark & icons",
         blurb: "Whether apps are light or dark, how they are styled, and which icons they use. A choice here stays when you change theme." },
+      { id: "looks", group: "Desktop", pane: "desktop", kind: "looks", icon: "󰃨", title: "Saved looks",
+        blurb: "The whole set of settings under one name, to put back whenever you like — and to carry to another machine." },
       { id: "cursor", group: "Desktop", pane: "desktop", kind: "cursor", icon: "󰇀", title: "Mouse pointer",
         blurb: "The look and size of the mouse pointer, and how it behaves while you type or switch desktop." },
       { id: "nightlight", group: "Desktop", pane: "desktop", kind: "night", icon: "󰖔", title: "Night light",
@@ -470,6 +474,7 @@ Item {
   // [page id, main tab, sub tab], in the order they are shown.
   readonly property var pagePlaces: [
     ["theme", "Colours & wallpaper", "Themes"], ["shuffle", "Colours & wallpaper", "Shuffle"], ["generate", "Colours & wallpaper", "Make a theme"],
+    ["looks", "Colours & wallpaper", "Saved looks"],
     ["fonts", "Screen & text", "Text"], ["sizes", "Screen & text", "Text"],
     ["gtk", "Screen & text", "Look of apps"],
     ["cursor", "Screen & text", "Mouse pointer"],
@@ -767,6 +772,9 @@ Item {
     // A pick from the wallpaper picker that Generate opened.
     if (payload && typeof payload.aetherSource === "string" && root.isImagePath(payload.aetherSource))
       aetherStore.setSource(payload.aetherSource)
+    // A looks file picked from Saved looks.
+    if (payload && typeof payload.looksFile === "string" && payload.looksFile !== "")
+      looksStore.importFrom(payload.looksFile)
     // What the font/cursor helper did, in one line (see DesktopStore.add).
     if (payload && typeof payload.status === "string" && payload.status !== "")
       root.statusText = payload.status.replace(/[\x00-\x1f\x7f]/g, " ").slice(0, 200)
