@@ -149,7 +149,8 @@ def main(argv):
         actions.append(("Take Lacquer's colours back out of " + ", ".join(themed), None, "tools"))
     if has_marker(HOOK, "# X-Lacquer-Managed=true"):
         actions.append(("Delete the theme-set hook " + HOOK.replace(HOME, "~"), HOOK, None))
-    if has_marker(FONTRENDER, "Written by Lacquer"):
+    # The whole line, as FontRenderStore writes it: has_marker anchors it.
+    if has_marker(FONTRENDER, "<!-- Written by Lacquer. Removing this file undoes everything in it. -->"):
         actions.append(("Delete the text drawing settings " + FONTRENDER.replace(HOME, "~"), FONTRENDER, None))
     if has_marker(LAUNCHER, "X-Lacquer-Managed=true"):
         actions.append(("Delete the launcher entry " + LAUNCHER.replace(HOME, "~"), LAUNCHER, None))
