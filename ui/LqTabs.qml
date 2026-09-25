@@ -28,6 +28,8 @@ Item {
 
   // Where the selected option sits, in this item's coordinates.
   function selectedCell() { return goo.cells[selectedIndex] || null }
+  // Where any option sits, for anything that needs to point at one.
+  function cellAt(i) { return goo.cells[i] || null }
 
   // Accepted from Omarchy's ButtonGroup; the kit draws its own colours and type.
   property color foreground: "white"

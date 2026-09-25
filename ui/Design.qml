@@ -75,6 +75,15 @@ QtObject {
   }
   readonly property string mono: app ? app.monoFamily : "monospace"
 
+  // The wordmark is set in a typewriter face, the same one the mark's L is cut
+  // from, so the name and the letter are plainly the same object.
+  readonly property string typewriter: {
+    var wantType = ["Courier Prime", "Courier 10 Pitch", "Nimbus Mono PS", "Liberation Mono"]
+    var haveType = Qt.fontFamilies()
+    for (var k = 0; k < wantType.length; k++) if (haveType.indexOf(wantType[k]) >= 0) return wantType[k]
+    return mono
+  }
+
   // The text column never runs the full width of the window: a printed page
   // keeps a margin.
   readonly property real columnWidth: 680

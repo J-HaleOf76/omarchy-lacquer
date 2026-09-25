@@ -135,10 +135,20 @@ Item {
   property real motionSpeed: 1
   readonly property string uiStatePath: root.home + "/.local/state/omarchy/io.github.deunnis.lacquer/ui.json"
 
+  // Whether the tour has been seen. It runs once, on the first opening.
+  property bool toured: false
+
   function saveUiState() {
     uiStateFile.setText(JSON.stringify({ motion: root.motion, feel: root.motionFeel,
-                                         speed: root.motionSpeed, panel: root.panelSize },
+                                         speed: root.motionSpeed, panel: root.panelSize,
+                                         toured: root.toured },
                                        null, 2) + "\n")
+  }
+
+  function markToured() {
+    if (root.toured) return
+    root.toured = true
+    root.saveUiState()
   }
 
   function setMotion(on) {
@@ -207,6 +217,7 @@ Item {
           if (parsed && typeof parsed.feel === "string") root.motionFeel = parsed.feel
           if (parsed && Number(parsed.speed) > 0) root.motionSpeed = Number(parsed.speed)
           if (parsed && typeof parsed.panel === "string") root.panelSize = parsed.panel
+          if (parsed && typeof parsed.toured === "boolean") root.toured = parsed.toured
         } catch (e) { }
       }
       root.motionLoaded = true
@@ -390,7 +401,7 @@ Item {
       { id: "gtk", group: "Desktop", pane: "desktop", kind: "gtk", icon: "󰉼", title: "Light or dark & icons",
         blurb: "Whether apps are light or dark, how they are styled, and which icons they use. A choice here stays when you change theme." },
       { id: "cursor", group: "Desktop", pane: "desktop", kind: "cursor", icon: "󰇀", title: "Mouse pointer",
-        blurb: "The look and size of the mouse pointer." },
+        blurb: "The look and size of the mouse pointer, and how it behaves while you type or switch desktop." },
       { id: "nightlight", group: "Desktop", pane: "desktop", kind: "night", icon: "󰖔", title: "Night light",
         blurb: "A warmer, easier-on-the-eyes screen now, or every evening." },
       { id: "sizes", group: "Desktop", pane: "desktop", kind: "sizes", icon: "⤢", title: "Size of everything",
@@ -458,7 +469,8 @@ Item {
   readonly property var pagePlaces: [
     ["theme", "Colours & wallpaper", "Themes"], ["shuffle", "Colours & wallpaper", "Shuffle"], ["generate", "Colours & wallpaper", "Make a theme"],
     ["fonts", "Screen & text", "Text"], ["sizes", "Screen & text", "Text"],
-    ["gtk", "Screen & text", "Look of apps"], ["cursor", "Screen & text", "Look of apps"],
+    ["gtk", "Screen & text", "Look of apps"],
+    ["cursor", "Screen & text", "Mouse pointer"],
     ["displays", "Screen & text", "Screens"], ["nightlight", "Screen & text", "Screens"],
     ["lock", "Screen & text", "Lock screen"], ["screensaver", "Screen & text", "Lock screen"],
     ["borders", "Windows", "Shape"], ["decoration", "Windows", "Shape"],
@@ -484,6 +496,79 @@ Item {
     var out = [{ kind: "home", title: "Home", icon: "󰋜" }]
     for (var i = 0; i < mainTabs.length; i++) out.push({ kind: "main", title: mainTabs[i].title, icon: mainTabs[i].icon })
     return out
+  }
+
+  // ------------------------------------------------------------------- tour
+  //
+  // Seven notes, about a minute, pointing at the real thing each one is about.
+  // Where a note says to click, the ring around it is a hole in the wash, so
+  // the click lands on the control itself.
+
+  function tourRect(item) {
+    if (!item || !item.visible || item.width <= 0 || item.height <= 0) return Qt.rect(0, 0, 0, 0)
+    var p = card.mapFromItem(item, 0, 0)
+    return Qt.rect(p.x, p.y, item.width, item.height)
+  }
+
+  function tourRailRect(i) {
+    var r = railTabs.cellAt(i)
+    if (!r) return Qt.rect(0, 0, 0, 0)
+    var p = card.mapFromItem(railTabs, r.x, r.y)
+    return Qt.rect(p.x, p.y, r.width, r.height)
+  }
+
+  readonly property var tourSteps: [
+    { title: "This is Lacquer",
+      body: "One app for how this desktop looks: its colours, its text, its windows, the bar along the top. A minute, and you will know where everything is.",
+      at: function() { return Qt.rect(0, 0, 0, 0) } },
+
+    { title: "Five drawers",
+      body: "Everything sits in one of these. Colours and wallpaper, screen and text, windows, the top bar and menus, and apps.",
+      click: "Try one — they stay live while the tour is up.",
+      at: function() { return root.tourRect(railTabs) } },
+
+    { title: "Pages along the top",
+      body: "Each drawer holds a few pages. Windows has the shape of them, the effects on them, how they are laid out, and how they move.",
+      enter: function() { root.goToMain("Windows") },
+      at: function() { return root.tourRect(subTabRow) } },
+
+    { title: "It happens as you click",
+      body: "There is no Apply button. Change something and the desktop changes with it, so you are always looking at the real thing.",
+      at: function() { return root.tourRect(pageContent) } },
+
+    { title: "Nothing here is a mistake",
+      body: "Undo puts the last change back, and Ctrl+Z does the same. Every page also has its own way back to normal.",
+      at: function() { return root.tourRect(undoButton) } },
+
+    { title: "Home is the contents page",
+      body: "It lists everything you have set, on one page. Wherever you are, start typing to look a setting up by name.",
+      click: "Click Home whenever you are lost.",
+      at: function() { return root.tourRailRect(0) } },
+
+    { title: "That is the tour",
+      body: "The rest you can find by looking. If you want these notes again, they live behind this lamp.",
+      at: function() { return root.tourRect(lampButton) } }
+  ]
+
+  // Where the tour was started from, so it can put the app back afterwards:
+  // one of the notes walks over to Windows to show the page tabs.
+  property string tourReturnTo: "home"
+
+  function startTour() {
+    root.tourReturnTo = root.currentSectionId
+    tour.begin()
+  }
+
+  function endTour() {
+    root.markToured()
+    if (root.opened && root.tourReturnTo !== "") root.showSectionById(root.tourReturnTo)
+  }
+
+  // The first opening shows the tour by itself, once the panel has settled.
+  Timer {
+    id: firstRunTour
+    interval: 700
+    onTriggered: if (!root.toured && root.opened) root.startTour()
   }
 
   readonly property string currentMain: section.group || ""
@@ -678,6 +763,7 @@ Item {
     if (payload && typeof payload.status === "string" && payload.status !== "")
       root.statusText = payload.status.replace(/[\x00-\x1f\x7f]/g, " ").slice(0, 200)
     Qt.callLater(function() { keyCatcher.forceActiveFocus() })
+    if (!root.toured) firstRunTour.restart()
   }
 
   function close() {
@@ -688,6 +774,8 @@ Item {
     root.opened = false
     root.confirmRemove = false
     root.confirmResetAll = false
+    firstRunTour.stop()
+    tour.stop()
   }
 
   function dismiss() {
@@ -1126,6 +1214,20 @@ Item {
         design: root.design
       }
 
+      // ------------------------------------------------------- the tour
+      //
+      // A minute of notes pinned over the app, each pointing at what it is
+      // about. Shown once, the first time Lacquer is opened, and afterwards
+      // only when the lamp in the header is pressed.
+      LqTour {
+        id: tour
+        anchors.fill: parent
+        z: 200
+        design: root.design
+        steps: root.tourSteps
+        onFinished: root.endTour()
+      }
+
       // The wash of ink behind everything. Inset so it stays inside the
       // sheet's corners.
       AmbientGoo {
@@ -1150,6 +1252,17 @@ Item {
         Keys.onPressed: function(event) {
           root.poke()
           var plain = !(event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier))
+
+          // While the tour is up it owns Escape and Enter: Escape closes the
+          // notes rather than the whole app, Enter turns the page.
+          if (tour.active && plain) {
+            if (event.key === Qt.Key_Escape) { tour.stop(); event.accepted = true; return }
+            if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Space) {
+              tour.next(); event.accepted = true; return
+            }
+            if (event.key === Qt.Key_Left) { tour.back(); event.accepted = true; return }
+            if (event.key === Qt.Key_Right) { tour.next(); event.accepted = true; return }
+          }
 
           if (event.modifiers & Qt.ControlModifier) {
             if (event.key === Qt.Key_Z) { root.undo(); event.accepted = true }
@@ -1261,20 +1374,23 @@ Item {
             id: titleMark
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
-            width: Math.round(Style.font.heading * 1.25)
+            width: Math.round(Style.font.heading * 2.1)
             height: width
             design: root.design
           }
 
+          // The name beside the mark, cut from the same typewriter face and
+          // letterspaced the way the lockup has it.
           Text {
             id: titleBlock
             anchors.left: titleMark.right
-            anchors.leftMargin: Style.spacing.md
+            anchors.leftMargin: Math.round(Style.font.heading * 0.9)
             anchors.verticalCenter: parent.verticalCenter
             text: "Lacquer"
             color: root.foreground
-            font.family: root.fontFamily
-            font.pixelSize: Style.font.heading
+            font.family: root.design.typewriter
+            font.pixelSize: Math.round(Style.font.heading * 1.25)
+            font.letterSpacing: Math.round(Style.font.heading * 0.12)
             font.bold: true
           }
 
@@ -1285,6 +1401,7 @@ Item {
             spacing: Style.spacing.md
 
             PanelActionButton {
+              id: undoButton
               iconText: "󰕌"
               enabled: root.undoStack.length > 0
               opacity: enabled ? 1 : 0.35
@@ -1292,6 +1409,17 @@ Item {
               foreground: root.foreground
               anchors.verticalCenter: parent.verticalCenter
               onClicked: root.undo()
+            }
+
+            // The tour. It runs itself the first time Lacquer is opened; after
+            // that this is the only way back to it.
+            PanelActionButton {
+              id: lampButton
+              iconText: "󰌵"
+              tooltipText: "Show me around"
+              foreground: tour.active ? root.accent : root.foreground
+              anchors.verticalCenter: parent.verticalCenter
+              onClicked: tour.active ? tour.stop() : root.startTour()
             }
 
             PanelActionButton {
