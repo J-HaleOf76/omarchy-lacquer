@@ -78,9 +78,18 @@ Canvas {
     b0 = lo; b1 = hi; c0 = c[0] + pad; c1 = c[1] + pad
   }
 
-  onCellsChanged: Qt.callLater(settle)
-  onSelectedChanged: Qt.callLater(settle)
-  onHoveredChanged: Qt.callLater(settle)
+  // Settling is deferred so a run of changes costs one pass, but through a
+  // timer rather than Qt.callLater: a callLater queued as the page is torn
+  // down still runs, on an object whose functions have already gone.
+  Timer {
+    id: settleSoon
+    interval: 0
+    onTriggered: track.settle()
+  }
+
+  onCellsChanged: settleSoon.restart()
+  onSelectedChanged: settleSoon.restart()
+  onHoveredChanged: settleSoon.restart()
   onB0Changed: requestPaint()
   onB1Changed: requestPaint()
   onC0Changed: requestPaint()

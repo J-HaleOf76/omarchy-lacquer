@@ -41,6 +41,7 @@ function group(title, items) {
 // Synthetic options have no config key of their own. They are backed by the
 // Lua they emit, and read back by measuring that Lua.
 var OPAQUE_WINDOWS_KEY = "lacquer:opaque_windows"
+var DESK_COLOUR_KEY = "lacquer:desk_colour"
 
 var SECTIONS = [
   {
@@ -49,6 +50,12 @@ var SECTIONS = [
     title: "Spacing & layout",
     blurb: "The space around windows and how they arrange themselves.",
     groups: [
+      group("The desktop behind them", [
+        item(DESK_COLOUR_KEY, "Paint the desktop in your theme's colour",
+             "What you see where there is no window: in the gaps, behind a floating window, and on an empty desktop. "
+             + "Omarchy leaves it a flat dark grey. This uses your theme's own background instead, and follows every theme change.",
+             "bool")
+      ]),
       group("Space and borders", [
         item("general:gaps_in", "Space between windows", "How much room is left between windows sitting next to each other.", "int",
              { min: 0, max: 40, unit: "px" }),

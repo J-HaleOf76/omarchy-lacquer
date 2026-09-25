@@ -26,7 +26,9 @@ var BEGIN_FENCE = "-- >>> lacquer managed block >>>"
 var END_FENCE = "-- <<< lacquer managed block <<<"
 
 var OPAQUE_WINDOWS_KEY = "lacquer:opaque_windows"
-var SYNTHETIC_KEYS = [OPAQUE_WINDOWS_KEY]
+// A switch with no key of its own: see renderDeskColour below.
+var DESK_COLOUR_KEY = "lacquer:desk_colour"
+var SYNTHETIC_KEYS = [OPAQUE_WINDOWS_KEY, DESK_COLOUR_KEY]
 
 // Fences Lacquer adopts from and then removes on migration.
 var LEGACY_FENCES = [
@@ -238,16 +240,51 @@ function join(chunks) {
   return kept.join("\n\n")
 }
 
-function renderLooknfeelBody(overrides, draftCurves, draftLeaves, baseCurves, baseLeaves, borders) {
-  return join([renderConfig(overrides),
-               diffedAnimations(draftCurves, draftLeaves, baseCurves, baseLeaves),
-               renderBorders(borders)])
+// ------------------------------------------------------------ desktop colour
+//
+// What shows where there is no window. Omarchy leaves it a flat dark grey.
+// Rather than pinning a colour, the block reads the live theme's own
+// colors.toml when Hyprland loads it, so it follows every theme switch even
+// when Lacquer is not running — the same trick the border gradient uses.
+//
+// The reader that measures a block back cannot open files, so the switch's
+// state is read from this marker line rather than from what the chunk does.
+var DESK_COLOUR_MARK = "-- lacquer: the desktop follows the theme"
+
+function renderDeskColour(on) {
+  if (on !== true) return ""
+  return [
+    DESK_COLOUR_MARK,
+    "pcall(function()",
+    "  local home = os.getenv('HOME')",
+    "  if not home then return end",
+    "  local f = io.open(home .. '/.local/state/omarchy/current/theme/colors.toml')",
+    "  if not f then return end",
+    "  local text = f:read('*a')",
+    "  f:close()",
+    "  for line in tostring(text):gmatch('[^\\r\\n]+') do",
+    "    local hex = line:match('^%s*background%s*=%s*\"#(%x%x%x%x%x%x)\"')",
+    "    if hex then",
+    "      hl.config({ misc = { background_color = '0xFF' .. hex:upper() } })",
+    "      return",
+    "    end",
+    "  end",
+    "end)"
+  ].join("\n")
 }
 
-function renderPreviewBody(overrides, draftCurves, draftLeaves, baseCurves, baseLeaves, borders) {
+function renderLooknfeelBody(overrides, draftCurves, draftLeaves, baseCurves, baseLeaves, borders, desk) {
+  return join([renderConfig(overrides),
+               diffedAnimations(draftCurves, draftLeaves, baseCurves, baseLeaves),
+               renderBorders(borders),
+               renderDeskColour(desk)])
+}
+
+function renderPreviewBody(overrides, draftCurves, draftLeaves, baseCurves, baseLeaves, borders, desk) {
   return join([renderConfig(overrides),
                allAnimations(draftCurves, draftLeaves, baseCurves, baseLeaves),
-               renderBorders(borders)])
+               renderBorders(borders),
+               renderDeskColour(desk)])
 }
 
 // Re-applies Omarchy's blanket opacity rule at 1.0. Registered after

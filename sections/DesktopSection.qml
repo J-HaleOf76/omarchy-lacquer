@@ -502,6 +502,10 @@ Item {
       options: section.app.panelSizes.map(function(p) { return { value: p.value, label: p.label } }),
       pick: function(v) { section.app.setPanelSize(v) }
     },
+    section.hyprGroup({ key: "xwayland:force_zero_scaling", type: "bool", fallback: false,
+      label: "Sharpen older apps",
+      note: "Older apps that do not know about a scaled screen are drawn small and stretched back up, "
+          + "which makes them look soft. This draws them at full size instead. They have to be restarted to pick it up." }),
     {
       id: "size-where", kind: "chips", title: "More of this",
       note: "Each part on its own: the top bar, menus and notifications in Bar & menu style, the space between windows in Spacing & layout.",
@@ -742,12 +746,13 @@ Item {
       options: [{ value: 0, label: "Yes" }, { value: 1, label: "No" }, { value: 2, label: "Automatic" }] }
   ]
 
-  // One group per pointer setting, in whichever control suits it.
-  function pointerGroup(item) {
+  // One group for a Hyprland setting declared inline, in whichever control
+  // suits its type. Used by the pages that are not built from LookSchema.
+  function hyprGroup(item) {
     var hypr = section.app.hypr
     var value = hypr.valueFor(item)
     var group = {
-      id: "pointer-" + item.key, title: item.label, note: item.note,
+      id: item.key.replace(/[:.]/g, "-"), title: item.label, note: item.note,
       tech: "Hyprland \u00b7 " + item.key
     }
     if (item.type === "bool") {
@@ -810,7 +815,7 @@ Item {
       options: [16, 20, 24, 32, 40, 48, 64].map(function(n) { return { value: n, label: String(n) } }),
       pick: function(v) { section.store.setCursor(section.cursorTheme, v) }
     }
-  ].concat(section.pointerItems.map(function(item) { return section.pointerGroup(item) }))
+  ].concat(section.pointerItems.map(function(item) { return section.hyprGroup(item) }))
 
   readonly property var ns: section.night.status
   readonly property var nowTemps: [5500, 5000, 4500, 4000, 3500, 3000]

@@ -82,7 +82,27 @@ Item {
     return root.baseCurves[name] || null
   }
 
+  // ------------------------------------------------------ the desktop colour
+  //
+  // A switch with no value of its own: on, the block carries a small chunk of
+  // Lua that reads the live theme's colors.toml when Hyprland loads it, so the
+  // colour behind the windows follows every theme switch, with or without
+  // Lacquer running. Read back from the marker line that chunk carries, since
+  // the reader that measures a block cannot open files.
+  property bool deskColour: false
+
+  function setDeskColour(on, label) {
+    if (root.deskColour === (on === true)) return
+    app.beginEdit()
+    root.deskColour = on === true
+    app.commitEdit(label || "Desktop colour")
+    // Turning it off cannot be previewed — there is no "unset this" in
+    // Hyprland — so either way the file is written and reloaded.
+    persistNow()
+  }
+
   function valueFor(item) {
+    if (item.key === StyleLua.DESK_COLOUR_KEY) return root.deskColour
     if (item.key === StyleLua.OPAQUE_WINDOWS_KEY) return root.opaqueWindows
     if (root.overrides[item.key] !== undefined) return root.overrides[item.key]
     if (root.effective[item.key] !== undefined) return root.effective[item.key]
@@ -95,6 +115,7 @@ Item {
   }
 
   function isModified(key) {
+    if (key === StyleLua.DESK_COLOUR_KEY) return root.deskColour
     if (key === StyleLua.OPAQUE_WINDOWS_KEY) return root.opaqueWindows === true
     return root.overrides[key] !== undefined
   }
@@ -150,6 +171,7 @@ Item {
   // ---------------------------------------------------------------- edits
 
   function setValue(item, value, commit) {
+    if (item.key === StyleLua.DESK_COLOUR_KEY) { setDeskColour(value === true, item.label); return }
     app.beginEdit()
     if (item.key === StyleLua.OPAQUE_WINDOWS_KEY) {
       root.opaqueWindows = value === true
@@ -169,6 +191,7 @@ Item {
     app.beginEdit()
     var next = StyleLua.cloneOverrides(root.overrides)
     for (var i = 0; i < keys.length; i++) {
+      if (keys[i] === StyleLua.DESK_COLOUR_KEY) { root.deskColour = false; continue }
       if (keys[i] === StyleLua.OPAQUE_WINDOWS_KEY) root.opaqueWindows = false
       delete next[keys[i]]
     }
@@ -220,7 +243,8 @@ Item {
   function livePreview() {
     if (!root.baselineReady) return
     var body = StyleLua.renderPreviewBody(root.overrides, root.curves, root.leaves,
-                                          root.baseCurves, root.baseLeaves, app.borders.spec)
+                                          root.baseCurves, root.baseLeaves, app.borders.spec,
+                                          root.deskColour)
     if (!body) return
     // One eval in flight at a time with the newest state queued behind it, so
     // a slider drag cannot outrun hyprctl.
@@ -237,7 +261,8 @@ Item {
 
     var current = configFile.text()
     var body = StyleLua.renderLooknfeelBody(root.overrides, root.curves, root.leaves,
-                                            root.baseCurves, root.baseLeaves, app.borders.spec)
+                                            root.baseCurves, root.baseLeaves, app.borders.spec,
+                                            root.deskColour)
     var next = StyleLua.applyBlock(current, body)
 
     var windowsCurrent = windowsFile.text()
@@ -387,7 +412,8 @@ Item {
     for (var i = 0; i < migrationQueue.length; i++)
       next = StyleLua.removeFences(next, migrationQueue[i].begin, migrationQueue[i].end)
     var body = StyleLua.renderLooknfeelBody(root.overrides, root.curves, root.leaves,
-                                            root.baseCurves, root.baseLeaves, app.borders.spec)
+                                            root.baseCurves, root.baseLeaves, app.borders.spec,
+                                            root.deskColour)
     next = StyleLua.applyBlock(next, body)
 
     root.migrationNotice = "Imported your settings from " + migrationNames.join(" and ") + "."
@@ -438,6 +464,7 @@ Item {
   function readBlock(text) {
     detectLegacy(text)
     var split = StyleLua.splitBlock(text)
+    root.deskColour = split.found && String(split.body).indexOf(StyleLua.DESK_COLOUR_MARK) >= 0
     if (!split.found) {
       root.overrides = ({}); root.leaves = ({}); root.curves = ({})
       root.blockRead = true
