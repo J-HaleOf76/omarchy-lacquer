@@ -3,12 +3,20 @@ import QtQuick.Layouts
 import qs.Commons
 import qs.Ui
 import "../ui"
+import "../Contrast.js" as Contrast
 
 // A theme generated from a wallpaper by aether, and aether's saved blueprints.
 Item {
   id: section
 
   required property var app
+
+  // Whether the theme this palette would make is one you can read. A wallpaper
+  // can hand back a set of colours that looks lovely in a row of swatches and
+  // is punishing as an editor, and that is worth knowing before the theme is
+  // built rather than after.
+  readonly property var reading: section.store && section.store.palette.length >= 8
+    ? Contrast.readPalette(section.store.palette) : null
 
   readonly property var store: app.aether
 
@@ -130,6 +138,42 @@ Item {
             color: section.store.paletteError !== "" ? Color.urgent : Qt.darker(section.app.foreground, 1.6)
             font.family: section.app.fontFamily
             font.pixelSize: Style.font.caption
+          }
+
+          Row {
+            visible: !!section.reading && !section.store.extracting
+            spacing: 8
+
+            Rectangle {
+              anchors.verticalCenter: parent.verticalCenter
+              width: Style.space(30)
+              height: Style.space(18)
+              radius: Math.min((app.design.cardRadius * 0.75), 3)
+              color: section.reading ? section.reading.background : "transparent"
+              border.width: 1
+              border.color: app.design.rule
+              Text {
+                anchors.centerIn: parent
+                text: "Aa"
+                color: section.reading ? section.reading.foreground : "transparent"
+                font.family: section.app.fontFamily
+                font.pixelSize: Style.font.caption
+              }
+            }
+
+            Text {
+              anchors.verticalCenter: parent.verticalCenter
+              readonly property var r: section.reading
+              text: !r ? "" : "Text on the background: " + r.main.toFixed(1) + " to 1 — " + r.word
+                + (r.weak > 0 ? "  ·  " + r.weak + " of the six colours " + (r.weak === 1 ? "is" : "are") + " hard to read on it" : "")
+              color: !r ? "transparent"
+                : (r.main < 4.5 || r.weak > 2) ? Color.urgent
+                : r.main < 7 ? Qt.darker(section.app.foreground, 1.3)
+                : Qt.darker(section.app.foreground, 1.6)
+              font.family: section.app.fontFamily
+              font.pixelSize: Style.font.caption
+              wrapMode: Text.WordWrap
+            }
           }
         }
       }
