@@ -15,8 +15,8 @@ Item {
 
   signal toggled()
 
-  implicitWidth: 44
-  implicitHeight: 24
+  implicitWidth: 46
+  implicitHeight: 21
 
   readonly property real knob: height - 8
   readonly property real trackRadius: design.controlRadius

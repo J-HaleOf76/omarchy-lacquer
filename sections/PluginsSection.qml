@@ -72,7 +72,7 @@ Item {
           color: app.foreground
           font.family: app.fontFamily
           font.pixelSize: Style.font.title
-          font.bold: true
+          font.weight: Font.Medium
         }
 
         Text {

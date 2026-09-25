@@ -74,7 +74,7 @@ Item {
           color: section.app.foreground
           font.family: section.app.fontFamily
           font.pixelSize: Style.font.title
-          font.bold: true
+          font.weight: Font.Medium
         }
         Text {
           text: section.store.applyingTheme !== ""
@@ -176,7 +176,7 @@ Item {
                 color: cell.modelData.foreground || section.app.foreground
                 font.family: section.app.fontFamily
                 font.pixelSize: Style.font.body
-                font.bold: true
+                font.weight: Font.Medium
                 elide: Text.ElideRight
               }
 
@@ -219,7 +219,7 @@ Item {
               color: "white"
               font.family: section.app.fontFamily
               font.pixelSize: Style.font.body
-              font.bold: true
+              font.weight: Font.Medium
             }
           }
 

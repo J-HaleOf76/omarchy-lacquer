@@ -31,14 +31,14 @@ QtObject {
   readonly property color ink: foreground
 
   // Hairlines do the work boxes used to do.
-  readonly property color rule: alpha(foreground, dark ? 0.15 : 0.2)
-  readonly property color ruleStrong: alpha(foreground, dark ? 0.3 : 0.38)
+  readonly property color rule: alpha(foreground, dark ? 0.12 : 0.16)
+  readonly property color ruleStrong: alpha(foreground, dark ? 0.22 : 0.29)
 
   // Faint washes, for the few places something must read as an area rather
   // than a line.
-  readonly property color surface: alpha(foreground, dark ? 0.05 : 0.045)
+  readonly property color surface: alpha(foreground, dark ? 0.04 : 0.036)
   readonly property color raised: alpha(foreground, dark ? 0.035 : 0.03)
-  readonly property color hover: alpha(foreground, dark ? 0.08 : 0.07)
+  readonly property color hover: alpha(foreground, dark ? 0.065 : 0.058)
   readonly property color hairline: rule
   readonly property color muted: mix(foreground, background, 0.38)
   readonly property color faint: mix(foreground, background, 0.6)

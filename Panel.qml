@@ -1390,8 +1390,8 @@ Item {
             color: root.foreground
             font.family: root.design.typewriter
             font.pixelSize: Math.round(Style.font.heading * 1.25)
-            font.letterSpacing: Math.round(Style.font.heading * 0.12)
-            font.bold: true
+            font.letterSpacing: Math.round(Style.font.heading * 0.16)
+            font.weight: Font.Normal
           }
 
           Row {
@@ -1554,8 +1554,8 @@ Item {
               design: root.design
               style: "rail"
               fontSize: 15
-              padX: 16
-              padY: 9
+              padX: 14
+              padY: 7
               breath: root.breath
               options: {
                 var out = []
@@ -1713,8 +1713,8 @@ Item {
                 design: root.design
                 style: "pills"
                 fontSize: 17
-                padX: 21
-                padY: 12
+                padX: 17
+                padY: 9
                 breath: root.breath
                 options: root.subTabs
                 value: root.currentSub

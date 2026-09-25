@@ -145,7 +145,7 @@ Item {
       // A printed page keeps a margin: the column never runs the full width.
       width: Math.min(flick.width - Style.spacing.xxl * 2, pane.design.columnWidth)
       x: Math.max(Style.spacing.xxl, (flick.width - width) / 2)
-      spacing: 18
+      spacing: 26
 
       Repeater {
         id: groupRepeater
@@ -198,7 +198,7 @@ Item {
           Column {
           id: groupBody
           width: parent.width
-          spacing: 12
+          spacing: 14
 
           Item {
             width: parent.width
@@ -359,7 +359,7 @@ Item {
               color: pane.design.foreground
               font.family: pane.design.mono
               font.pixelSize: 14
-              font.weight: Font.DemiBold
+              font.weight: Font.Medium
             }
             LqButton {
               design: pane.design

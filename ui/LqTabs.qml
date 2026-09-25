@@ -42,8 +42,8 @@ Item {
   readonly property bool isRail: style === "rail"
   readonly property bool isUnderline: style === "underline"
   // Overridable, so a row of tabs can be made to carry more weight.
-  property real padX: isRail ? 14 : isUnderline ? 6 : 14
-  property real padY: isRail ? 9 : isUnderline ? 7 : 7
+  property real padX: isRail ? 14 : isUnderline ? 6 : 12
+  property real padY: isRail ? 7 : isUnderline ? 7 : 6
 
   function optionValue(o) { return (o && typeof o === "object") ? String(o.value) : String(o) }
   function optionLabel(o) { return (o && typeof o === "object" && o.label !== undefined) ? String(o.label) : String(o) }
@@ -100,7 +100,7 @@ Item {
     animated: tabs.design.motion
     mass: tabs.design.mass
     breath: tabs.breath
-    swell: tabs.isRail ? 2 : 3
+    swell: tabs.isRail ? 1.4 : 2
     maxRadius: tabs.design.controlRadius
   }
 
@@ -155,7 +155,7 @@ Item {
       readonly property bool ruled: tabs.optionRule(modelData)
       // The entry itself, and under it the band the rule sits in. The ink
       // block covers the entry only, so block and rule line up.
-      readonly property real cellHeight: content.implicitHeight + tabs.padY * 2 + (big ? 2 : 0)
+      readonly property real cellHeight: content.implicitHeight + tabs.padY * 2
       readonly property real ruleBand: ruled ? 15 : 0
       width: tabs.isRail ? flow.width : content.implicitWidth + tabs.padX * 2
       height: cellHeight + ruleBand
@@ -205,7 +205,7 @@ Item {
           text: tabs.optionLabel(entry.modelData)
           font.family: tabs.optionFamily(entry.modelData)
           font.pixelSize: Math.round(tabs.fontSize + (entry.big ? 3 : 0))
-          font.weight: entry.selected || entry.big ? Font.DemiBold : Font.Normal
+          font.weight: entry.selected || entry.big ? Font.Medium : Font.Normal
           color: entry.selected && !tabs.isUnderline ? tabs.design.onAccent
                : entry.selected ? tabs.design.accent
                : entry.hot ? tabs.design.foreground : tabs.design.muted

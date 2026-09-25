@@ -606,8 +606,8 @@ Item {
             color: home.accent
             font.family: home.app.fontFamily
             font.pixelSize: Style.font.caption
-            font.bold: true
-            font.letterSpacing: 1.2
+            font.weight: Font.Medium
+            font.letterSpacing: 1.8
             Timer { interval: 20000; repeat: true; running: home.live; onTriggered: greeting.now = new Date() }
           }
 
@@ -618,7 +618,7 @@ Item {
             color: home.app.foreground
             font.family: home.app.design.serif
             font.pixelSize: Style.font.display
-            font.bold: true
+            font.weight: Font.Normal
           }
 
           // The palette, breathing.
@@ -922,8 +922,8 @@ Item {
               color: home.app.design.muted
               font.family: home.app.design.serif
               font.pixelSize: 11
-              font.weight: Font.DemiBold
-              font.letterSpacing: 1.6
+              font.weight: Font.Medium
+              font.letterSpacing: 2.1
               font.capitalization: Font.AllUppercase
             }
 

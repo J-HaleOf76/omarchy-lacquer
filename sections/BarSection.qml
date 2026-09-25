@@ -173,7 +173,7 @@ Item {
                     color: app.foreground
                     font.family: app.fontFamily
                     font.pixelSize: Style.font.body
-                    font.bold: true
+                    font.weight: Font.Medium
                     elide: Text.ElideRight
                   }
 

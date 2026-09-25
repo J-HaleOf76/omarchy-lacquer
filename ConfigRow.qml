@@ -204,7 +204,7 @@ Item {
       color: root.modified ? root.accent : root.foreground
       font.family: root.design ? root.design.mono : root.fontFamily
       font.pixelSize: 14
-      font.weight: Font.DemiBold
+      font.weight: Font.Medium
       horizontalAlignment: Text.AlignRight
       width: Style.space(58)
       anchors.verticalCenter: parent.verticalCenter

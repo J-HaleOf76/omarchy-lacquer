@@ -166,7 +166,7 @@ Item {
     color: slider.dragging ? slider.design.accent : slider.design.foreground
     font.family: slider.design.mono
     font.pixelSize: 14
-    font.weight: Font.DemiBold
+    font.weight: Font.Medium
     elide: Text.ElideLeft
   }
 }

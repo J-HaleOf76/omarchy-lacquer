@@ -62,7 +62,7 @@ Item {
       color: glance.design.foreground
       font.family: glance.design.sans
       font.pixelSize: 14
-      font.weight: Font.DemiBold
+      font.weight: Font.Medium
     }
 
     // The colours as little drops, heavier at the bottom.

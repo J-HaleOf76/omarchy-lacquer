@@ -140,7 +140,7 @@ Item {
         color: section.app.foreground
         font.family: section.app.fontFamily
         font.pixelSize: Style.font.body
-        font.bold: true
+        font.weight: Font.Medium
       }
 
       // Everything below is inert until the engine is live.
@@ -174,7 +174,7 @@ Item {
               anchors.rightMargin: Style.spacing.xxl
               anchors.verticalCenter: parent.verticalCenter
               spacing: Style.spacing.xxs
-              Text { text: modelData.label; color: section.app.foreground; font.family: section.app.fontFamily; font.pixelSize: Style.font.subtitle; font.bold: true }
+              Text { text: modelData.label; color: section.app.foreground; font.family: section.app.fontFamily; font.pixelSize: Style.font.subtitle; font.weight: Font.Medium }
               Text { width: parent.width; wrapMode: Text.WordWrap; text: modelData.desc; color: Qt.darker(section.app.foreground, 1.55); font.family: section.app.fontFamily; font.pixelSize: Style.font.caption }
             }
 

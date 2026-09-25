@@ -97,8 +97,8 @@ Item {
             color: app.design.muted
             font.family: app.design.serif
             font.pixelSize: 11
-            font.weight: Font.DemiBold
-            font.letterSpacing: 1.6
+            font.weight: Font.Medium
+            font.letterSpacing: 2.1
           }
         }
       }

@@ -161,7 +161,7 @@ Item {
       x: 0
       y: 0
       width: parent.width
-      height: 3
+      height: 2
       topLeftRadius: parent.radius
       topRightRadius: parent.radius
       color: tour.design.accent
