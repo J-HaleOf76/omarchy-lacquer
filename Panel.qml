@@ -568,7 +568,13 @@ Item {
   Timer {
     id: firstRunTour
     interval: 700
-    onTriggered: if (!root.toured && root.opened) root.startTour()
+    onTriggered: {
+      // The saved state may still be on its way back from disk. Waiting for
+      // it is what keeps someone who has already seen the tour from being
+      // shown it again on a slow start.
+      if (!root.motionLoaded) { firstRunTour.restart(); return }
+      if (!root.toured && root.opened) root.startTour()
+    }
   }
 
   readonly property string currentMain: section.group || ""
