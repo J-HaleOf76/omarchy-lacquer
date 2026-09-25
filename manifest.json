@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "author": "deunnis",
   "license": "MIT",
-  "description": "One app for how your Omarchy desktop looks: themes, wallpapers, theme shuffle and aether generation; one motion feel for the whole desktop; fonts, GTK, icons, cursor and nightlight; window shape, border gradients built from your theme, animations and curves; sizes and displays; shell style, bar and menu look; lock, boot and the unlock screen; per-app window rules and launcher entries; terminals, btop, prompt and every plugin's settings. Live, through the tools that already own each setting.",
+  "description": "One app for how your Omarchy desktop looks. Themes, wallpapers, theme shuffle and aether generation with a readability check; saved looks you can name and carry to another machine; fonts, text rendering, GTK, icons and the mouse pointer; window shape, border gradients built from your theme, glass, shadow and the colour behind your windows; one motion feel for the whole desktop, or every animation and bezier on its own; sizes, screens and night light; lock, boot and screensaver; shell style, bar and menu look; per-app window rules and launcher entries; terminals, btop, prompt and every plugin's settings. 370 settings in everyday words, live, through the tools that already own each one.",
   "kinds": [
     "panel",
     "service"

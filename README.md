@@ -1,49 +1,100 @@
-![Lacquer](docs/media/wordmark.png)
+<p align="center">
+  <img src="docs/media/wordmark.png" width="420" alt="Lacquer">
+</p>
 
-One app for how your Omarchy desktop looks.
+<p align="center">
+  <b>One app for how your Omarchy desktop looks.</b><br>
+  Colours, text, windows, the bar, your apps — in one place, in plain words,
+  live as you change them.
+</p>
 
-![The Home screen: a live miniature of your desktop, search across every setting, and a card for each section](docs/media/home.gif)
+<p align="center">
+  <img alt="version 1.0" src="https://img.shields.io/badge/version-1.0-7daea3?style=flat-square&labelColor=282828">
+  <img alt="MIT" src="https://img.shields.io/badge/licence-MIT-d4be98?style=flat-square&labelColor=282828">
+  <img alt="Omarchy 4" src="https://img.shields.io/badge/Omarchy-4.0%2B-d4be98?style=flat-square&labelColor=282828">
+  <img alt="no telemetry" src="https://img.shields.io/badge/no%20telemetry-665c54?style=flat-square&labelColor=282828">
+</p>
 
-[![Watch the 90-second tour](docs/media/video-thumbnail.webp)](https://github.com/Deunnis/omarchy-lacquer/releases/download/v0.3.0/lacquer-showcase.mp4)
-<sub>▶ [Watch the 90-second tour](https://github.com/Deunnis/omarchy-lacquer/releases/download/v0.3.0/lacquer-showcase.mp4) (MP4, 17 MB)</sub>
+---
 
-| Main tab | Sub tabs › pages |
+Omarchy gives you a beautiful desktop and a hundred files to change it in.
+Lacquer is the other half: **one window, 370 settings, everything named in
+everyday words**, and nothing that needs a restart to see.
+
+There is no Apply button. Move a slider and your windows move with it. Change
+your mind and `Ctrl+Z` puts it back. Everything Lacquer writes goes into one
+fenced block in your own config, so it stays yours, and `lacquer-cleanup`
+takes every trace of it back out.
+
+[![Watch the three-minute tour](docs/media/video-poster.webp)](https://github.com/Deunnis/omarchy-lacquer/releases/download/v1.0.0/lacquer-1.0.mp4)
+
+<sub>▶ **[Watch the three-minute tour](https://github.com/Deunnis/omarchy-lacquer/releases/download/v1.0.0/lacquer-1.0.mp4)** — every page, in one take (MP4, 30 MB)</sub>
+
+## What it looks like
+
+<img src="docs/media/home-search.gif" alt="Home: a live miniature of your own desktop, and search across every setting">
+
+**Home** is a printed contents page: a live miniature of your own windows drawn
+from your real settings, what you have changed, and a search box that finds any
+setting by name from anywhere in the app.
+
+<img src="docs/media/shape.gif" alt="Picking a window shape preset, applied live">
+
+**Everything is live.** Pick a shape and your windows take it immediately — and
+the miniature on Home carries it too, so you can see what you did without
+leaving the app.
+
+<img src="docs/media/undo.gif" alt="Ctrl+Z walking a change back">
+
+**Nothing here is a mistake.** Undo walks back through every change, every page
+has its own way back to normal, and the first time Lacquer touches a file it
+keeps a copy of it.
+
+## What is in it
+
+| Main tab | Pages |
 |---|---|
-| Colours & wallpaper | Themes · Shuffle · Make a theme |
-| Screen & text | Text › Fonts & text size, Size of everything · Look of apps › Light or dark & icons, Mouse pointer · Screens › Resolution & scale, Night light · Lock screen › Lock & start-up screen, Screensaver |
-| Windows | Shape › Shape & border, Corners & see-through · Effects › Glass & shadow, Screen frame · Layout › Spacing & layout, Grouped windows · Motion › Motion feel, Animations, Animation curves |
-| Top bar & menus | Style · Top bar · App menu |
-| Apps | Terminal › Terminal, System monitor & prompt · App list › App list, App windows · Add-ons |
+| **Colours & wallpaper** | Themes and their wallpapers · Shuffle (a new theme on a schedule or with the sun) · Make a theme from any wallpaper · **Saved looks** |
+| **Screen & text** | Fonts & text size · **How text is drawn** · Size of everything · Light or dark & icons · **Mouse pointer** · Resolution & scale · Night light · Lock, start-up & screensaver |
+| **Windows** | Shape & border · Corners & see-through · Glass & shadow · Screen frame · Spacing & layout · Grouped windows · Motion feel · Animations · Animation curves |
+| **Top bar & menus** | Bar & menu style · What sits in the top bar · The app menu's own look |
+| **Apps** | Terminal · System monitor & prompt · App list · Per-app window rules · Add-ons |
 
-Every setting is named in everyday words; resting on one opens its explanation,
-with the technical name in small print for anyone following a guide online.
+Every setting is named in everyday words. Rest on one and it explains itself,
+with the technical name in small print underneath for anyone following a guide
+online.
+
+## Some of it, in pictures
 
 <table>
 <tr>
-<td width="33%"><img src="docs/media/themes.webp" alt="Theme & wallpaper: every installed theme with its wallpapers"><br><sub><b>Theme & wallpaper</b>: every theme and its wallpapers</sub></td>
-<td width="33%"><img src="docs/media/shuffle.webp" alt="Shuffle: a new theme on every boot, or day and night themes"><br><sub><b>Shuffle</b>: a new theme every boot, or Day & Night</sub></td>
-<td width="33%"><img src="docs/media/generate.webp" alt="Generate: build a theme from any wallpaper with aether"><br><sub><b>Generate</b>: a theme from any wallpaper</sub></td>
+<td width="33%"><img src="docs/media/themes.webp" alt="Themes: every installed theme with its wallpapers"><br><sub><b>Themes</b> — every theme and its wallpapers</sub></td>
+<td width="33%"><img src="docs/media/generate.webp" alt="Make a theme: a palette from any wallpaper, with a readability check"><br><sub><b>Make a theme</b> — from a wallpaper, and it tells you whether you will be able to read it</sub></td>
+<td width="33%"><img src="docs/media/looks.webp" alt="Saved looks: a whole set of settings under one name"><br><sub><b>Saved looks</b> — name a whole set of settings, and carry it to another machine</sub></td>
 </tr>
 <tr>
-<td><img src="docs/media/desktop.webp" alt="GTK & icons: light or dark apps, GTK theme and icon set with previews"><br><sub><b>GTK & icons</b>: pinned through theme switches</sub></td>
-<td><img src="docs/media/curves.webp" alt="Curves: drag the bezier handles of an animation curve"><br><sub><b>Curves</b>: drag a bezier, every animation follows</sub></td>
-<td><img src="docs/media/menu-look.webp" alt="Menu look: size, corner radius, border and transparency of the Omarchy menu"><br><sub><b>Menu look</b>: size, corners, border, transparency</sub></td>
+<td><img src="docs/media/borders.webp" alt="Shape and border: presets, gradients and corner settings"><br><sub><b>Shape &amp; border</b> — presets, or each part on its own</sub></td>
+<td><img src="docs/media/effects.webp" alt="Glass and shadow: blur, dimming and glow"><br><sub><b>Glass &amp; shadow</b> — blur, dimming, glow</sub></td>
+<td><img src="docs/media/curves.webp" alt="Animation curves: drag the bezier handles and watch it play"><br><sub><b>Curves</b> — drag the bezier, watch it play</sub></td>
 </tr>
 <tr>
-<td><img src="docs/media/motion.webp" alt="Motion: one feel for the whole desktop, with a speed multiplier"><br><sub><b>Motion</b>: one feel for the whole desktop</sub></td>
-<td><img src="docs/media/borders.webp" alt="Borders and shape: window shape presets and a border gradient from the theme"><br><sub><b>Borders &amp; shape</b>: gradients from your theme</sub></td>
-<td><img src="docs/media/displays.webp" alt="Displays: resolution, refresh rate, scale and rotation with a countdown revert"><br><sub><b>Displays</b>: kept only if you confirm</sub></td>
+<td><img src="docs/media/desktop.webp" alt="Fonts and text size, with every font on the machine"><br><sub><b>Fonts &amp; text</b> — every font on the machine, previewed</sub></td>
+<td><img src="docs/media/pointer.webp" alt="Mouse pointer: style, size and behaviour"><br><sub><b>Mouse pointer</b> — its look, its size, what it does while you type</sub></td>
+<td><img src="docs/media/displays.webp" alt="Screens: resolution, refresh rate and scale with a countdown revert"><br><sub><b>Screens</b> — a bad mode puts itself back</sub></td>
+</tr>
+<tr>
+<td><img src="docs/media/bar.webp" alt="Top bar: what sits in it and how tall it stands"><br><sub><b>Top bar</b> — what sits in it, and where</sub></td>
+<td><img src="docs/media/shell.webp" alt="Bar and menu style: the look of every surface Omarchy draws"><br><sub><b>Bar &amp; menu style</b> — every surface Omarchy draws</sub></td>
+<td><img src="docs/media/apprules.webp" alt="Per-app window rules: how one app opens"><br><sub><b>Per-app rules</b> — how one app opens</sub></td>
 </tr>
 </table>
 
-> **1.0.** Lacquer has so far been used on one laptop (1080p, one screen,
-> foot, mostly light themes). If yours is different (several screens,
-> scaling, a dark theme, kitty/ghostty/alacritty, no lock-explorer), please
-> try it and [open an issue](https://github.com/Deunnis/omarchy-lacquer/issues/new/choose)
-> for anything that breaks or looks wrong. Paste the output of
-> `~/.config/omarchy/plugins/io.github.deunnis.lacquer/lacquer-report` with it.
-> First-run backups and `lacquer-cleanup` (see [Remove](#remove)) are there so
-> nothing is hard to undo.
+> **What 1.0 means here.** Every setting has been round-tripped: set it, unset
+> it, and the config file is byte-for-byte what it was. Lacquer has been built
+> and tested on one laptop (1080p, one screen, foot, Hyprland via Omarchy 4).
+> If yours is different — several screens, fractional scaling, another terminal
+> — please [open an issue](https://github.com/Deunnis/omarchy-lacquer/issues/new/choose)
+> for anything that looks wrong, with the output of `lacquer-report` attached.
 
 ## Install
 
@@ -107,8 +158,8 @@ them in effect. To undo them first:
 
 `lacquer-cleanup` removes Lacquer's blocks from `looknfeel.lua`, `hyprland.lua`
 and `autostart.lua`, puts back Omarchy's `hyprsunset.conf` if Lacquer wrote
-one, unpins GTK and icon choices, resets a saved cursor, and deletes its hook,
-launcher entry and state. It lists, and leaves alone, what are ordinary
+one, unpins GTK and icon choices, resets a saved cursor, and deletes its
+text-drawing file, hook, launcher entry and state. It lists, and leaves alone, what are ordinary
 settings elsewhere: `shell.toml`/`shell.json` values, fonts and text size,
 terminal/btop/starship lines, lock-explorer and OmaMenu settings, and the
 backups. Skipping it is fine too: the launcher entry goes when the plugin is
@@ -264,6 +315,37 @@ the whole desktop to a theme called `aether` and, unless unticked, writes theme
 files into Zed, VS Code and Neovim — so it asks twice. Saved blueprints apply
 with `--apply-blueprint`; everything else is one click away in aether itself.
 
+## Saved looks
+
+A look is the whole set under one name: the theme, the entire Hyprland block
+(spacing, borders, corners, effects, motion, the desktop colour), the bar and
+menu style as your own `shell.toml` text, fonts and text size, the pointer, the
+GTK pins, and how text is drawn. Naming one keeps what is on the screen; picking
+it puts all of it back.
+
+Deliberately not in a look: window rules, monitor arrangement and launcher
+entries. Those describe a machine and its apps, and carrying them to another
+computer would do harm rather than good.
+
+Applying always keeps a **Just before** first, so the way out never depends on
+having thought of it beforehand. **Write them to a file** puts every look in
+`~/lacquer-looks.json` — the same file Lacquer stores them in — so moving your
+desktop to another machine is a copy rather than an export format of its own,
+and **Read a file in…** merges one back. Anything read from a file is treated as
+a stranger: only the shapes Lacquer writes survive, names and slugs are clipped,
+and at most a hundred looks are taken.
+
+## The tour
+
+The first time Lacquer opens it shows seven notes, about a minute, each pinned
+over the thing it is talking about. The sheet washes out around a ring, and the
+ring is a real hole — so where a note says to click, the click reaches the
+control underneath. Escape closes the notes rather than the app, Enter turns the
+page, and it puts you back on the page you started from.
+
+Afterwards it lives behind the lamp in the header. Wiping Lacquer's state folder
+brings it back on the next opening.
+
 ## Desktop
 
 | | applied with | survives a theme switch |
@@ -274,6 +356,8 @@ with `--apply-blueprint`; everything else is one click away in aether itself.
 | Light/dark apps, GTK theme, icons | gsettings, **pinned** | only when pinned |
 | Cursor | `hyprctl setcursor` + gsettings + Lacquer's block in `hypr/autostart.lua` | yes |
 | Nightlight | `hypr/hyprsunset.conf` + autostart | yes |
+| How text is drawn | `~/.config/fontconfig/conf.d/99-lacquer-rendering.conf` | yes |
+| Pointer behaviour | Lacquer's block in `hypr/looknfeel.lua` (`cursor:*`) | yes |
 
 Every theme switch resets the GTK theme, colour scheme and icons to what the
 theme asks for. A pick in GTK & icons is a **pin**: it is kept in `pins.json`
@@ -288,6 +372,17 @@ Two Omarchy quirks are worked around, not changed:
   foot's size and rewrites the family inside its quotes only.
 - Text size re-derives every terminal's size from the px value, so the section
   says what a step will set terminals to before you press it.
+
+**How text is drawn** — smoothing, hinting and the screen's subpixel order — is
+fontconfig's, not Hyprland's. Lacquer owns one file of its own for it so your
+`fonts.conf` is never touched, and *Back to normal* leaves that file with
+nothing in it, which is the same as not having it. What the page shows before
+anything is set is measured with `fc-match` rather than guessed. Nothing here
+previews: an app reads fontconfig when it starts.
+
+**Mouse pointer** carries the style and size, and what the pointer *does*: hide
+it while you type, hide it when it has sat still, jump it to the window you land
+on, magnify around it, and who draws it.
 
 **Add a font** and **Add a cursor theme** take a download straight from the
 desktop file chooser: a `.ttf`/`.otf`, a theme folder, or a `.zip`/`.tar.gz` of
@@ -426,6 +521,15 @@ reaching 1.0. Cancelling it means a window rule, and window rules belong in
 That block also holds the per-app rules from **App windows**, and nothing else.
 Both files are written before a single `hyprctl reload`, so Hyprland never
 reads a half-written pair.
+
+Two settings are written as Lua rather than as values, so they can follow the
+theme without Lacquer running. The **border gradient** works its second colour
+out from the theme's own border colour when Hyprland loads the block, and
+**Paint the desktop in your theme's colour** reads the live theme's
+`colors.toml` the same way. Both are wrapped in `pcall`, so a theme without the
+colour they want changes nothing. The desktop-colour switch has no key of its
+own in the file; it is read back from the marker line its chunk carries, since
+the reader that measures a block is sandboxed and cannot open files.
 
 Omarchy's defaults are read by running
 `$OMARCHY_PATH/default/hypr/looknfeel.lua` through `read.lua`, a set of
@@ -583,7 +687,7 @@ so the plugin directory comes from `Qt.resolvedUrl(".")` instead.
 | `MotionTokens.js` | the motion feels: curve families, durations and the leaves each one drives |
 | `read.lua` | recording stubs that report what a Lua chunk declares |
 | `Service.qml` | launcher entry, theme-set hook, Shuffle engine, reopen after a font restart |
-| `stores/` | one non-visual store per area: Hypr, ShellToml, ShellJson, Theme, ShuffleEngine, Aether, Desktop, Night, Screens, MenuLook, Apps, Motion, Borders, Monitors, Rules, Launcher, Tools, Companion |
+| `stores/` | one non-visual store per area: Hypr, ShellToml, ShellJson, Theme, ShuffleEngine, Aether, Desktop, FontRender, Looks, Night, Screens, MenuLook, Apps, Motion, Borders, Monitors, Rules, Launcher, Tools, Companion |
 | `sections/HomeSection.qml` | Home: miniature, palette, search index, summary cards |
 | `sections/` | one view per pane; `ChoicePane.qml` renders the chip, stepper, icon, font, art and card groups shared by Desktop, Screens and Apps |
 | `ShuffleDeck.js`, `SunTimes.js` | OmaShuffle's deck and sunrise maths |
@@ -599,6 +703,8 @@ so the plugin directory comes from `Qt.resolvedUrl(".")` instead.
 | `monitors-write` | owns the fenced block in `hypr/monitors.lua` |
 | `add-asset` | unpacks a picked font or cursor theme into place |
 | `unlock-screen`, `unlock-apply` | build and install the boot unlock screen for any theme |
+| `Contrast.js` | the readability maths behind Make a theme's reading |
+| `ui/` | Lacquer's own kit: the lithograph tokens in `Design.qml`, the ink controls, the mark, the tour |
 | `read-state` | a bounded reader for Lacquer's own state files |
 | `lacquer-report` | prints setup details and recent log lines for a bug report |
 
