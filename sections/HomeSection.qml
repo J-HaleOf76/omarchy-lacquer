@@ -205,7 +205,9 @@ Item {
   readonly property var choiceGroups: ({
     fonts: ["Add a font", "Text size", "Terminal font", "App text size", "App font"],
     gtk: ["Light or dark apps", "App style", "Icons"],
-    cursor: ["Add a pointer style", "Pointer style", "Pointer size"],
+    cursor: ["Add a pointer style", "Pointer style", "Pointer size", "Hide while typing",
+             "Hide when it sits still", "Jump to the window you land on", "Magnify around the pointer",
+             "Let the graphics card draw it"],
     motion: ["Motion feel", "Speed", "This app's animations", "Top bar animations", "What moves in the top bar"],
     sizes: ["Size of everything", "Text size", "This window"],
     displays: ["Make things bigger", "Themes in the shuffle", "Keep this?"],

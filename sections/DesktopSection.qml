@@ -719,6 +719,73 @@ Item {
   readonly property int cursorSize: section.d ? section.d.gsettings["cursor-size"] : 24
   readonly property var savedCursor: section.store.block ? section.store.block.cursor : null
 
+
+  // What the pointer itself does, from Hyprland. Written into the same block
+  // as every other window setting.
+  readonly property var pointerItems: [
+    { key: "cursor:hide_on_key_press", type: "bool", fallback: false,
+      label: "Hide while typing",
+      note: "The pointer disappears as soon as you start typing, and comes back when you move it." },
+    { key: "cursor:inactive_timeout", type: "float", min: 0, max: 30, step: 1, decimals: 0, fallback: 0,
+      label: "Hide when it sits still",
+      note: "Hide the pointer after it has not moved for this long. 0 leaves it showing." },
+    { key: "cursor:warp_on_change_workspace", type: "enum", numeric: true, fallback: 0,
+      label: "Jump to the window you land on",
+      note: "When you switch desktop, move the pointer onto whatever window ends up in front.",
+      options: [{ value: 0, label: "No" }, { value: 1, label: "Yes" }, { value: 2, label: "Always" }] },
+    { key: "cursor:zoom_factor", type: "float", min: 1, max: 3, step: 0.1, decimals: 1, fallback: 1,
+      label: "Magnify around the pointer",
+      note: "Blow up whatever is under the pointer, for reading something small. 1.0 is off." },
+    { key: "cursor:no_hardware_cursors", type: "enum", numeric: true, fallback: 2,
+      label: "Let the graphics card draw it",
+      note: "The smoothest way to draw a pointer, but a few setups show it in the wrong place. Automatic decides for you.",
+      options: [{ value: 0, label: "Yes" }, { value: 1, label: "No" }, { value: 2, label: "Automatic" }] }
+  ]
+
+  // One group per pointer setting, in whichever control suits it.
+  function pointerGroup(item) {
+    var hypr = section.app.hypr
+    var value = hypr.valueFor(item)
+    var group = {
+      id: "pointer-" + item.key, title: item.label, note: item.note,
+      tech: "Hyprland \u00b7 " + item.key
+    }
+    if (item.type === "bool") {
+      group.kind = "chips"
+      group.current = value === true ? "on" : "off"
+      group.options = section.onOffWords()
+      group.pick = function(v) { hypr.setValue(item, v === "on", true) }
+      return group
+    }
+    if (item.type === "enum") {
+      group.kind = "chips"
+      group.current = String(value)
+      group.options = item.options.map(function(o) { return { value: String(o.value), label: o.label } })
+      group.pick = function(v) { hypr.setValue(item, Number(v), true) }
+      return group
+    }
+    group.kind = "stepper"
+    group.num = Number(value)
+    group.min = item.min
+    group.max = item.max
+    group.stepSize = item.step
+    group.value = Number(value).toFixed(item.decimals)
+    group.unit = item.key === "cursor:inactive_timeout" ? "s" : "\u00d7"
+    group.format = function(v) {
+      if (item.key === "cursor:inactive_timeout")
+        return Number(v) <= 0 ? "never" : Math.round(v) + " s"
+      return Number(v).toFixed(1) + "\u00d7"
+    }
+    group.step = function(d) {
+      hypr.setValue(item, Math.max(item.min, Math.min(item.max, Number(value) + d * item.step)), true)
+    }
+    if (hypr.isModified(item.key)) {
+      group.reset = function() { hypr.resetKeys([item.key], item.label) }
+      group.resetLabel = "Back to normal"
+    }
+    return group
+  }
+
   readonly property var cursorGroups: !section.d ? [] : [
     section.addGroup("cursor", "Add a pointer style",
       "A pointer style you downloaded, as a folder or a .zip. It is added for you and shows up below."),
@@ -743,7 +810,7 @@ Item {
       options: [16, 20, 24, 32, 40, 48, 64].map(function(n) { return { value: n, label: String(n) } }),
       pick: function(v) { section.store.setCursor(section.cursorTheme, v) }
     }
-  ]
+  ].concat(section.pointerItems.map(function(item) { return section.pointerGroup(item) }))
 
   readonly property var ns: section.night.status
   readonly property var nowTemps: [5500, 5000, 4500, 4000, 3500, 3000]
