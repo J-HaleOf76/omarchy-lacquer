@@ -11,7 +11,8 @@ Removed and put back:
   - a hyprsunset.conf that Lacquer wrote, replaced by Omarchy's default
   - GTK / colour-scheme / icon pins, then the theme's own values re-applied
   - a cursor theme Lacquer saved, back to the default
-  - the theme-set hook, the launcher entry and Lacquer's state folder
+  - the theme-set hook, the launcher entry, the text drawing settings in
+    ~/.config/fontconfig/conf.d, and Lacquer's state folder
 
 Left alone, and listed so you can decide:
   - shell.toml and shell.json values (Shell style, Bar, plugin settings, idle
@@ -33,6 +34,7 @@ STATE = os.path.join(HOME, ".local/state/omarchy", PLUGIN_ID)
 MARKER = os.path.join(HOME, ".local/state/omarchy/lacquer-backups-made")
 HOOK = os.path.join(HOME, ".config/omarchy/hooks/theme-set.d/lacquer-reapply")
 LAUNCHER = os.path.join(HOME, ".local/share/applications/lacquer.desktop")
+FONTRENDER = os.path.join(HOME, ".config/fontconfig/conf.d/99-lacquer-rendering.conf")
 HYPR = os.path.join(HOME, ".config/hypr")
 SUNSET = os.path.join(HYPR, "hyprsunset.conf")
 SUNSET_DEFAULT = os.path.join(OMARCHY, "config/hypr/hyprsunset.conf")
@@ -147,6 +149,8 @@ def main(argv):
         actions.append(("Take Lacquer's colours back out of " + ", ".join(themed), None, "tools"))
     if has_marker(HOOK, "# X-Lacquer-Managed=true"):
         actions.append(("Delete the theme-set hook " + HOOK.replace(HOME, "~"), HOOK, None))
+    if has_marker(FONTRENDER, "Written by Lacquer"):
+        actions.append(("Delete the text drawing settings " + FONTRENDER.replace(HOME, "~"), FONTRENDER, None))
     if has_marker(LAUNCHER, "X-Lacquer-Managed=true"):
         actions.append(("Delete the launcher entry " + LAUNCHER.replace(HOME, "~"), LAUNCHER, None))
     if os.path.isdir(STATE):

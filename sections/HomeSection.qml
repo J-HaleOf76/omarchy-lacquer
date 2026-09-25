@@ -203,7 +203,8 @@ Item {
   // Only the labels a person would look for; groups in the Desktop, Screens
   // and Apps views are listed by their visible titles.
   readonly property var choiceGroups: ({
-    fonts: ["Add a font", "Text size", "Terminal font", "App text size", "App font"],
+    fonts: ["Add a font", "Text size", "Terminal font", "App text size", "App font",
+            "Smooth the edges of text", "Snap text to the pixel grid", "Use the screen's colour stripes"],
     gtk: ["Light or dark apps", "App style", "Icons"],
     cursor: ["Add a pointer style", "Pointer style", "Pointer size", "Hide while typing",
              "Hide when it sits still", "Jump to the window you land on", "Magnify around the pointer",

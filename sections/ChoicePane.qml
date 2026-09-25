@@ -65,6 +65,7 @@ Item {
 
   function moveBy(dx, dy) {
     if (pane.list.length === 0) return
+    pane.wantTitle = ""
     var g = pane.list[pane.cursorGroup]
     var opts = optionsOf(g)
     if (dx !== 0) {
@@ -93,9 +94,20 @@ Item {
   }
 
   // Search on Home lands here with a group title to put the cursor on.
+  // A group the page was asked to open on, from a search result. It is kept
+  // rather than acted on once: the groups are rebuilt as the store finishes
+  // rescanning, and every rebuild used to throw the page back to the top.
+  property string wantTitle: ""
+
   function focusGroupTitle(title) {
+    pane.wantTitle = String(title || "")
+    return honourWanted()
+  }
+
+  function honourWanted() {
+    if (pane.wantTitle === "") return false
     for (var i = 0; i < pane.list.length; i++) {
-      if (pane.list[i].title !== title) continue
+      if (pane.list[i].title !== pane.wantTitle) continue
       enterGroup(i, false)
       return true
     }
@@ -120,7 +132,7 @@ Item {
 
   signal cascadeRequested()
 
-  function reset() { pane.filterText = ""; pane.seenCount = 0; enterGroup(0, false); flick.contentY = 0; cascadeRequested() }
+  function reset() { pane.filterText = ""; pane.seenCount = 0; pane.wantTitle = ""; enterGroup(0, false); flick.contentY = 0; cascadeRequested() }
 
   onVisibleChanged: if (visible) reset()
   // Groups often arrive after the pane is shown; the first real set places the
@@ -129,6 +141,7 @@ Item {
   onListChanged: {
     var first = pane.seenCount === 0 && pane.list.length > 0
     pane.seenCount = pane.list.length
+    if (honourWanted()) return
     if (first || pane.cursorGroup < 0 || pane.cursorGroup >= pane.list.length) enterGroup(0, false)
   }
 

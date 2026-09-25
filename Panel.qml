@@ -43,6 +43,7 @@ Item {
   ThemeStore { id: themeStore; app: root }
   AetherStore { id: aetherStore; app: root }
   DesktopStore { id: desktopStore; app: root }
+  FontRenderStore { id: fontRenderStore; app: root }
   NightStore { id: nightStore; app: root }
   ScreensStore { id: screensStore; app: root }
   MenuLookStore { id: menuLookStore; app: root; Component.onCompleted: rescan() }
@@ -88,6 +89,7 @@ Item {
   readonly property alias tools: toolsStore
   readonly property alias aether: aetherStore
   readonly property alias desktop: desktopStore
+  readonly property alias fontRender: fontRenderStore
   readonly property alias night: nightStore
   readonly property alias screens: screensStore
   readonly property alias menuLook: menuLookStore
@@ -956,7 +958,7 @@ Item {
     if (entry.shellTab !== undefined) root.shellTab = entry.shellTab
     if (entry.animTab !== undefined) root.animTab = entry.animTab
     Qt.callLater(function() {
-      if (entry.group && root.isDesktop) { desktopSection.focusGroupTitle(entry.group); return }
+      if (entry.group && root.isDesktop) { root.focusGroupSoon(entry.group); return }
       if (!entry.key && !entry.leaf) return
       for (var i = 0; i < root.rows.length; i++) {
         var r = root.rows[i]
@@ -968,6 +970,31 @@ Item {
         return
       }
     })
+  }
+
+  // A page's groups are built from its store, which may still be rescanning
+  // when the search result lands on it. Ask again for a moment rather than
+  // giving up and leaving the page at the top.
+  property string focusWanted: ""
+  property int focusTries: 0
+
+  function focusGroupSoon(title) {
+    root.focusWanted = String(title || "")
+    root.focusTries = 0
+    if (root.focusWanted === "") return
+    if (desktopSection.focusGroupTitle(root.focusWanted)) { root.focusWanted = ""; return }
+    focusRetry.restart()
+  }
+
+  Timer {
+    id: focusRetry
+    interval: 70
+    repeat: true
+    onTriggered: {
+      root.focusTries = root.focusTries + 1
+      if (root.focusWanted === "" || !root.isDesktop || root.focusTries > 10) { stop(); return }
+      if (desktopSection.focusGroupTitle(root.focusWanted)) { root.focusWanted = ""; stop() }
+    }
   }
 
   // An absolute path to an image, with nothing odd in it. The file itself is

@@ -91,6 +91,53 @@ Item {
       options: section.d.uiFonts.map(function(f) { return { value: f, label: f } }),
       pick: function(v) { section.store.setUiFont(v, section.store.uiSize) }
     }
+  ].concat(section.renderGroups)
+
+  // ------------------------------------------------------------ how text is drawn
+  //
+  // fontconfig, not Hyprland: smoothing, hinting and the screen's subpixel
+  // order. None of it can be previewed — an app reads these when it starts.
+
+  readonly property var render: section.app.fontRender
+
+  readonly property string renderNote:
+    "Apps pick this up when they start. Ones already open keep the old look until you open them again."
+
+  readonly property var renderGroups: [
+    {
+      id: "text-smoothing", kind: "chips", title: "Smooth the edges of text",
+      tech: "fontconfig · antialias",
+      note: "Softens the steps along a letter's edges. Off is sharper and thinner, and much harder to read at small sizes. "
+          + section.renderNote,
+      current: section.render.valueOf("antialias") === true ? "on" : "off",
+      options: section.onOffWords(),
+      pick: function(v) { section.render.write("antialias", v === "on") }
+    },
+    {
+      id: "text-hinting", kind: "chips", title: "Snap text to the pixel grid",
+      tech: "fontconfig · hintstyle",
+      note: "Nudges the strokes of each letter onto whole pixels. More of it is crisper and more even; less of it keeps "
+          + "the shape the font was drawn with. " + section.renderNote,
+      current: section.render.valueOf("hintstyle"),
+      options: [{ value: "hintnone", label: "Not at all" }, { value: "hintslight", label: "A little" },
+                { value: "hintmedium", label: "Some" }, { value: "hintfull", label: "All the way" }],
+      pick: function(v) { section.render.write("hintstyle", v) }
+    },
+    {
+      id: "text-subpixel", kind: "chips", title: "Use the screen's colour stripes",
+      tech: "fontconfig · rgba",
+      note: "Every pixel on an LCD is three coloured stripes, and using them separately makes text look about three times "
+          + "sharper. Pick the order your screen uses — RGB is almost always right. Wrong, or on the wrong kind of screen, "
+          + "it puts colour fringes on the letters. " + section.renderNote,
+      current: section.render.valueOf("rgba"),
+      options: [{ value: "none", label: "Don't" }, { value: "rgb", label: "RGB" }, { value: "bgr", label: "BGR" },
+                { value: "vrgb", label: "RGB, stacked" }, { value: "vbgr", label: "BGR, stacked" }],
+      pinned: section.render.touched,
+      pinnedText: section.render.touched ? "set by Lacquer" : "",
+      unpinLabel: "Back to normal",
+      unpin: function() { section.render.resetAll() },
+      pick: function(v) { section.render.write("rgba", v) }
+    }
   ]
 
   readonly property var gtkGroups: !section.d ? [] : [
