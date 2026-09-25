@@ -19,8 +19,12 @@ Item {
   required property var app
 
   readonly property bool live: visible && app.opened
-  // Live and allowed to move: the Motion switch stills everything below.
-  readonly property bool moving: live && app.motion
+  // Live and allowed to move: the Motion switch stills everything below, and so
+  // does the panel's own idleness. Home costs about 8 % of a core while its
+  // miniature re-tiles, and paying that for half an hour because the page was
+  // left open is not a live picture of anything — the first pointer movement
+  // wakes it again.
+  readonly property bool moving: live && app.motion && app.lively
   property string query: ""
   property int cursorAt: 0
 
