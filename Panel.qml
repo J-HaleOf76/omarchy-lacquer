@@ -340,25 +340,36 @@ Item {
     : root.backupStamp !== "" ? "Kept a copy of your settings before changing anything, just in case (*.lacquer-backup-" + root.backupStamp + ")"
     : ""
 
+  // Each hint is "key \u2013 what it does", separated by middots. It used to run
+  // the key straight into the verb ("Tab next page"), which reads as one
+  // phrase rather than as a key and its action, and it said "page" for what
+  // this app calls a section.
   readonly property string keyHints: {
     if (root.isHome) return homeSection.query !== ""
-      ? "↑↓ choose · Enter open · Backspace edit · Esc clear"
-      : "type to search · ←→ group · ↑↓ section · Enter open · Tab next page · Esc close"
-    if (root.isGenerate) return (root.confirmGenerate ? "g again to generate and apply · Esc cancel" : "w pick a wallpaper · f any picture · l light or dark · g make the theme (asks first) · o open the theme maker · Esc close")
-    if (root.isShuffle) return "the shuffle keeps working while Lacquer is closed · Tab next page · Esc close"
+      ? "\u2191\u2193 \u2013 choose \u00b7 Enter \u2013 open \u00b7 Backspace \u2013 edit \u00b7 Esc \u2013 clear"
+      : "type anywhere to search \u00b7 \u2190\u2192 \u2013 group \u00b7 \u2191\u2193 \u2013 row \u00b7 Enter \u2013 open \u00b7 Tab \u2013 next section \u00b7 Esc \u2013 close"
+    if (root.isGenerate) return (root.confirmGenerate
+      ? "g again \u2013 generate and apply \u00b7 Esc \u2013 cancel"
+      : "w \u2013 pick a wallpaper \u00b7 f \u2013 any picture \u00b7 l \u2013 light or dark \u00b7 g \u2013 make the theme (asks first) \u00b7 o \u2013 open the theme maker \u00b7 Esc \u2013 close")
+    if (root.isShuffle) return "the shuffle keeps working while Lacquer is closed \u00b7 Tab \u2013 next section \u00b7 Esc \u2013 close"
     // Only the pages that pin a value or carry a default mention Del.
     if (root.isDesktop && ["fonts", "gtk", "cursor", "sizes", "looks"].indexOf(root.section.id) < 0)
-      return "↑↓ group · ←→ choose or step · Enter pick · Tab next page · Esc close"
-    if (root.section.id === "nightlight") return "↑↓ group · ←→ choose or step · Enter pick · Tab next page · Esc close"
-    if (root.isDesktop) return "↑↓ group · ←→ choose or step a size · Enter pick · Del back to normal · Tab next page · Esc close"
-    if (root.isTheme) return "←→↑↓ hjkl choose · Enter apply · click a wallpaper to set it · Tab next page · Esc close"
-    if (root.isBar) return "◀ ▶ move · ▲ ▼ order · ✕ take off the bar · Tab next page · Esc close"
-    if (root.isPlugins) return "[ ] pick an add-on, then change its settings with the mouse · Tab next page · Esc close"
+      return "\u2191\u2193 \u2013 group \u00b7 \u2190\u2192 \u2013 choose or step \u00b7 Enter \u2013 pick \u00b7 Tab \u2013 next section \u00b7 Esc \u2013 close"
+    if (root.section.id === "nightlight")
+      return "\u2191\u2193 \u2013 group \u00b7 \u2190\u2192 \u2013 choose or step \u00b7 Enter \u2013 pick \u00b7 Tab \u2013 next section \u00b7 Esc \u2013 close"
+    if (root.isDesktop)
+      return "\u2191\u2193 \u2013 group \u00b7 \u2190\u2192 \u2013 choose or step \u00b7 Enter \u2013 pick \u00b7 Del \u2013 back to normal \u00b7 Tab \u2013 next section \u00b7 Esc \u2013 close"
+    if (root.isTheme)
+      return "\u2190\u2192\u2191\u2193 or hjkl \u2013 choose \u00b7 Enter \u2013 apply \u00b7 click a wallpaper to set it \u00b7 Tab \u2013 next section \u00b7 Esc \u2013 close"
+    if (root.isBar)
+      return "\u25c0 \u25b6 \u2013 move \u00b7 \u25b2 \u25bc \u2013 order \u00b7 \u2715 \u2013 take off the bar \u00b7 Tab \u2013 next section \u00b7 Esc \u2013 close"
+    if (root.isPlugins)
+      return "[ ] \u2013 pick an add-on, then change its settings with the mouse \u00b7 Tab \u2013 next section \u00b7 Esc \u2013 close"
     var hint = root.isCurves
-      ? "drag a handle · P play · Tab next page"
-      : "↑↓ kj row · ←→ hl adjust · Space toggle · Backspace reset · Tab next page"
-        + ((root.isShell || root.isAnimations) ? " · [ ] next tab" : "")
-    return hint + " · Ctrl+Z undo · Esc close"
+      ? "drag a handle \u00b7 P \u2013 play \u00b7 Tab \u2013 next section"
+      : "\u2191\u2193 or kj \u2013 row \u00b7 \u2190\u2192 or hl \u2013 adjust \u00b7 Space \u2013 toggle \u00b7 Backspace \u2013 reset \u00b7 Tab \u2013 next section"
+        + ((root.isShell || root.isAnimations) ? " \u00b7 [ ] \u2013 next tab" : "")
+    return hint + " \u00b7 Ctrl+Z \u2013 undo \u00b7 Esc \u2013 close"
   }
 
   // Reset all asks once, then acts on a second press within a few seconds.

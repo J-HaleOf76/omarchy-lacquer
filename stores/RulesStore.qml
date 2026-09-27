@@ -17,7 +17,7 @@ Item {
   readonly property string home: Quickshell.env("HOME")
   readonly property string statePath: root.home + "/.local/state/omarchy/io.github.deunnis.lacquer/rules.json"
 
-  // [{ match, name, float, center, pin, width, height, workspace, opacity,
+  // [{ match, name, float, center, pin, width, height, workspace, monitor, opacity,
   //    noBlur, noShadow, noBorder, noRounding }]
   property var rules: []
   property bool loaded: false
@@ -56,6 +56,7 @@ Item {
              center: r.center === true, pin: r.pin === true,
              width: Number(r.width) || 0, height: Number(r.height) || 0,
              workspace: String(r.workspace || ""),
+             monitor: String(r.monitor || ""),
              opacity: r.opacity === undefined || r.opacity === "" ? "" : Number(r.opacity),
              noBlur: r.noBlur === true, noShadow: r.noShadow === true,
              noBorder: r.noBorder === true, noRounding: r.noRounding === true }

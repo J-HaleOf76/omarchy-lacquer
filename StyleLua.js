@@ -319,6 +319,9 @@ function renderWindowRule(rule) {
   if (Number(rule.width) > 0 && Number(rule.height) > 0)
     props.push("size = { " + Math.round(rule.width) + ", " + Math.round(rule.height) + " }")
   if (rule.workspace) props.push("workspace = " + quote(String(rule.workspace)))
+  // Which screen it opens on. `o.window` hands the table straight to
+  // hl.window_rule, so this needs nothing on the Omarchy side.
+  if (rule.monitor) props.push("monitor = " + quote(String(rule.monitor)))
   if (rule.opacity !== undefined && rule.opacity !== "")
     props.push("opacity = " + quote(num(rule.opacity, 2) + " " + num(rule.opacityInactive === undefined ? rule.opacity : rule.opacityInactive, 2)))
   if (rule.noBlur === true) props.push("no_blur = true")

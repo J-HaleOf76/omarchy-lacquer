@@ -28,7 +28,9 @@ Item {
     if (kind === "motion" || kind === "borders") return
     if (kind === "looks") { section.app.looks.rescan(); return }
     if (kind === "monitors") { section.app.monitors.rescan(); return }
-    if (kind === "rules") { section.app.rules.rescan(); return }
+    // The screen picker needs the monitor list, which the Screens page would
+    // otherwise be the only thing to fetch.
+    if (kind === "rules") { section.app.rules.rescan(); section.app.monitors.rescan(); return }
     if (kind === "launcher") { section.app.launcher.rescan(); return }
     if (kind === "frame") { section.app.companion.rescan(); return }
     if (kind === "night") night.rescan()
@@ -426,6 +428,25 @@ Item {
       })).concat([{ value: "special", label: "Scratchpad" }]),
       pick: function(v) { store.set("workspace", v, v === "" ? "Opens wherever you are" : "Opens on " + v) }
     })
+    // Which screen it opens on, for anyone who wants a game on the big one
+    // and everything else where they are. Only worth showing with more than
+    // one screen plugged in.
+    if (section.app.monitors.monitors.length > 1) {
+      out.push({
+        id: "rule-monitor", kind: "chips", tech: "Hyprland \u00b7 monitor window rule",
+        title: "Opens on which screen",
+        note: "Always open this app on the same screen, wherever you happen to be working.",
+        current: rule ? rule.monitor : "",
+        options: [{ value: "", label: "Whichever you are on" }].concat(
+          section.app.monitors.monitors.map(function(m) {
+            var size = m.width && m.height ? "  \u00b7  " + m.width + "\u00d7" + m.height : ""
+            return { value: String(m.name), label: String(m.name) + size }
+          })),
+        pick: function(v) {
+          store.set("monitor", v, v === "" ? "Opens on whichever screen you are on" : "Opens on " + v)
+        }
+      })
+    }
     out.push({
       id: "opacity", kind: "chips", title: "See-through",
       note: "How see-through this app's windows are, whatever the other windows are set to.",
