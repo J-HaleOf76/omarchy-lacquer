@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "io.github.deunnis.lacquer",
   "name": "Omarchy Lacquer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "deunnis",
   "license": "MIT",
   "description": "One app for how your Omarchy desktop looks. Themes, wallpapers, shuffle and theme generation with a readability check; saved looks you can carry to another machine; fonts, text rendering, icons and the mouse pointer; window shape, borders built from your theme, glass, shadow and the colour behind your windows; one motion feel or every animation on its own; screens, night light, lock and boot; bar and menu style; per-app rules; terminals, btop and every plugin. 370 settings in plain words, live.",

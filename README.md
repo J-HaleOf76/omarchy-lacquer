@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img alt="version 1.0" src="https://img.shields.io/badge/version-1.0-7daea3?style=flat-square&labelColor=282828">
+  <img alt="version 1.0.1" src="https://img.shields.io/badge/version-1.0.1-7daea3?style=flat-square&labelColor=282828">
   <img alt="MIT" src="https://img.shields.io/badge/licence-MIT-d4be98?style=flat-square&labelColor=282828">
   <img alt="Omarchy 4" src="https://img.shields.io/badge/Omarchy-4.0%2B-d4be98?style=flat-square&labelColor=282828">
   <img alt="no telemetry" src="https://img.shields.io/badge/no%20telemetry-665c54?style=flat-square&labelColor=282828">
@@ -88,6 +88,34 @@ online.
 <td><img src="docs/media/apprules.webp" alt="Per-app window rules: how one app opens"><br><sub><b>Per-app rules</b> — how one app opens</sub></td>
 </tr>
 </table>
+
+## 1.0.1, from what people said
+
+The 1.0 release hid each setting's description until you rested the pointer on
+it. That opened the row and pushed everything below it down, so scrolling with a
+mouse re-flowed the page under your own cursor. Three people reported it, one
+rolled back. **Descriptions are simply there again**, as they were in the beta:
+nothing opens, nothing moves.
+
+Along with it:
+
+- The **wheel no longer changes values** when you scroll past a slider. Plain
+  wheel scrolls the page; Ctrl+wheel still steps, on purpose.
+- The **window can be resized** by the grip in its bottom-right corner, and the
+  size is remembered. A layer-shell surface cannot be dragged by the
+  compositor, which is why it could not be resized before.
+- The **tab marker is an underline** again, rather than a brush stroke that
+  read, accurately, as half-drawn.
+- The **Windows tab is no longer a telephone**. `U+F118F` is
+  `md-phone_bluetooth_outline` in the installed Nerd Font.
+- The **paper grain is lighter and even**, and the key hints say
+  "key – what it does" rather than running the two together.
+- Per-app rules can **pin an app to a screen**, for a game on the big monitor
+  and everything else wherever you are.
+
+One thing that cannot be fixed from inside the app: `Super`+`W` will not close
+Lacquer. Hyprland binds it globally, so the compositor consumes the key before
+any client sees it. `Esc` closes, as does the ✕.
 
 > **What 1.0 means here.** Every setting has been round-tripped: set it, unset
 > it, and the config file is byte-for-byte what it was. Lacquer has been built
