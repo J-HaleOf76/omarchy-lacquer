@@ -180,10 +180,10 @@ Item {
           readonly property var modelData: pane.list[index] || ({})
           readonly property bool groupHasCursor: index === pane.cursorGroup
           readonly property var shown: pane.optionsOf(modelData)
-          // The note opens when the card is hovered for a moment, or when the
-          // keyboard is on it; otherwise the page is just titles and controls.
-          property bool lingering: false
-          readonly property bool open: groupHasCursor || lingering || modelData.noteAlways === true
+          // The note is simply there. Opening it on hover re-flowed the page
+          // under the reader's own cursor as they scrolled, which is the
+          // single most complained-about thing in 1.0.
+          readonly property bool open: true
 
           design: pane.design
           ruled: index > 0
@@ -193,11 +193,7 @@ Item {
           width: column.width
           padding: 14
 
-          HoverHandler {
-            id: cardHover
-            onHoveredChanged: hovered ? lingerTimer.restart() : (lingerTimer.stop(), groupItem.lingering = false)
-          }
-          Timer { id: lingerTimer; interval: 120; onTriggered: groupItem.lingering = true }
+          HoverHandler { id: cardHover }
 
           // Cards settle in one after another, sinking slowly into place.
           property real appear: 1

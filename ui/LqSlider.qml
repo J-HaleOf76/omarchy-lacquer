@@ -6,7 +6,8 @@ import QtQuick
 //
 // `value` is where it is; dragging shows `shown` and emits `moved` for pages
 // that preview live, and `committed` once on release, measured from where the
-// drag began. Arrow keys and the wheel emit `stepped(±1)` like a stepper did.
+// drag began. Arrow keys emit `stepped(±1)` like a stepper did; so does
+// Ctrl+wheel, while a plain wheel is left to scroll the page.
 Item {
   id: slider
 
@@ -141,6 +142,7 @@ Item {
     hoverEnabled: true
     cursorShape: Qt.PointingHandCursor
     preventStealing: true
+    propagateComposedEvents: true
     onPressed: function(m) { slider.startValue = slider.safeValue; slider.dragging = true; slider.dragValue = slider.valueAt(m.x); slider.moved(slider.dragValue) }
     onPositionChanged: function(m) {
       if (!slider.dragging) return
@@ -153,7 +155,18 @@ Item {
       if (Math.abs(v - slider.startValue) > 0.0000001) { slider.committed(v); slider.released(v) }
     }
     onCanceled: slider.dragging = false
-    onWheel: function(w) { slider.stepped(w.angleDelta.y > 0 ? 1 : -1) }
+    // The wheel scrolls the page. It used to nudge the value, so scrolling
+    // past a slider quietly changed the setting under the pointer; several
+    // people hit that within a day of 1.0. Ctrl+wheel still steps it, for
+    // anyone who wants the fine control on purpose.
+    onWheel: function(w) {
+      if (w.modifiers & Qt.ControlModifier) {
+        slider.stepped(w.angleDelta.y > 0 ? 1 : -1)
+        w.accepted = true
+        return
+      }
+      w.accepted = false
+    }
   }
 
   Text {

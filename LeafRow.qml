@@ -24,10 +24,10 @@ Item {
   required property var leafSpec
   // Lacquer's design kit, from the panel.
   property var design: null
-  // The description opens on the row the keyboard is on, or one the
-  // pointer has rested on for a moment.
-  property bool lingering: false
-  readonly property bool open: hasCursor || lingering
+  // Descriptions are simply there. They used to open when the pointer rested
+  // on a row, which re-flowed the page under the reader's own cursor while
+  // they were scrolling — the single most complained-about thing in 1.0.
+  readonly property bool open: true
   property var value: null
   property bool inherited: false
   property bool modified: false
@@ -88,13 +88,11 @@ Item {
     Behavior on color { enabled: root.animated; ColorAnimation { duration: 140 } }
   }
 
-  Timer { id: lingerTimer; interval: 120; onTriggered: root.lingering = true }
 
   MouseArea {
     anchors.fill: parent
     acceptedButtons: Qt.NoButton
     hoverEnabled: true
-    onContainsMouseChanged: containsMouse ? lingerTimer.restart() : (lingerTimer.stop(), root.lingering = false)
     // Only real pointer motion moves the cursor. A row sliding under a mouse
     // that is just resting on the panel — which happens every time the list
     // changes, and the panel opens centred — must not steal keyboard focus.

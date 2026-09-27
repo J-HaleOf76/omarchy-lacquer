@@ -200,21 +200,14 @@ Canvas {
     var s = 1 + breath * 0.025
 
     if (mode === "line") {
-      // The strand thickens under the selected word and thins away at both
-      // ends — an underline with some weight in it, not a drop hanging off.
+      // An underline under the selected word, and nothing cleverer than that.
+      // It used to be a brush stroke with a sagging belly whose ends ran ten
+      // pixels past the word on either side, which reads as a half-finished
+      // drawing rather than as a mark of which tab you are on.
       ctx.fillStyle = bulgeColor
       ctx.beginPath()
-      var base = c1 - 3
-      var w = (hi - lo) * 0.78 * s
-      var mid = (lo + hi) / 2
-      var drop = 3.2 * s
-      moveTo(ctx, mid - w / 2 - 10, base)
-      curveTo(ctx, mid - w / 2 - 3, base, mid - w / 2, base + 1, mid - w / 2, base + drop * 0.5)
-      curveTo(ctx, mid - w / 2, base + drop * 1.25, mid + w / 2, base + drop * 1.25, mid + w / 2, base + drop * 0.5)
-      curveTo(ctx, mid + w / 2, base + 1, mid + w / 2 + 3, base, mid + w / 2 + 10, base)
-      lineTo(ctx, mid + w / 2 + 10, base - 3)
-      lineTo(ctx, mid - w / 2 - 10, base - 3)
-      ctx.closePath()
+      var top = c1 - 3.5
+      capsule(ctx, lo, hi, top, top + 3)
       ctx.fill()
       return
     }

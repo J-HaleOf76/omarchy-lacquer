@@ -145,7 +145,8 @@ Item {
   function saveUiState() {
     uiStateFile.setText(JSON.stringify({ motion: root.motion, feel: root.motionFeel,
                                          speed: root.motionSpeed, panel: root.panelSize,
-                                         toured: root.toured },
+                                         toured: root.toured,
+                                         width: Math.round(root.customW), height: Math.round(root.customH) },
                                        null, 2) + "\n")
   }
 
@@ -163,6 +164,12 @@ Item {
 
   // How big Lacquer's own window is. Saved next to the motion settings.
   property string panelSize: "normal"
+  // A size dragged by the corner, which wins over the preset until a preset is
+  // picked again. 0 means "use the preset". The panel is a layer-shell surface,
+  // so the compositor cannot resize it the way it resizes a window — this grip
+  // is the only way to make it bigger, and people asked for it on day one.
+  property real customW: 0
+  property real customH: 0
   readonly property var panelSizes: [
     { value: "compact", label: "Compact", w: 720, h: 560 },
     { value: "normal", label: "Normal", w: 880, h: 680 },
@@ -178,6 +185,8 @@ Item {
 
   function setPanelSize(id) {
     root.panelSize = String(id || "normal")
+    root.customW = 0
+    root.customH = 0
     root.saveUiState()
     root.statusText = "Panel size: " + root.panelSizeSpec.label
   }
@@ -222,6 +231,8 @@ Item {
           if (parsed && Number(parsed.speed) > 0) root.motionSpeed = Number(parsed.speed)
           if (parsed && typeof parsed.panel === "string") root.panelSize = parsed.panel
           if (parsed && typeof parsed.toured === "boolean") root.toured = parsed.toured
+          if (parsed && Number(parsed.width) > 0) root.customW = Number(parsed.width)
+          if (parsed && Number(parsed.height) > 0) root.customH = Number(parsed.height)
         } catch (e) { }
       }
       root.motionLoaded = true
@@ -493,7 +504,7 @@ Item {
   readonly property var mainTabs: [
     { title: "Colours & wallpaper", icon: "" },
     { title: "Screen & text", icon: "󰍹" },
-    { title: "Windows", icon: "󱆏" },
+    { title: "Windows", icon: "󱂬" },
     { title: "Top bar & menus", icon: "󰒓" },
     { title: "Apps", icon: "󰀻" }
   ]
@@ -1225,8 +1236,10 @@ Item {
     BorderSurface {
       id: card
       anchors.centerIn: parent
-      width: Math.min(Style.space(root.panelSizeSpec.w), window.width - Style.gapsOut * 4)
-      height: Math.min(Style.space(root.panelSizeSpec.h), window.height - Style.gapsOut * 4)
+      width: Math.min(root.customW > 0 ? root.customW : Style.space(root.panelSizeSpec.w),
+                      window.width - Style.gapsOut * 4)
+      height: Math.min(root.customH > 0 ? root.customH : Style.space(root.panelSizeSpec.h),
+                       window.height - Style.gapsOut * 4)
       // As round as the cards inside it: no square window around the goo.
       radius: root.design.cardRadius + 6
       color: root.background
@@ -1255,6 +1268,70 @@ Item {
         anchors.margins: 1
         z: 60
         design: root.design
+      }
+
+      // A corner to drag the window bigger. The card is centred, so the
+      // corner has to move twice as fast as the width to stay under the
+      // pointer. Released sizes are saved; a preset in Size of everything
+      // clears them again.
+      Item {
+        id: grip
+        z: 150
+        width: 22
+        height: 22
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+
+        readonly property real minW: 620
+        readonly property real minH: 460
+
+        Canvas {
+          anchors.fill: parent
+          anchors.margins: 5
+          opacity: gripArea.containsMouse || gripArea.pressed ? 0.85 : 0.35
+          Behavior on opacity { NumberAnimation { duration: 140 } }
+          onPaint: {
+            var ctx = getContext("2d")
+            ctx.reset()
+            ctx.strokeStyle = root.design.ink
+            ctx.lineWidth = 1.4
+            for (var i = 0; i < 3; i++) {
+              var o = i * 4.5
+              ctx.beginPath()
+              ctx.moveTo(width - o, height)
+              ctx.lineTo(width, height - o)
+              ctx.stroke()
+            }
+          }
+          Connections {
+            target: root.design
+            function onInkChanged() { requestPaint() }
+          }
+        }
+
+        MouseArea {
+          id: gripArea
+          anchors.fill: parent
+          anchors.margins: -6
+          hoverEnabled: true
+          cursorShape: Qt.SizeFDiagCursor
+          property real startX: 0
+          property real startY: 0
+          property real startW: 0
+          property real startH: 0
+          onPressed: function(m) {
+            startX = m.x; startY = m.y
+            startW = card.width; startH = card.height
+          }
+          onPositionChanged: function(m) {
+            if (!pressed) return
+            root.customW = Math.max(grip.minW, Math.min(window.width - Style.gapsOut * 4,
+                                                        startW + (m.x - startX) * 2))
+            root.customH = Math.max(grip.minH, Math.min(window.height - Style.gapsOut * 4,
+                                                        startH + (m.y - startY) * 2))
+          }
+          onReleased: root.saveUiState()
+        }
       }
 
       // ------------------------------------------------------- the tour
