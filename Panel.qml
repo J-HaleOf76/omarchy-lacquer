@@ -1701,8 +1701,13 @@ Item {
               if (!r) return
               // The cell is in the tab column's own coordinates, and that
               // column sits above the rail's top edge.
-              fallingDrop.x = railTabs.x + r.x + r.width / 2 - fallingDrop.width / 2
-              fallingDrop.y = railTabs.y + r.y + r.height - 3
+              //
+              // It leaves from the right-hand edge of the block rather than
+              // from underneath it, and falls down that empty lane: straight
+              // down the middle it crossed the label of every tab below it on
+              // the way to the puddle.
+              fallingDrop.x = railTabs.x + r.x + r.width - fallingDrop.width - 11
+              fallingDrop.y = railTabs.y + r.y + r.height / 2 - fallingDrop.height / 2
               fallingDrop.opacity = 0.7
               fall.to = puddle.y + puddle.height * 0.45 - fallingDrop.height
               fall.duration = Math.round(Math.sqrt(Math.max(1, fall.to - fallingDrop.y)) * 34)
