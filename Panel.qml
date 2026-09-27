@@ -1702,11 +1702,12 @@ Item {
               // The cell is in the tab column's own coordinates, and that
               // column sits above the rail's top edge.
               //
-              // It leaves from the right-hand edge of the block rather than
-              // from underneath it, and falls down that empty lane: straight
-              // down the middle it crossed the label of every tab below it on
-              // the way to the puddle.
-              fallingDrop.x = railTabs.x + r.x + r.width - fallingDrop.width - 11
+              // It leaves from the left-hand edge of the block rather than from
+              // underneath it, and falls down the gutter there: straight down
+              // the middle it crossed the label of every tab below it on the
+              // way to the puddle. The gutter is the block's own padding, so
+              // it stays clear of the icons too.
+              fallingDrop.x = railTabs.x + r.x + 2
               fallingDrop.y = railTabs.y + r.y + r.height / 2 - fallingDrop.height / 2
               fallingDrop.opacity = 0.7
               fall.to = puddle.y + puddle.height * 0.45 - fallingDrop.height

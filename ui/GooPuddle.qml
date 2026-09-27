@@ -19,7 +19,9 @@ Canvas {
   // How hard the last drop landed: the droplet that jumps back out lands
   // softer, so its ripple is smaller.
   function splash(x, strength) {
-    at = Math.max(0.1, Math.min(0.9, x / Math.max(1, width)))
+    // Near enough to the rim to sit under a drop that falls down the very
+    // edge of the rail, which is where it falls from now.
+    at = Math.max(0.04, Math.min(0.96, x / Math.max(1, width)))
     if (!design.motion) return
     ripple = strength === undefined ? 1 : strength
     settle.restart()
